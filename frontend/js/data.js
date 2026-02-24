@@ -77,6 +77,31 @@ class DataManager {
             console.error(`Failed to save ${type}/${id}:`, error);
         }
     }
+
+    async deleteEntity(type, id) {
+        if (!this.isEditMode) {
+            console.warn("Delete called in View Mode.");
+            return false;
+        }
+
+        try {
+            const response = await fetch(`${this.apiBase}/${type}/${id}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
+            });
+            if (response.ok) {
+                const cacheKey = `${type}_${id}`;
+                this.cache.delete(cacheKey);
+                // Force manifest reload
+                this.manifest = null;
+                await this.loadManifest();
+                return true;
+            }
+        } catch (error) {
+            console.error(`Failed to delete ${type}/${id}:`, error);
+        }
+        return false;
+    }
 }
 
 // Global instance

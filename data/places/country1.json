@@ -1,0 +1,7 @@
+{
+    "name": "country1",
+    "type": "country",
+    "parent": "continent_a",
+    "description": "",
+    "gallery": []
+}

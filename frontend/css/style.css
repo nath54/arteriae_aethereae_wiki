@@ -112,6 +112,34 @@ body {
     display: none !important;
 }
 
+/* ── Edit Mode ────────────────────────────────────────────── */
+/* Hidden by default (view-only / GitHub Pages mode) */
+.edit-only {
+    display: none !important;
+}
+
+/* Shown only when running the FastAPI edit server */
+body.edit-mode .edit-only {
+    display: revert !important;
+}
+
+/* Edit mode indicator badge */
+body.edit-mode::after {
+    content: '✏️ EDIT MODE';
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 255, 255, 0.15);
+    color: var(--aether-cyan);
+    border: 1px solid var(--aether-cyan-dim);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: 'Gothica', sans-serif;
+    font-size: 0.85rem;
+    z-index: 9999;
+    pointer-events: none;
+}
+
 /* ── Scrollbar ────────────────────────────────────────────── */
 ::-webkit-scrollbar {
     width: 8px;

@@ -188,16 +188,136 @@
             renderCardGrid(container);
         });
 
+        // Edit button
+        const editBtn = document.getElementById('btn-edit-char');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => {
+                openCharacterEditor(id, data);
+            });
+        }
+
         // Delete button
         const delBtn = document.getElementById('btn-delete-char');
         if (delBtn) {
             delBtn.addEventListener('click', async () => {
-                if (confirm(`Delete character "${data.name}"?`)) {
-                    // TODO: backend delete endpoint
-                    alert('Delete not yet implemented in backend');
+                if (confirm(`Delete character "${data.name}"? This cannot be undone.`)) {
+                    const success = await window.db.deleteEntity('characters', id);
+                    if (success) {
+                        renderCardGrid(container);
+                    } else {
+                        alert('Failed to delete character.');
+                    }
                 }
             });
         }
+    }
+
+    // ── Character Editor ──
+
+    function openCharacterEditor(id, data) {
+        const container = document.getElementById('characters-content');
+
+        let html = `<div class="char-sheet">
+            <button class="char-sheet-back tool-btn" id="btn-cancel-edit">← Cancel</button>
+            <h2 class="char-sheet-name" style="margin-bottom:20px;">Editing: ${data.name}</h2>
+            <form id="char-edit-form">`;
+
+        // Name field
+        html += `<div class="char-section">
+            <h3 class="char-section-title">📋 Basic Info</h3>
+            <div class="char-section-body">
+                <div class="edit-field">
+                    <label>Name</label>
+                    <input type="text" name="name" value="${escapeAttr(data.name || '')}" />
+                </div>
+            </div>
+        </div>`;
+
+        // All template sections as editable fields
+        for (const section of TEMPLATE_SECTIONS) {
+            const sectionData = data[section.key];
+            if (!sectionData || typeof sectionData !== 'object') continue;
+
+            html += `<div class="char-section">
+                <h3 class="char-section-title">${section.icon} ${section.title}</h3>
+                <div class="char-section-body">`;
+
+            for (const [key, value] of Object.entries(sectionData)) {
+                const label = formatLabel(key);
+                if (typeof value === 'number') {
+                    html += `<div class="edit-field">
+                        <label>${label}</label>
+                        <input type="number" name="${section.key}.${key}" value="${value}" min="0" max="10" />
+                    </div>`;
+                } else {
+                    const isLong = (value || '').length > 60;
+                    if (isLong) {
+                        html += `<div class="edit-field">
+                            <label>${label}</label>
+                            <textarea name="${section.key}.${key}" rows="3">${escapeHtml(value || '')}</textarea>
+                        </div>`;
+                    } else {
+                        html += `<div class="edit-field">
+                            <label>${label}</label>
+                            <input type="text" name="${section.key}.${key}" value="${escapeAttr(value || '')}" />
+                        </div>`;
+                    }
+                }
+            }
+            html += '</div></div>';
+        }
+
+        html += `<div style="display:flex;gap:12px;margin-top:20px;">
+            <button type="submit" class="tool-btn" style="border-color:#4ecdc4;color:#4ecdc4;">💾 Save</button>
+            <button type="button" class="tool-btn" id="btn-cancel-edit2">Cancel</button>
+        </div>`;
+
+        html += '</form></div>';
+        container.innerHTML = html;
+
+        // Cancel
+        const cancelHandler = () => openCharacterSheet(id);
+        document.getElementById('btn-cancel-edit').addEventListener('click', cancelHandler);
+        document.getElementById('btn-cancel-edit2').addEventListener('click', cancelHandler);
+
+        // Save
+        document.getElementById('char-edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const updated = JSON.parse(JSON.stringify(data)); // deep clone
+
+            for (const [field, val] of formData.entries()) {
+                if (field === 'name') {
+                    updated.name = val;
+                } else if (field.includes('.')) {
+                    const [section, key] = field.split('.');
+                    if (!updated[section]) updated[section] = {};
+                    // Try to preserve number types
+                    const origVal = data[section] && data[section][key];
+                    if (typeof origVal === 'number') {
+                        updated[section][key] = parseInt(val) || 0;
+                    } else {
+                        updated[section][key] = val;
+                    }
+                }
+            }
+
+            await window.db.saveEntity('characters', id, updated);
+            // Force manifest reload and show updated sheet
+            window.db.manifest = null;
+            await window.db.loadManifest();
+            // Clear cache for this character
+            window.db.cache.delete(`characters_${id}`);
+            openCharacterSheet(id);
+        });
+    }
+
+    function escapeHtml(text) {
+        return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function escapeAttr(text) {
+        return String(text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     function renderStatBars(combat) {

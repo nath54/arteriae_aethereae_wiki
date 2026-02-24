@@ -1,0 +1,7 @@
+{
+    "name": "continent_A",
+    "type": "continent",
+    "parent": "continent_planet1",
+    "description": "",
+    "gallery": []
+}

@@ -1,12 +1,12 @@
 {
     "characters": {
-        "aeron": {
-            "name": "Aeron",
+        "aeria": {
+            "name": "Aeria",
             "parent": "deos_royal_family",
             "type": "Protagonist"
         },
-        "aeria": {
-            "name": "Aeria",
+        "aeron": {
+            "name": "Aeron",
             "parent": "deos_royal_family",
             "type": "Protagonist"
         },
@@ -17,53 +17,41 @@
         }
     },
     "places": {
-        "teria": {
-            "name": "Teria",
+        "continent_1": {
+            "name": "continent_1",
+            "parent": "test_planete1",
+            "type": "continent",
+            "description": ""
+        },
+        "continent_a": {
+            "name": "continent_A",
+            "parent": "continent_planet1",
+            "type": "continent",
+            "description": ""
+        },
+        "continent_planet1": {
+            "name": "continent_planet1",
+            "parent": null,
+            "type": "continent",
+            "description": ""
+        },
+        "country1": {
+            "name": "country1",
+            "parent": "continent_a",
+            "type": "country",
+            "description": ""
+        },
+        "country_1": {
+            "name": "country_1",
+            "parent": "continent_1",
+            "type": "country",
+            "description": ""
+        },
+        "test_planete1": {
+            "name": "test_planete1",
             "parent": null,
             "type": "planet",
-            "description": "Human-inhabited twin planet"
-        },
-        "maria": {
-            "name": "Maria",
-            "parent": null,
-            "type": "planet",
-            "description": "Déos-inhabited twin planet"
-        },
-        "risnia": {
-            "name": "Risnia",
-            "parent": "teria",
-            "type": "country",
-            "description": "European-inspired kingdom, birthplace of the twins on Teria"
-        },
-        "bruine": {
-            "name": "Bruine",
-            "parent": "risnia",
-            "type": "village",
-            "description": "Small village where Aeron and Aeria grew up"
-        },
-        "caledo": {
-            "name": "Caledo",
-            "parent": "teria",
-            "type": "country",
-            "description": "Celtic-inspired nation in the north"
-        },
-        "ardelia": {
-            "name": "Ardelia",
-            "parent": "teria",
-            "type": "country",
-            "description": "Mediterranean-inspired coastal nation"
-        },
-        "nahara": {
-            "name": "Nahara",
-            "parent": "teria",
-            "type": "country",
-            "description": "Desert kingdom inspired by Middle Eastern cultures"
-        },
-        "kazama": {
-            "name": "Kazama",
-            "parent": "teria",
-            "type": "country",
-            "description": "East Asian-inspired island nation"
+            "description": ""
         }
     },
     "maps": {

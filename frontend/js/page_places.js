@@ -47,7 +47,7 @@
                     ${data.description ? `<p class="place-card-desc">${data.description}</p>` : ''}
                 </div>
                 <div class="place-card-actions">
-                    ${hasChildren ? `<button class="tool-btn place-enter-btn" data-id="${id}" title="Enter">→ Enter</button>` : ''}
+                    <button class="tool-btn place-enter-btn" data-id="${id}" title="Enter">→ Enter</button>
                     ${hasMap ? `<button class="tool-btn place-map-btn" data-map="${id}" title="View Map">🗺️ Map</button>` : ''}
                 </div>
             </div>`;
@@ -67,8 +67,9 @@
 
         container.querySelectorAll('.place-card').forEach(card => {
             card.addEventListener('click', () => {
-                const id = card.dataset.id;
-                openPlaceDetail(id);
+                // Click on card body → drill into the place
+                currentPath.push(card.dataset.id);
+                renderPlacesGrid(container);
             });
         });
 

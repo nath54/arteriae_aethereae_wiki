@@ -11,7 +11,13 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from backend.data_manager import init_data_dirs, build_manifest, get_entity, save_entity
+from backend.data_manager import (
+    init_data_dirs,
+    build_manifest,
+    get_entity,
+    save_entity,
+    delete_entity,
+)
 
 
 app = FastAPI(title="Arteriae Aethereae Engine API")
@@ -85,4 +91,10 @@ def write_entity(category: str, entity_id: str, data: dict):
     return {"status": "success", "entity_id": entity_id}
 
 
-# Note: Further CRUD endpoints for entities and maps will be added here
+@app.delete("/api/{category}/{entity_id}")
+def remove_entity(category: str, entity_id: str):
+    """Delete an entity by category and ID."""
+    success = delete_entity(category, entity_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Entity not found")
+    return {"status": "deleted", "entity_id": entity_id}

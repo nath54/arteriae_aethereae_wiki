@@ -42,11 +42,14 @@ def build_manifest():
                     with open(f_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
                         # Extract minimalist info for manifest
-                        manifest[category][entity_id] = {
+                        entry = {
                             "name": data.get("name", entity_id),
                             "parent": data.get("parent", None),
                             "type": data.get("type", None),
                         }
+                        if category == "places" and "description" in data:
+                            entry["description"] = data["description"]
+                        manifest[category][entity_id] = entry
                 except Exception as e:  # pylint: disable=broad-except
                     print(f"Error reading {filename}: {e}")
 
@@ -77,3 +80,13 @@ def save_entity(category: str, entity_id: str, data: dict):
         json.dump(data, f, indent=4)
     # Rebuild manifest when a file is saved
     build_manifest()
+
+
+def delete_entity(category: str, entity_id: str):
+    """Delete an entity JSON file and rebuild the manifest."""
+    f_path = os.path.join(DATA_DIR, category, f"{entity_id}.json")
+    if os.path.exists(f_path):
+        os.remove(f_path)
+        build_manifest()
+        return True
+    return False
