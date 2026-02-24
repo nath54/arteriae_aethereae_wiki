@@ -1,0 +1,12 @@
+{
+    "characters": {},
+    "places": {},
+    "maps": {
+        "poly1": {
+            "name": "poly1",
+            "parent": null,
+            "type": null
+        }
+    },
+    "events": {}
+}

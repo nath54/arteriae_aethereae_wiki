@@ -1,0 +1,6 @@
+res_tmp
+.venv
+venv
+*cache*
+*.pyc
+__pycache__
