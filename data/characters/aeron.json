@@ -1,0 +1,84 @@
+{
+    "name": "Aeron",
+    "type": "Protagonist",
+    "parent": "deos_royal_family",
+    "icon": null,
+    "gallery": [],
+    "identity": {
+        "firstName": "Aeron",
+        "lastName": "(Unknown - lost royal name)",
+        "aliases": "L'Enfant des Étoiles",
+        "titles": "Prince of the Déos",
+        "gender": "Male",
+        "age": "Begins as infant",
+        "birthDate": "Unknown",
+        "birthPlace": "Maria"
+    },
+    "appearance": {
+        "race": "Déos",
+        "subRace": "Pure bloodline",
+        "height": "175 cm",
+        "weight": "70 kg",
+        "lifespan": "300-1000 years",
+        "originPlanet": "Maria",
+        "description": "Young man with spiky black hair and turquoise eyes characteristic of the Déos. His appearance adapted to life on Teria but he retains the distinctive traits of his race.",
+        "face": "Oval, noble features, piercing turquoise eyes that glow with ether",
+        "eyes": "Bright turquoise (illuminate with ether use)",
+        "hair": "Deep black, naturally spiky (Dragon Ball style), glows turquoise with ether",
+        "skin": "Tanned, slightly golden, some training scars",
+        "body": "Athletic, well-proportioned, 7/10 musculature",
+        "clothing": "Simple villager clothes, prefers blue/turquoise/black"
+    },
+    "combat": {
+        "strength": 6,
+        "agility": 8,
+        "endurance": 7,
+        "speed": 8,
+        "resistance": 5,
+        "etherLevel": 3,
+        "mainElement": "Pure Ether",
+        "specialization": "Close-combat supported by magic",
+        "weapons": "Martial arts, hand-to-hand, various weapons (prefers melee)",
+        "fightingStyle": "Offensive, brawler, acts in direct synergy with his twin sister Aeria",
+        "techniques": "Basic ether absorption",
+        "weaknesses": "Lack of structured experience, impulsiveness"
+    },
+    "personality": {
+        "temperament": "Brawler at first, but highly intelligent and destined to evolve alongside Aeria",
+        "values": "Justice, protecting innocents, unwavering fraternal loyalty",
+        "morals": "Benevolent, loyal, honest",
+        "weaknesses": "Ignorance of his origins, sense of responsibility toward his sister",
+        "strengths": "Perseverance, courage, adaptive intelligence",
+        "motivations": "Discover his origins with Aeria and understand their powers",
+        "fears": "Losing Aeria, never knowing the truth",
+        "dreams": "Reunite with their true family"
+    },
+    "skills": {
+        "profession": "Merchant's assistant (temporary)",
+        "expertise": "3/10",
+        "naturalTalents": "Continuous ether absorption, physical resistance, twin synergy. Quick martial arts learning, shared reflexes with Aeria",
+        "languages": "Common tongue of Teria",
+        "education": "Basic village education, supplemented by growing intellect",
+        "specialKnowledge": "Potential for pure ether manipulation"
+    },
+    "connections": {
+        "family": "Malvin & Elise Bulon (adoptive parents), Marie (adoptive sister), Aeria (twin sister, MC)",
+        "friends": "Marie Bulon, village youth",
+        "allies": "Aeria (unwavering ally)",
+        "enemies": "Unknown yet",
+        "mentors": "None yet",
+        "organizations": "None",
+        "importantPlaces": "Village of Bruine (Risnia), surrounding forests"
+    },
+    "background": {
+        "childhood": "Son of King Darian and Queen Lysandra. Forced exile to Teria as an infant with twin Aeria, mother's death",
+        "importantEvents": "Loss of biological parents, forced exile, adaptation to human life",
+        "quests": "Discovering their origins together, investigating Cadfael's offer"
+    },
+    "narrative": {
+        "role": "Co-protagonist (Twin MCs)",
+        "importance": "Major",
+        "storyArc": "Hero in the making, quest for identity as a duo",
+        "futureDevelopment": "Force balancing, intellectual maturation as a duo"
+    }
+}

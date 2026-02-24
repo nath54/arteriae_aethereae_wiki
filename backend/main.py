@@ -1,11 +1,13 @@
 """
-TODO: docstring
+Arteriae Aethereae — Edit Server
+Serves the frontend, static assets, and provides CRUD API endpoints.
 """
 
 import os
 import json
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -27,9 +29,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 RES_DIR = os.path.join(BASE_DIR, "res")
+RES_TMP_DIR = os.path.join(BASE_DIR, "res_tmp")
 
 app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
+app.mount("/data", StaticFiles(directory=DATA_DIR), name="data")
 app.mount("/res", StaticFiles(directory=RES_DIR), name="res")
+if os.path.isdir(RES_TMP_DIR):
+    app.mount("/res_tmp", StaticFiles(directory=RES_TMP_DIR), name="res_tmp")
 
 
 @app.on_event("startup")
@@ -42,10 +48,8 @@ def startup_event():
 
 @app.get("/")
 def read_root():
-    """
-    TODO: docstring
-    """
-    return {"message": "Welcome to the Arteriae Aethereae Engine Edit Server"}
+    """Redirect to the frontend index page."""
+    return RedirectResponse(url="/frontend/index.html")
 
 
 @app.get("/api/manifest")

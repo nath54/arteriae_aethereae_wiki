@@ -1,0 +1,84 @@
+{
+    "name": "Aeria",
+    "type": "Protagonist",
+    "parent": "deos_royal_family",
+    "icon": null,
+    "gallery": [],
+    "identity": {
+        "firstName": "Aeria",
+        "lastName": "(Unknown - lost royal name)",
+        "aliases": "L'Enfant des Étoiles",
+        "titles": "Princess of the Déos",
+        "gender": "Female",
+        "age": "Begins as infant",
+        "birthDate": "Unknown",
+        "birthPlace": "Maria"
+    },
+    "appearance": {
+        "race": "Déos",
+        "subRace": "Pure bloodline",
+        "height": "165 cm",
+        "weight": "55 kg",
+        "lifespan": "300-1000 years",
+        "originPlanet": "Maria",
+        "description": "Graceful young woman with long flowing black hair and intensely bright cyan eyes. Her ether aura is more visibly radiant than her twin's.",
+        "face": "Delicate, noble features with intensely bright cyan eyes",
+        "eyes": "Bright cyan (more intense glow than Aeron)",
+        "hair": "Long, flowing black, floats with ether use, cyan luminescence",
+        "skin": "Fair, slightly golden",
+        "body": "Slender, graceful, athletic",
+        "clothing": "Simple villager clothes, elegant when available"
+    },
+    "combat": {
+        "strength": 5,
+        "agility": 9,
+        "endurance": 6,
+        "speed": 8,
+        "resistance": 5,
+        "etherLevel": 4,
+        "mainElement": "Pure Ether (cyan-focused)",
+        "specialization": "Ranged ether combat, graceful technique",
+        "weapons": "Ether projection, distance combat",
+        "fightingStyle": "Graceful, precise, complementary synergy with Aeron",
+        "techniques": "Enhanced ether absorption, ranged ether attacks",
+        "weaknesses": "Physically less durable, overreliance on ether"
+    },
+    "personality": {
+        "temperament": "Highly intelligent, analytical, graceful, empathetic",
+        "values": "Knowledge, fraternal bond, justice, protection",
+        "morals": "Compassionate, strategic, wise beyond her years",
+        "weaknesses": "Can overthink situations, emotional bond to Aeron",
+        "strengths": "Exceptional intelligence, intuition, strategic mind",
+        "motivations": "Understand their true nature, protect Aeron, master ether",
+        "fears": "Being separated from Aeron, losing control of their powers",
+        "dreams": "Find their family, understand the truth of the Déos"
+    },
+    "skills": {
+        "profession": "Helps with village tasks",
+        "expertise": "3/10",
+        "naturalTalents": "Intense ether absorption, twin synergy, exceptional intellect",
+        "languages": "Common tongue of Teria",
+        "education": "Self-taught beyond village schooling",
+        "specialKnowledge": "Potential for pure ether mastery"
+    },
+    "connections": {
+        "family": "Malvin & Elise Bulon (adoptive parents), Marie (adoptive sister), Aeron (twin brother, MC)",
+        "friends": "Marie Bulon, village youth",
+        "allies": "Aeron (unwavering ally)",
+        "enemies": "Unknown yet",
+        "mentors": "None yet",
+        "organizations": "None",
+        "importantPlaces": "Village of Bruine (Risnia), surrounding forests"
+    },
+    "background": {
+        "childhood": "Daughter of King Darian and Queen Lysandra. Fled Maria as infant with twin Aeron under mother's sacrifice",
+        "importantEvents": "Mother's death protecting the twins, exile to Teria, growing up human",
+        "quests": "Discovering their origins with Aeron, investigating Cadfael's resistance"
+    },
+    "narrative": {
+        "role": "Co-protagonist (Twin MCs)",
+        "importance": "Major",
+        "storyArc": "Twin heroine, quest for identity and power mastery",
+        "futureDevelopment": "Intellectual and magical maturation, synergy with Aeron"
+    }
+}

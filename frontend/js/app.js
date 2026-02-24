@@ -1,20 +1,26 @@
+/**
+ * App Bootstrap — Arteriae Aethereae Wiki
+ */
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Initial Load of manifest
+    // 1. Detect server (edit mode)
+    await detectServer();
+
+    // 2. Load data manifest
     await window.db.loadManifest();
 
-    // 2. Render Left Menu
-    await window.uiMenu.render();
-
-    // 3. Init Router (which will read the hash and trigger map load / card open)
+    // 3. Initialize router (reads hash, shows correct page)
     window.router.init();
 
-    // Set edit mode visibility
-    if (window.db.isEditMode) {
-        document.querySelector('.edit-tools').style.display = 'flex';
-    }
-
-    // Quick test map loading if available
-    if (window.loadMap && !window.location.hash) {
-        window.loadMap('teria');
+    // 4. Medallion shine-to-home animation
+    const medallion = document.getElementById('nav-home-btn');
+    if (medallion) {
+        medallion.addEventListener('click', (e) => {
+            e.preventDefault();
+            medallion.classList.add('shine-active');
+            setTimeout(() => {
+                medallion.classList.remove('shine-active');
+                window.location.hash = '';
+            }, 400);
+        });
     }
 });

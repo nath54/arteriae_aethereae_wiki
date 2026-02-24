@@ -3,38 +3,49 @@ class MapTools {
         window.currentTool = 'view';
         this.selectedNodeId = null;
         this.draggingNodeId = null;
-
-        // Wait for DOM to load tool buttons
-        document.addEventListener('DOMContentLoaded', () => {
-            this.bindEvents();
-        });
+        this.bound = false;
     }
 
+    /**
+     * Bind events when map editor is opened.
+     * Can be called multiple times safely.
+     */
     bindEvents() {
-        const btns = document.querySelectorAll('.tool-btn[data-tool]');
+        if (this.bound) return;
+        this.bound = true;
+
+        const btns = document.querySelectorAll('#map-editor-header .tool-btn[data-tool]');
         btns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 btns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 window.currentTool = btn.dataset.tool;
-                this.selectedNodeId = null; // reset state
-
-                // Rerender to clear visual selections if any
+                this.selectedNodeId = null;
                 if (window.mapRenderer) window.mapRenderer.render();
             });
         });
 
-        // Setup exports
+        // Export buttons
         const exportSvg = document.getElementById('btn-export-svg');
         if (exportSvg) exportSvg.addEventListener('click', () => this.exportSVG());
 
         const exportPng = document.getElementById('btn-export-png');
         if (exportPng) exportPng.addEventListener('click', () => this.exportPNG());
 
+        // Close map editor
+        const closeBtn = document.getElementById('btn-close-map');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                document.getElementById('map-editor-overlay').classList.add('hidden');
+            });
+        }
+
         const svg = document.getElementById('map-svg');
-        svg.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
-        window.addEventListener('pointermove', (e) => this.handlePointerMove(e));
-        window.addEventListener('pointerup', (e) => this.handlePointerUp(e));
+        if (svg) {
+            svg.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
+            window.addEventListener('pointermove', (e) => this.handlePointerMove(e));
+            window.addEventListener('pointerup', (e) => this.handlePointerUp(e));
+        }
     }
 
     handlePointerDown(e) {

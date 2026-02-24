@@ -1,15 +1,16 @@
 class DataManager {
     constructor() {
         this.cache = new Map();
-        this.MAX_CACHE_SIZE = 50; // Memory management
+        this.MAX_CACHE_SIZE = 50;
         this.manifest = null;
+    }
 
-        // When running via file:// or GitHub pages, we fetch from local ./data folder.
-        // When running on localhost:8000, we fetch from the backend API if we want to.
-        // But to keep it simple and unifying, the view mode standard is fetching JSON.
-        // For Edit mode, we will do POST requests to the python server.
-        this.isEditMode = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-        this.apiBase = this.isEditMode ? 'http://127.0.0.1:8000/api' : '../data';
+    get isEditMode() {
+        return window.isEditMode || false;
+    }
+
+    get apiBase() {
+        return this.isEditMode ? 'http://127.0.0.1:8000/api' : '../data';
     }
 
     async loadManifest() {

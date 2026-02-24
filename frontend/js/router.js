@@ -1,52 +1,79 @@
+/**
+ * SPA Router for Arteriae Aethereae Wiki
+ * Handles hash-based page navigation: #page or #page:id
+ */
 class Router {
     constructor() {
-        this.currentHash = '';
-        window.addEventListener('hashchange', this.handleHashChange.bind(this));
+        this.currentPage = '';
+        this.currentId = null;
+        this.pages = ['landing', 'documents', 'characters', 'places', 'timeline'];
+        window.addEventListener('hashchange', () => this.handleRoute());
     }
 
     init() {
-        this.handleHashChange();
+        this.handleRoute();
     }
 
-    handleHashChange() {
+    handleRoute() {
         const hash = window.location.hash.substring(1); // remove '#'
-        this.currentHash = hash;
 
         if (!hash) {
-            // Default view (e.g. world map)
-            this.navigate('maps', 'map_teria'); // Example default
+            this.showPage('landing');
             return;
         }
 
-        // Hash format: type:id
         const parts = hash.split(':');
-        if (parts.length === 2) {
-            const type = parts[0];
-            const id = parts[1];
-            this.navigate(type, id);
+        const page = parts[0];
+        const id = parts.length > 1 ? parts.slice(1).join(':') : null;
+
+        if (this.pages.includes(page)) {
+            this.showPage(page, id);
+        } else {
+            // Legacy support: type:id format for entities
+            this.showPage('landing');
         }
     }
 
-    async navigate(type, id) {
-        // Depending on type, trigger UI updates
-        if (type === 'maps' || type === 'map') {
-            // Load map globally using renderer
-            if (window.loadMap) {
-                window.loadMap(id);
-            }
-        }
-        else if (['character', 'characters', 'places', 'place', 'events', 'event'].includes(type) || type === 'loc' || type === 'char') {
-            // It's an entity to show in card
-            // normalize type
-            let normalizedType = type;
-            if (type === 'character' || type === 'char') normalizedType = 'characters';
-            if (type === 'place' || type === 'loc') normalizedType = 'places';
-            if (type === 'event') normalizedType = 'events';
+    showPage(pageName, id = null) {
+        this.currentPage = pageName;
+        this.currentId = id;
 
-            if (window.uiCards) {
-                window.uiCards.openCard(normalizedType, id);
+        // Hide all pages
+        document.querySelectorAll('.page-container').forEach(p => {
+            p.classList.remove('active', 'with-nav');
+        });
+
+        // Show target page
+        const target = document.getElementById(`page-${pageName}`);
+        if (target) {
+            target.classList.add('active');
+            if (pageName !== 'landing') {
+                target.classList.add('with-nav');
             }
         }
+
+        // Nav bar visibility
+        const nav = document.getElementById('nav-bar');
+        if (pageName === 'landing') {
+            nav.classList.add('hidden');
+            nav.classList.remove('visible');
+        } else {
+            nav.classList.remove('hidden');
+            nav.classList.add('visible');
+        }
+
+        // Update active nav button
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.page === pageName);
+        });
+
+        // Scroll to top
+        window.scrollTo(0, 0);
+
+        // Dispatch page change event for page-specific JS
+        window.dispatchEvent(new CustomEvent('pagechange', {
+            detail: { page: pageName, id: id }
+        }));
     }
 }
 

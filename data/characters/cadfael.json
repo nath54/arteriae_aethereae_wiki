@@ -1,0 +1,50 @@
+{
+    "name": "Cadfael",
+    "type": "Major Character",
+    "parent": "deos_royal_family",
+    "icon": null,
+    "gallery": [],
+    "identity": {
+        "firstName": "Cadfael",
+        "lastName": "(Royal name)",
+        "aliases": "",
+        "titles": "Prince of the Déos, Leader of the Resistance",
+        "gender": "Male",
+        "age": "5 years older than the twins",
+        "birthDate": "Unknown",
+        "birthPlace": "Maria"
+    },
+    "appearance": {
+        "race": "Déos",
+        "subRace": "Pure bloodline",
+        "originPlanet": "Maria",
+        "description": "Elder brother of the twins. A mature and battle-hardened prince who has spent years building a resistance movement."
+    },
+    "combat": {
+        "strength": 8,
+        "agility": 8,
+        "endurance": 8,
+        "speed": 7,
+        "resistance": 7,
+        "etherLevel": 9,
+        "mainElement": "Pure Ether",
+        "specialization": "Mastered pure ether manipulation, teleportation, combat magic",
+        "fightingStyle": "Versatile, experienced, strategic"
+    },
+    "personality": {
+        "temperament": "Determined, charismatic, carries heavy burden of responsibility",
+        "values": "Duty to the Déos people, family reunion, justice",
+        "motivations": "Reunite the Déos people and rescue their captured father",
+        "fears": "Failing his people, losing more family"
+    },
+    "connections": {
+        "family": "Darian (father, captured), Lysandra (mother, deceased), Aeron & Aeria (younger twin siblings)",
+        "organizations": "Founder and leader of the Déos resistance organization"
+    },
+    "narrative": {
+        "role": "Major supporting character / catalyst",
+        "importance": "Major",
+        "storyArc": "Bridge between twins' past and future, resistance leader",
+        "futureDevelopment": "Reveals the twins' heritage, offers them a path"
+    }
+}

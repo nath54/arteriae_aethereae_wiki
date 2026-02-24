@@ -1,24 +1,33 @@
+/**
+ * UIMenu — Utility for building tree menus from manifest data.
+ * Used by page-specific modules (not a standalone sidebar anymore).
+ */
 class UIMenu {
     constructor() {
-        this.container = document.getElementById('tree-menu');
+        // No longer auto-renders; pages call renderInto() as needed
     }
 
-    async render() {
+    /**
+     * Render a category tree into a target container element.
+     * @param {HTMLElement} container - The DOM element to render into
+     * @param {string[]} categories - Which manifest categories to show
+     */
+    async renderInto(container, categories = ['maps', 'places', 'characters', 'events']) {
         if (!window.db.manifest) {
             await window.db.loadManifest();
         }
 
         const manifest = window.db.manifest;
-        let html = '<ul>';
-
-        const categories = {
+        const labels = {
             'maps': '🗺️ Maps',
             'places': '📍 Places',
             'characters': '👤 Characters',
             'events': '📜 Events'
         };
 
-        for (const [key, label] of Object.entries(categories)) {
+        let html = '<ul class="tree-menu">';
+        for (const key of categories) {
+            const label = labels[key] || key;
             html += `<li class="category-header"><strong>${label}</strong><ul>`;
             const items = manifest[key] || {};
             for (const [id, data] of Object.entries(items)) {
@@ -26,9 +35,8 @@ class UIMenu {
             }
             html += `</ul></li>`;
         }
-
         html += '</ul>';
-        this.container.innerHTML = html;
+        container.innerHTML = html;
     }
 }
 window.uiMenu = new UIMenu();
