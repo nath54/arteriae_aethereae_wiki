@@ -5,13 +5,43 @@
 }
 
 @font-face {
-    font-family: 'Warsuck';
-    src: url('../../res/fonts/warsuck/Warsuck.ttf') format('truetype');
+    font-family: 'Augusta_Shadow';
+    src: url('../../res/fonts/augusta/Augusta Shadow.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Berry_Rotunda';
+    src: url('../../res/fonts/berry_rotunda/Berry_Rotunda.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Cardinal';
+    src: url('../../res/fonts/cardinal/Cardinal.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Deutsch';
+    src: url('../../res/fonts/deutsch_gothic/Deutsch.ttf') format('truetype');
 }
 
 @font-face {
     font-family: 'EnchantedLand';
     src: url('../../res/fonts/enchanted_land/Enchanted Land.otf') format('opentype');
+}
+
+@font-face {
+    font-family: 'GregorianFLF';
+    src: url('../../res/fonts/gregorian_flf/GregorianFLF.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'OldLondon';
+    src: url('../../res/fonts/old_london/Olondon_.otf') format('opentype');
+}
+
+@font-face {
+    font-family: 'Warsuck';
+    src: url('../../res/fonts/warsuck/Warsuck.ttf') format('truetype');
 }
 
 :root {
@@ -27,9 +57,10 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Warsuck', sans-serif;
+    font-family: 'EnchantedLand', cursive;
     background: linear-gradient(to right, var(--bg-dark), var(--bg-violet), var(--bg-blue));
     color: var(--text-light);
+    font-size: 1.75rem;
     height: 100vh;
     overflow: hidden;
 }
@@ -244,8 +275,8 @@ line.map-edge.selected {
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
-    font-family: inherit;
-    font-weight: bold;
+    font-family: 'EnchantedLand', cursive;
+    font-size: 1.5rem;
     transition: all 0.2s;
 }
 
@@ -272,4 +303,6 @@ line.map-edge.selected {
     height: 20px;
     background: var(--aether-cyan);
     margin: 0 5px;
+    margin-top: auto;
+    margin-bottom: auto;
 }

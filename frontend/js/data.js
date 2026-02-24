@@ -3,7 +3,7 @@ class DataManager {
         this.cache = new Map();
         this.MAX_CACHE_SIZE = 50; // Memory management
         this.manifest = null;
-        
+
         // When running via file:// or GitHub pages, we fetch from local ./data folder.
         // When running on localhost:8000, we fetch from the backend API if we want to.
         // But to keep it simple and unifying, the view mode standard is fetching JSON.
@@ -45,7 +45,7 @@ class DataManager {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
-            
+
             // 4. Store and return
             this.cache.set(cacheKey, data);
             return data;
@@ -60,7 +60,7 @@ class DataManager {
             console.warn("Save called in View Mode (Not connected to Edit Server).");
             return;
         }
-        
+
         try {
             const response = await fetch(`${this.apiBase}/${type}/${id}`, {
                 method: "POST",
