@@ -72,6 +72,8 @@
     }
 
     let searchQuery = '';
+    let selectedFolderPath = ''; // Context for new documents/folders
+
 
     function renderDocumentsPage(container) {
         let html = '';
@@ -100,25 +102,63 @@
 
         container.innerHTML = html;
 
-        // Bind tree clicks
+        // Bind tree clicks (Items)
         container.querySelectorAll('.doc-tree-item[data-file]').forEach(item => {
             item.addEventListener('click', () => {
                 container.querySelectorAll('.doc-tree-item').forEach(i => i.classList.remove('active'));
+                container.querySelectorAll('.doc-tree-folder').forEach(f => f.classList.remove('selected'));
+                selectedFolderPath = ''; // Clear folder selection when selecting a doc
                 item.classList.add('active');
                 loadDocument(item.dataset.file, item.dataset.name);
             });
         });
 
-        // Bind folder toggling
+        // Bind folder selection (Clicking the row)
         container.querySelectorAll('.doc-tree-folder').forEach(folder => {
             folder.addEventListener('click', (e) => {
+                const path = folder.dataset.path;
+                const isSelected = folder.classList.contains('selected');
+
+                container.querySelectorAll('.doc-tree-folder').forEach(f => f.classList.remove('selected'));
+                container.querySelectorAll('.doc-tree-item').forEach(i => i.classList.remove('active'));
+
+                if (isSelected) {
+                    selectedFolderPath = '';
+                } else {
+                    folder.classList.add('selected');
+                    selectedFolderPath = path;
+                }
+            });
+        });
+
+        // Bind folder toggling (Clicking the arrow only)
+        container.querySelectorAll('.folder-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
+                const folder = toggle.closest('.doc-tree-folder');
                 const children = folder.nextElementSibling;
                 if (children) {
                     children.classList.toggle('collapsed');
                     folder.classList.toggle('folder-open');
                 }
             });
+        });
+
+        // New Folder / New Doc Actions
+        container.querySelector('#btn-new-folder').addEventListener('click', () => {
+            const folderName = prompt(`Create new folder in [${selectedFolderPath || 'Root'}]:`);
+            if (folderName) {
+                console.log(`Creating folder "${folderName}" in "${selectedFolderPath}"`);
+                // TODO: Call API
+            }
+        });
+
+        container.querySelector('#btn-new-doc').addEventListener('click', () => {
+            const docName = prompt(`Create new document in [${selectedFolderPath || 'Root'}]:`);
+            if (docName) {
+                console.log(`Creating document "${docName}" in "${selectedFolderPath}"`);
+                // TODO: Call API
+            }
         });
 
         // Search
@@ -131,19 +171,22 @@
         }
     }
 
-    function renderTree(nodes, depth) {
+    function renderTree(nodes, depth, currentPath = '') {
         let html = '';
         for (const node of nodes) {
             const indent = depth * 16;
+            const nodePath = currentPath ? `${currentPath}/${node.name}` : node.name;
+
             if (node.type === 'folder') {
-                html += `<div class="doc-tree-folder folder-open" style="padding-left:${indent}px">
+                const isSelected = selectedFolderPath === nodePath;
+                html += `<div class="doc-tree-folder folder-open ${isSelected ? 'selected' : ''}" data-path="${nodePath}" style="padding-left:${indent}px">
                     <span class="folder-toggle">▼</span>
                     <span class="folder-icon">${node.icon || '📁'}</span>
                     <span class="folder-name">${node.name}</span>
                 </div>`;
                 html += `<div class="doc-tree-children">`;
                 if (node.children) {
-                    html += renderTree(node.children, depth + 1);
+                    html += renderTree(node.children, depth + 1, nodePath);
                 }
                 html += '</div>';
             } else {

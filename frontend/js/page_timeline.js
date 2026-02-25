@@ -54,11 +54,7 @@
         html += '<div class="timeline-line"></div>';
 
         if (eventList.length === 0) {
-            // Show sample events for demo
-            const sampleEvents = getSampleEvents();
-            for (const evt of sampleEvents) {
-                html += renderTimelineRow(evt);
-            }
+            html += '<div class="timeline-empty"><p>No events found in the archives of Maria or Teria.</p></div>';
         } else {
             for (const evt of eventList) {
                 html += renderTimelineRow(evt);
@@ -188,18 +184,7 @@
         return isNaN(num) ? 0 : num;
     }
 
-    function getSampleEvents() {
-        return [
-            { id: 'birth_twins', name: 'Birth of Aeron & Aeria', date: 'Year 0', world: 'maria', linked: true, description: 'The royal twins are born on Maria.', mariaDescription: 'Royal celebration, but danger looms.' },
-            { id: 'exile', name: 'Exile to Teria', date: 'Year 0', world: 'teria', linked: true, description: 'Queen Lysandra sacrifices herself to send the twins to Teria.', mariaDescription: 'The queen is lost, the kingdom falls to darkness.' },
-            { id: 'adoption', name: 'Adopted by Bulon family', date: 'Year 0', world: 'teria', description: 'Malvin and Elise Bulon discover and adopt the twin infants.' },
-            { id: 'childhood', name: 'Childhood in Bruine', date: 'Years 1-15', world: 'teria', description: 'The twins grow up in the village, unaware of their origins.' },
-            { id: 'resistance_forms', name: 'Cadfael forms Resistance', date: 'Year 5', world: 'maria', description: 'Elder brother Cadfael begins building a resistance movement against the usurper.' },
-            { id: 'tournament', name: 'The Tournament', date: 'Year 15', world: 'teria', description: 'Aeron and Aeria discover their ether powers during a village tournament.' },
-            { id: 'ether_awakening', name: 'Ether Awakening', date: 'Year 15', world: 'teria', linked: true, description: 'The twins\' latent ether powers fully manifest.', mariaDescription: 'Cadfael detects the awakening across worlds.' },
-            { id: 'cadfael_arrives', name: 'Cadfael\'s Arrival', date: 'Year 16', world: 'teria', linked: true, description: 'Cadfael arrives on Teria, finding his siblings.', mariaDescription: 'The resistance\'s last hope — bringing the twins home.' }
-        ];
-    }
+
 
     function openTimelineSidebar(eventId, data = null) {
         const sidebar = document.getElementById('timeline-sidebar');
@@ -224,7 +209,7 @@
                         <label>Event Name</label>
                         <input type="text" id="ev-name" value="${escAttr(existingData.name)}" required autofocus />
                     </div>
-                    
+
                     <div style="display:flex; gap:10px;">
                         <div class="edit-field" style="flex:1;">
                             <label>Year</label>

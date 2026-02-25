@@ -219,3 +219,15 @@ TIMELINE PAGE
 #timeline-sidebar.visible {
     transform: translateX(0);
 }
+
+.timeline-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+    font-style: italic;
+    background: rgba(0, 255, 255, 0.02);
+    border: 1px dashed var(--glass-border);
+    border-radius: 12px;
+    margin: 40px auto;
+    max-width: 600px;
+}

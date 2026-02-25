@@ -73,11 +73,21 @@ DOCUMENTS PAGE
     background: rgba(0, 255, 255, 0.05);
 }
 
+.doc-tree-folder.selected {
+    background: rgba(0, 255, 255, 0.15);
+    border-left: 2px solid var(--aether-cyan);
+    color: var(--aether-cyan);
+}
+
 .folder-toggle {
     font-size: 0.8rem;
-    transition: transform 0.2s;
-    width: 12px;
-    display: inline-block;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.folder-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .doc-tree-folder:not(.folder-open) .folder-toggle {

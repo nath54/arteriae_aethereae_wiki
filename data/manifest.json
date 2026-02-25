@@ -16,68 +16,9 @@
             "type": "Major Character"
         }
     },
-    "places": {
-        "continent_1": {
-            "name": "continent_1",
-            "parent": "test_planete1",
-            "type": "continent",
-            "description": ""
-        },
-        "continent_2": {
-            "name": "continent_2",
-            "parent": "test_planete1",
-            "type": "continent",
-            "description": ""
-        },
-        "continent_a": {
-            "name": "continent_A",
-            "parent": "continent_planet1",
-            "type": "continent",
-            "description": ""
-        },
-        "country1": {
-            "name": "country1",
-            "parent": "continent_a",
-            "type": "country",
-            "description": ""
-        },
-        "country_1": {
-            "name": "country_1",
-            "parent": "continent_1",
-            "type": "country",
-            "description": ""
-        },
-        "test_planete1": {
-            "name": "test_planete1",
-            "parent": null,
-            "type": "planet",
-            "description": "test aaa"
-        }
-    },
-    "maps": {
-        "map_teria": {
-            "name": "map_teria",
-            "parent": null,
-            "type": null
-        },
-        "poly1": {
-            "name": "poly1",
-            "parent": null,
-            "type": null
-        },
-        "test_planete1": {
-            "name": "test_planete1",
-            "parent": null,
-            "type": null
-        }
-    },
-    "events": {
-        "test": {
-            "name": "test",
-            "parent": null,
-            "type": null
-        }
-    },
+    "places": {},
+    "maps": {},
+    "events": {},
     "documents": {
         "calendrier_systeme": {
             "name": "Calendrier Systeme",
@@ -108,21 +49,6 @@
             "name": "\u00c9l\u00e9ments",
             "type": "doc",
             "file": "\u00e9l\u00e9ments.md"
-        },
-        "histoire_v0_.chapitre_0___l'enfant_sauv\u00e9": {
-            "name": ".Chapitre 0   L'Enfant Sauv\u00e9",
-            "type": "doc",
-            "file": "Histoire/v0/.Chapitre_0 _ L'enfant sauv\u00e9.md"
-        },
-        "histoire_v0_.chapitre_1___le_d\u00e9but_de_l\u2019aventure": {
-            "name": ".Chapitre 1   Le D\u00e9but De L\u2019Aventure",
-            "type": "doc",
-            "file": "Histoire/v0/.Chapitre_1 _ Le d\u00e9but de l\u2019aventure.md"
-        },
-        "histoire_v0_.chapitre_2_": {
-            "name": ".Chapitre 2 ",
-            "type": "doc",
-            "file": "Histoire/v0/.Chapitre_2_.md"
         },
         "histoire_v1_chapitre_0_l_arrivee_dans_un_nouveau_monde": {
             "name": "Chapitre 0 L Arrivee Dans Un Nouveau Monde",
