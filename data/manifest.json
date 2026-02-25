@@ -29,12 +29,6 @@
             "type": "continent",
             "description": ""
         },
-        "continent_planet1": {
-            "name": "continent_planet1",
-            "parent": null,
-            "type": "continent",
-            "description": ""
-        },
         "country1": {
             "name": "country1",
             "parent": "continent_a",
@@ -51,12 +45,17 @@
             "name": "test_planete1",
             "parent": null,
             "type": "planet",
-            "description": ""
+            "description": "test aaa"
         }
     },
     "maps": {
         "poly1": {
             "name": "poly1",
+            "parent": null,
+            "type": null
+        },
+        "test_planete1": {
+            "name": "test_planete1",
             "parent": null,
             "type": null
         }

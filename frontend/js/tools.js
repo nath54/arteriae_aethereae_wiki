@@ -3,6 +3,7 @@ class MapTools {
         window.currentTool = 'view';
         this.selectedNodeId = null;
         this.draggingNodeId = null;
+        this.selectedPlaceId = null; // Used for sidebar place highlighting
         this.bound = false;
     }
 
@@ -37,6 +38,7 @@ class MapTools {
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
                 document.getElementById('map-editor-overlay').classList.add('hidden');
+                this.selectPlace(null);
             });
         }
 
@@ -45,6 +47,80 @@ class MapTools {
             svg.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
             window.addEventListener('pointermove', (e) => this.handlePointerMove(e));
             window.addEventListener('pointerup', (e) => this.handlePointerUp(e));
+        }
+    }
+
+    selectPlace(placeId) {
+        this.selectedPlaceId = placeId;
+
+        // Update unassign button visibility
+        const subList = document.getElementById('map-editor-subplaces-list');
+        if (subList) {
+            subList.querySelectorAll('.map-subplace-item').forEach(item => {
+                const assignBtn = item.querySelector('button[data-assign]');
+                const unassignBtn = item.querySelector('button[data-unassign]');
+                if (assignBtn && unassignBtn) {
+                    if (item.dataset.id === placeId) {
+                        // Check if it's actually assigned in the map to show unassign vs assign
+                        let isAssigned = false;
+                        if (window.mapGraph) {
+                            for (const poly of Object.values(window.mapGraph.polygons)) {
+                                if (poly.link === placeId) {
+                                    isAssigned = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (isAssigned) {
+                            assignBtn.style.display = 'none';
+                            unassignBtn.style.display = 'inline-block';
+                            unassignBtn.onclick = async (e) => {
+                                e.stopPropagation();
+                                await this.unassignPlace(placeId);
+                            };
+                        } else {
+                            assignBtn.style.display = 'inline-block';
+                            unassignBtn.style.display = 'none';
+                        }
+                    } else {
+                        assignBtn.style.display = 'inline-block';
+                        unassignBtn.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        if (window.mapRenderer) {
+            window.mapRenderer.render();
+        }
+    }
+
+    activateAssignMode(placeId) {
+        this.selectPlace(placeId);
+
+        // Emulate clicking the assign tool button
+        const assignBtn = document.querySelector('.tool-btn[data-tool="assign_region"]');
+        if (assignBtn) {
+            document.querySelectorAll('#map-editor-header .tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+            assignBtn.classList.add('active');
+        }
+        window.currentTool = 'assign_region';
+    }
+
+    async unassignPlace(placeId) {
+        if (!window.mapGraph) return;
+        let modified = false;
+        for (const poly of Object.values(window.mapGraph.polygons)) {
+            if (poly.link === placeId) {
+                delete poly.link;
+                modified = true;
+            }
+        }
+        if (modified) {
+            await this.saveCurrentMap();
+            if (window.mapRenderer) window.mapRenderer.render();
+            this.selectPlace(this.selectedPlaceId); // Refresh BTN state
         }
     }
 

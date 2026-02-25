@@ -133,7 +133,28 @@
             <h1>🗺️ World, Maps & Places</h1>
         </div>
         <div id="places-content" class="page-body">
-            <p class="placeholder-text">Places page — coming soon.</p>
+            <div id="places-sidebar" class="places-sidebar">
+                <!-- Populated by page_places.js: details, icon, actions -->
+            </div>
+            <div id="places-grid-container" class="places-grid-container">
+                <!-- Populated by page_places.js: sub-places grid -->
+            </div>
+        </div>
+
+        <div id="map-create-popup" class="edit-only parchment-card" style="display: none !important;">
+            <h3>Create New Map</h3>
+            <div class="form-group">
+                <label>Width:</label>
+                <input type="number" id="map-create-w" value="1000">
+            </div>
+            <div class="form-group">
+                <label>Height:</label>
+                <input type="number" id="map-create-h" value="1000">
+            </div>
+            <div class="form-actions">
+                <button class="tool-btn" id="btn-cancel-map-create">Cancel</button>
+                <button class="tool-btn" id="btn-confirm-map-create">Create</button>
+            </div>
         </div>
 
         <!-- Map editor sub-view (loaded on demand inside places) -->
@@ -141,32 +162,56 @@
             <div id="map-editor-header">
                 <button id="btn-close-map" class="tool-btn" title="Back to places">← Back</button>
                 <span id="map-editor-title">Map Editor</span>
-                <div class="edit-only" style="display:inline-flex; gap:8px;">
-                    <button class="tool-btn" data-tool="move_point" title="Move Point">Move</button>
-                    <button class="tool-btn" data-tool="split_segment" title="Split Segment">Split</button>
-                    <button class="tool-btn" data-tool="subdivide_segment" title="Subdivide">Subdivide</button>
-                    <button class="tool-btn" data-tool="unsplit_segment" title="Join Areas">Join</button>
-                    <button class="tool-btn" data-tool="delete_point" title="Delete Point">Delete</button>
-                    <button class="tool-btn" data-tool="assign_region" title="Assign Region">Assign</button>
-                </div>
-                <button class="tool-btn" id="btn-export-svg">Export SVG</button>
-                <button class="tool-btn" id="btn-export-png">Export PNG</button>
             </div>
-            <svg id="map-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <filter id="glow">
-                        <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-                        <feMerge>
-                            <feMergeNode in="coloredBlur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                    </filter>
-                </defs>
-                <g id="map-layers">
-                    <g id="layer-regions"></g>
-                    <g id="layer-borders"></g>
-                </g>
-            </svg>
+            <div id="map-editor-workspace">
+                <div id="map-editor-main">
+                    <svg id="map-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <g id="map-layers">
+                            <g id="layer-regions"></g>
+                            <g id="layer-borders"></g>
+                        </g>
+                    </svg>
+                </div>
+                <div id="map-editor-sidebar" class="parchment-card">
+                    <div class="edit-only map-tools-panel">
+                        <h4>Tools</h4>
+                        <div class="map-tools-grid">
+                            <button class="tool-btn" data-tool="view_map" title="View Map" alt="View Map">​👁️​
+                                View</button>
+                            <button class="tool-btn" data-tool="move_point" title="Move Point" alt="Move Point">​👆​
+                                Move</button>
+                            <button class="tool-btn" data-tool="subdivide_segment" title="Subdivide" alt="Subdivide">📏​
+                                Subdivide</button>
+                            <button class="tool-btn" data-tool="split_segment" title="Split Segment"
+                                alt="Split Segment">⛓️‍💥​ Split</button>
+                            <button class="tool-btn" data-tool="unsplit_segment" title="Join Areas" alt="Join Areas">🔗​
+                                Join</button>
+                            <button class="tool-btn" data-tool="delete_point" title="Delete Point"
+                                alt="Delete Point">​🗑️​ Delete</button>
+                            <button class="tool-btn" data-tool="assign_region" title="Assign Region"
+                                alt="Assign Region">​📥​ Assign</button>
+                            <button class="tool-btn" data-tool="unassign_region" title="Unassign Region"
+                                alt="Unassign Region">​📤​ Unassign</button>
+                        </div>
+                    </div>
+                    <div class="map-actions-panel">
+                        <button class="tool-btn" id="btn-export-svg">Export SVG</button>
+                        <button class="tool-btn" id="btn-export-png">Export PNG</button>
+                    </div>
+                    <div id="map-editor-subplaces-list" class="map-subplaces-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 

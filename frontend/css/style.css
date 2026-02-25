@@ -99,6 +99,10 @@
     padding: 0;
 }
 
+html {
+    background-color: var(--bg-violet);
+}
+
 body {
     font-family: 'Gothica', 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-violet) 50%, var(--bg-blue) 100%);
@@ -177,6 +181,10 @@ body.edit-mode::after {
     -webkit-backdrop-filter: blur(20px);
     padding: 0 30px;
     transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+body.map-editor-active #nav-bar {
+    display: none !important;
 }
 
 #nav-bar.hidden {
@@ -610,6 +618,95 @@ body.edit-mode::after {
     background: var(--bg-dark);
     display: flex;
     flex-direction: column;
+}
+
+#map-editor-workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+#map-editor-main {
+    flex: 1 1 70%;
+    position: relative;
+}
+
+#map-editor-sidebar {
+    flex: 1 1 30%;
+    min-width: 300px;
+    max-width: 400px;
+    background: rgba(15, 12, 41, 0.95);
+    border-left: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    overflow-y: auto;
+    border-radius: 0;
+}
+
+.map-tools-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.map-tools-panel h4 {
+    color: var(--aether-cyan);
+    font-family: 'Balgruf', serif;
+    margin-bottom: 10px;
+    font-weight: normal;
+    letter-spacing: 1px;
+}
+
+.map-actions-panel {
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.map-subplaces-list {
+    flex: 1;
+    overflow-y: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.map-subplace-item {
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.map-subplace-item:hover {
+    background: rgba(0, 255, 255, 0.05);
+    border-color: rgba(0, 255, 255, 0.2);
+}
+
+.map-subplace-item.active {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: var(--aether-cyan);
+    color: var(--aether-cyan);
+}
+
+.map-subplace-name {
+    font-family: 'Balgruf', serif;
+    font-size: 1.2rem;
+}
+
+.map-assign-btn {
+    font-size: 0.9rem;
+    padding: 4px 8px;
 }
 
 #map-editor-overlay.hidden {
@@ -1182,6 +1279,81 @@ body.edit-mode .edit-only {
     font-size: 1.2rem;
 }
 
+#places-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.places-sidebar {
+    flex: 1 1 350px;
+    min-width: 320px;
+    max-width: 450px;
+    position: sticky;
+    top: calc(var(--nav-height) + 20px);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    padding: 14px 18px;
+}
+
+.places-grid-container {
+    flex: 2 1 500px;
+    width: 100%;
+}
+
+#map-create-popup {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    top: 20%;
+    left: 20%;
+    right: 20%;
+    bottom: 20%;
+    z-index: 1000;
+    background: var(--bg-dark);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    color: var(--text-light);
+}
+
+#map-create-popup label {
+    margin-top: 10px;
+    color: var(--text-light);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-family: 'Gothica', sans-serif;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+}
+
+.form-group input {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #a68b5e;
+    border-radius: 4px;
+    font-family: 'Gothica', sans-serif;
+    font-size: 1.1rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
 .breadcrumb-link {
     color: var(--aether-cyan);
     text-decoration: none;
@@ -1313,6 +1485,18 @@ body.edit-mode .edit-only {
     border-color: var(--aether-purple);
     color: var(--aether-purple);
     background: rgba(155, 89, 255, 0.05);
+}
+
+@media (max-width: 900px) {
+    #places-content {
+        flex-direction: column;
+    }
+
+    .places-sidebar {
+        position: relative;
+        max-width: 100%;
+        top: 0;
+    }
 }
 
 /* ══════════════════════════════════════════════════════════════

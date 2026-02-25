@@ -71,14 +71,41 @@ class MapRenderer {
             pathNode.setAttribute('fill', poly.color || '#4A6B5C');
             pathNode.setAttribute('id', `poly-${id}`);
             pathNode.classList.add('map-polygon');
+
             if (window.db.isEditMode) pathNode.classList.add('interactive');
 
-            pathNode.addEventListener('click', () => {
+            // Highlight if linked to the actively selected subplace
+            if (window.mapTools && window.mapTools.selectedPlaceId === poly.link) {
+                pathNode.setAttribute('fill', '#00ffff'); // Bright cyan highlight
+                pathNode.setAttribute('stroke', '#ffffff');
+                pathNode.setAttribute('stroke-width', '4');
+            }
+
+            pathNode.addEventListener('click', async () => {
                 if (window.currentTool === 'assign_region') {
-                    // Logic to assign
+                    const tools = window.mapTools;
+
+                    if (tools && tools.selectedPlaceId) {
+                        // Quick assign mode: selected subplace -> clicked polygon
+                        poly.link = tools.selectedPlaceId;
+                        await tools.saveCurrentMap();
+                        this.render();
+                    } else {
+                        // Manual prompted mode
+                        const placeId = prompt('Enter the Place ID to assign to this region (e.g., bruine):', poly.link || '');
+                        if (placeId !== null) {
+                            const manifest = window.db.manifest;
+                            if (placeId && (!manifest.places || !manifest.places[placeId])) {
+                                alert(`Warning: Place ID '${placeId}' does not exist in the manifest. You might need to create it first.`);
+                            }
+                            poly.link = placeId;
+                            if (tools) await tools.saveCurrentMap();
+                            this.render();
+                        }
+                    }
                 } else if (window.currentTool === 'view') {
                     const linkId = poly.link || id;
-                    window.location.hash = `#place:${linkId}`; // Assumes map polygon IDs match place IDs
+                    window.location.hash = `#place:${linkId}`;
                 }
             });
 
