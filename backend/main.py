@@ -14,7 +14,6 @@ HOW TO EXTEND / ADD NEW FEATURES HERE:
     - `DATA_DIR` (path to the data directory)
     - `FRONTEND_DIR` (path to the frontend directory)
     - `RES_DIR` (path to the resources directory)
-    - `RES_TMP_DIR` (path to the temporary resources directory)
 """
 
 from typing import Any
@@ -60,17 +59,10 @@ FRONTEND_DIR: str = os.path.join(BASE_DIR, "frontend")
 # Path to the resources directory.
 RES_DIR: str = os.path.join(BASE_DIR, "res")
 
-# Path to the temporary resources directory.
-RES_TMP_DIR: str = os.path.join(BASE_DIR, "res_tmp")
-
 # Mount the static files directories.
 app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
 app.mount("/data", StaticFiles(directory=DATA_DIR), name="data")
 app.mount("/res", StaticFiles(directory=RES_DIR), name="res")
-
-# Mount the temporary resources directory if it exists.
-if os.path.isdir(RES_TMP_DIR):
-    app.mount("/res_tmp", StaticFiles(directory=RES_TMP_DIR), name="res_tmp")
 
 
 # Hook called when the FastAPI server starts.

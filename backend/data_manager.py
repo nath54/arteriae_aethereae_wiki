@@ -44,12 +44,8 @@ def init_data_dirs() -> None:
     for d in DIRECTORIES:
         os.makedirs(os.path.join(DATA_DIR, d), exist_ok=True)
 
-    # Get the path to the manifest file
-    manifest_path = os.path.join(DATA_DIR, "manifest.json")
-
-    # Create the manifest if it doesn't exist
-    if not os.path.exists(manifest_path):
-        build_manifest()
+    # Always rebuild manifest to ensure it is up-to-date with filesystem
+    build_manifest()
 
 
 # Function to build the manifest
@@ -76,7 +72,12 @@ def build_manifest() -> dict[str, Any]:
         "places": {},
         "maps": {},
         "events": {},
+        "documents": {},
     }
+
+    # Helper function to slugify paths/names
+    def slugify(text: str) -> str:
+        return text.lower().replace(" ", "_").replace("/", "_").replace("\\", "_")
 
     # Type hinting, category is a string
     category: str
@@ -134,6 +135,27 @@ def build_manifest() -> dict[str, Any]:
                     #
                     # Print an error message
                     print(f"Error reading {filename}: {e}")
+
+    # Scan for markdown documents in data/documents
+    docs_dir = os.path.join(DATA_DIR, "documents")
+    if os.path.exists(docs_dir):
+        for root, _, files in os.walk(docs_dir):
+            for file in files:
+                if file.endswith(".md"):
+                    # Calculate relative path from docs_dir for unique ID
+                    rel_path = os.path.relpath(os.path.join(root, file), docs_dir)
+                    # Convert path separators to underscore to create a unique ID
+                    doc_id = slugify(rel_path[:-3])  # exclude '.md'
+
+                    doc_name = file[:-3].replace("_", " ").title()
+
+                    manifest["documents"][doc_id] = {
+                        "name": doc_name,
+                        "type": "doc",
+                        "file": rel_path.replace(
+                            "\\", "/"
+                        ),  # store path with forward slashes
+                    }
 
     # Open the manifest file and write the manifest to it
     with open(manifest_path, "w", encoding="utf-8") as f:

@@ -7,71 +7,77 @@
  * manually to display them in the UI.
  */
 (function () {
-    // Document tree structure — static definition for now
-    // In edit mode with server, this would come from the API
-    const DOCUMENT_TREE = {
-        name: 'Root',
-        type: 'folder',
-        children: [
-            {
-                name: 'Univers',
-                type: 'folder',
-                icon: '🌍',
-                children: [
-                    { name: 'World Overview', type: 'doc', file: 'world.md', icon: '📄' },
-                    { name: 'Races & Species', type: 'doc', file: 'races.md', icon: '📄' },
-                    { name: 'Magic System', type: 'doc', file: 'magic.md', icon: '📄' },
-                    { name: 'Languages', type: 'doc', file: 'languages.md', icon: '📄' },
-                    { name: 'Religions', type: 'doc', file: 'religions.md', icon: '📄' }
-                ]
-            },
-            {
-                name: 'Histoire',
-                type: 'folder',
-                icon: '📚',
-                children: [
-                    {
-                        name: 'v0 - Outline',
-                        type: 'folder',
-                        children: [
-                            { name: 'Chapter 0', type: 'doc', file: 'histoire_v0_ch0.md', icon: '📜' },
-                            { name: 'Chapter 1', type: 'doc', file: 'histoire_v0_ch1.md', icon: '📜' },
-                            { name: 'Chapter 2', type: 'doc', file: 'histoire_v0_ch2.md', icon: '📜' }
-                        ]
-                    },
-                    {
-                        name: 'v1 - Draft',
-                        type: 'folder',
-                        children: [
-                            { name: 'Chapter 0', type: 'doc', file: 'histoire_v1_ch0.md', icon: '📜' },
-                            { name: 'Chapter 1', type: 'doc', file: 'histoire_v1_ch1.md', icon: '📜' }
-                        ]
+    function getFolderIcon(name) {
+        const lower = name.toLowerCase();
+        if (lower.includes('univers') || lower.includes('world') || lower.includes('worldbuilding')) return '🌍';
+        if (lower.includes('histoire') || lower.includes('story') || lower.includes('plot')) return '📚';
+        if (lower.includes('personnage') || lower.includes('character') || lower.includes('npc')) return '👤';
+        if (lower.includes('inspiration') || lower.includes('idea')) return '💡';
+        if (lower.includes('timeline') || lower.includes('chronology')) return '⏳';
+        return '📁';
+    }
+
+    function buildTreeFromManifest() {
+        const root = { name: 'Root', type: 'folder', children: [] };
+        const manifestDocs = (window.db && window.db.manifest && window.db.manifest.documents) || {};
+
+        for (const [id, doc] of Object.entries(manifestDocs)) {
+            const parts = doc.file.split('/');
+            let currentLevel = root.children;
+
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                const isLast = (i === parts.length - 1);
+
+                if (isLast) {
+                    // It's the file
+                    currentLevel.push({
+                        name: doc.name || part.replace('.md', ''),
+                        type: 'doc',
+                        file: id, // Use the slugified ID
+                        icon: '📄'
+                    });
+                } else {
+                    // It's a folder
+                    let folder = currentLevel.find(item => item.name === part && item.type === 'folder');
+                    if (!folder) {
+                        folder = {
+                            name: part,
+                            type: 'folder',
+                            icon: getFolderIcon(part),
+                            children: []
+                        };
+                        currentLevel.push(folder);
                     }
-                ]
-            },
-            {
-                name: 'Personnages',
-                type: 'folder',
-                icon: '👤',
-                children: [
-                    { name: 'Character Template', type: 'doc', file: 'Personnage_template.md', icon: '📋' }
-                ]
-            },
-            {
-                name: 'Inspirations',
-                type: 'folder',
-                icon: '💡',
-                children: [
-                    { name: 'Project README', type: 'doc', file: 'README.md', icon: '📄' }
-                ]
+                    currentLevel = folder.children;
+                }
             }
-        ]
-    };
+        }
+
+        // Sort: folders first, then files, both alphabetically
+        const sortNodes = (nodes) => {
+            nodes.sort((a, b) => {
+                if (a.type !== b.type) {
+                    return a.type === 'folder' ? -1 : 1;
+                }
+                return a.name.localeCompare(b.name);
+            });
+            nodes.forEach(node => {
+                if (node.children) sortNodes(node.children);
+            });
+        };
+
+        sortNodes(root.children);
+        return root;
+    }
 
     let searchQuery = '';
 
     function renderDocumentsPage(container) {
         let html = '';
+
+        // Build tree dynamically
+        const tree = buildTreeFromManifest();
 
         // Search bar
         html += `<div class="doc-toolbar">
@@ -85,7 +91,7 @@
         // File tree + content pane
         html += '<div class="doc-layout">';
         html += '<div class="doc-tree" id="doc-tree">';
-        html += renderTree(DOCUMENT_TREE.children, 0);
+        html += renderTree(tree.children, 0);
         html += '</div>';
         html += '<div class="doc-viewer" id="doc-viewer">';
         html += '<div class="doc-viewer-empty"><span class="doc-viewer-icon">📜</span><p>Select a document to view</p></div>';
@@ -150,18 +156,23 @@
         return html;
     }
 
-    async function loadDocument(filename, displayName) {
+    async function loadDocument(idOrFilename, displayName) {
         const viewer = document.getElementById('doc-viewer');
         viewer.innerHTML = '<p class="doc-loading">Loading...</p>';
 
-        // Try multiple paths for the markdown file
+        let relativePath = idOrFilename;
+
+        // Try to find the document in the manifest to get its real path
+        if (window.db && window.db.manifest && window.db.manifest.documents) {
+            const doc = window.db.manifest.documents[idOrFilename];
+            if (doc && doc.file) {
+                relativePath = doc.file;
+            }
+        }
+
         const paths = [
-            `../res_tmp/arteriae_aethereae_content_and_templates/${filename}`,
-            `../res_tmp/arteriae_aethereae_content_and_templates/Univers/${filename}`,
-            `../res_tmp/arteriae_aethereae_content_and_templates/Histoire/v0/${filename}`,
-            `../res_tmp/arteriae_aethereae_content_and_templates/Histoire/v1/${filename}`,
-            `../res_tmp/arteriae_aethereae_content_and_templates/Personnages/${filename}`,
-            `../data/documents/${filename}`
+            `../data/documents/${relativePath}`,
+            `../data/documents/${idOrFilename}`
         ];
 
         let content = null;

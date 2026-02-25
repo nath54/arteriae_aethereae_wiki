@@ -196,3 +196,26 @@ TIMELINE PAGE
         font-size: 1rem;
     }
 }
+
+/*
+── Timeline Sidebar (Right Panel behavior)
+*/
+#timeline-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 380px;
+    height: 100vh;
+    background: rgba(15, 12, 41, 0.95);
+    border-left: 1px solid var(--glass-border);
+    backdrop-filter: blur(15px);
+    padding: 20px;
+    overflow-y: auto;
+    z-index: 900;
+    transform: translateX(100%);
+    transition: transform var(--transition-smooth);
+}
+
+#timeline-sidebar.visible {
+    transform: translateX(0);
+}

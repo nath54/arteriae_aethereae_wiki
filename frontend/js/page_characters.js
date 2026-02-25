@@ -356,18 +356,43 @@
         return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
     }
 
-    async function promptNewCharacter() {
-        const name = prompt('Character name:');
-        if (!name) return;
-        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-        const charData = createEmptyCharacter(name);
-        await window.db.saveEntity('characters', id, charData);
-        // Rebuild manifest and re-render
-        await window.db.loadManifest();
-        window.db.manifest = null; // Force reload
-        await window.db.loadManifest();
+    function promptNewCharacter() {
         const container = document.getElementById('characters-content');
-        renderCardGrid(container);
+        container.innerHTML = `
+        <div class="char-sheet">
+            <button class="char-sheet-back tool-btn" id="btn-cancel-create-char">← Cancel</button>
+            <h2 class="char-sheet-name" style="margin-bottom:20px;">New Character</h2>
+            <form id="char-create-form" class="char-section">
+                <div class="char-section-body">
+                    <div class="edit-field">
+                        <label>Name</label>
+                        <input type="text" id="new-char-name" required autofocus />
+                    </div>
+                </div>
+                <div style="display:flex;gap:12px;margin-top:20px;">
+                    <button type="submit" class="tool-btn" style="border-color:#4ecdc4;color:#4ecdc4;">💾 Create</button>
+                </div>
+            </form>
+        </div>`;
+
+        document.getElementById('btn-cancel-create-char').addEventListener('click', () => {
+            renderCardGrid(container);
+        });
+
+        document.getElementById('char-create-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('new-char-name').value.trim();
+            if (!name) return;
+
+            const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            const charData = createEmptyCharacter(name);
+            await window.db.saveEntity('characters', id, charData);
+
+            // Rebuild manifest and re-render sheet immediately
+            window.db.manifest = null; // Force reload
+            await window.db.loadManifest();
+            openCharacterEditor(id, charData); // Jump straight to full editor
+        });
     }
 
     // ── Page Lifecycle ──

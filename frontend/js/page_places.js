@@ -291,48 +291,133 @@
     }
 
     // ── CRUD Logic ──
-    async function promptNewPlace() {
-        const name = prompt('Place name:');
-        if (!name) return;
-
-        const type = prompt('Place type (planet, continent, country, region, city, village):') || 'region';
-        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    function promptNewPlace() {
+        const container = document.getElementById('places-grid-container');
         const parentId = currentPath.length > 0 ? currentPath[currentPath.length - 1] : null;
 
-        const placeData = {
-            name: name,
-            type: type,
-            parent: parentId,
-            description: '',
-            gallery: []
-        };
+        let html = `
+        <div class="places-grid" style="grid-column: 1/-1;">
+            <div class="char-sheet" style="max-width:100%;">
+                <button class="char-sheet-back tool-btn" id="btn-cancel-create-place">← Cancel</button>
+                <h2 class="char-sheet-name" style="margin-bottom:20px;">New Location</h2>
+                <form id="place-create-form" class="char-section">
+                    <div class="char-section-body">
+                        <div class="edit-field">
+                            <label>Name</label>
+                            <input type="text" id="new-place-name" required autofocus />
+                        </div>
+                        <div class="edit-field">
+                            <label>Type</label>
+                            <select id="new-place-type" style="padding:8px; background:var(--bg-lighter); color:white; border:1px solid var(--border-color); border-radius:4px; width:100%;">
+                                <option value="planet">Planet</option>
+                                <option value="continent">Continent</option>
+                                <option value="country">Country</option>
+                                <option value="region" selected>Region</option>
+                                <option value="city">City</option>
+                                <option value="village">Village</option>
+                                <option value="dungeon">Dungeon</option>
+                                <option value="temple">Temple</option>
+                                <option value="forest">Forest</option>
+                                <option value="mountain">Mountain</option>
+                                <option value="ocean">Ocean</option>
+                                <option value="island">Island</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;margin-top:20px;">
+                        <button type="submit" class="tool-btn" style="border-color:#4ecdc4;color:#4ecdc4;">💾 Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>`;
+        container.innerHTML = html;
 
-        await window.db.saveEntity('places', id, placeData);
-        window.db.manifest = null;
-        await window.db.loadManifest();
-        renderPlacesView();
+        document.getElementById('btn-cancel-create-place').addEventListener('click', () => {
+            renderPlacesView();
+        });
+
+        document.getElementById('place-create-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('new-place-name').value.trim();
+            if (!name) return;
+            const type = document.getElementById('new-place-type').value;
+            const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+            const placeData = {
+                name: name,
+                type: type,
+                parent: parentId,
+                description: '',
+                gallery: []
+            };
+
+            await window.db.saveEntity('places', id, placeData);
+            window.db.manifest = null;
+            await window.db.loadManifest();
+            renderPlacesView();
+        });
     }
 
-    async function promptEditPlace(id, existingData) {
-        const desc = prompt('Enter description:', existingData.description || '');
-        if (desc === null) return;
+    function promptEditPlace(id, existingData) {
+        const container = document.getElementById('places-sidebar');
 
-        const type = prompt('Place type:', existingData.type || 'region');
-        if (type === null) return;
+        const escHtml = str => String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const escAttr = str => String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-        const iconUrl = prompt('Enter icon filename (e.g., place_icon.png) or leave blank:', existingData.icon ? existingData.icon.split('/').pop() : '');
+        let html = `<div class="char-sheet" style="max-width:100%;">`;
+        html += `<div class="char-sheet-header" style="align-items:flex-start;">
+                    <div class="char-sheet-title-block">
+                        <h2 class="char-sheet-name">Editing: ${existingData.name}</h2>
+                    </div>
+                 </div>`;
+        html += `<form id="place-edit-form" class="char-section">
+            <div class="char-section-body">
+                <div class="edit-field">
+                    <label>Description</label>
+                    <textarea id="edit-place-desc" rows="4">${escHtml(existingData.description || '')}</textarea>
+                </div>
+                <div class="edit-field">
+                    <label>Type</label>
+                    <input type="text" id="edit-place-type" value="${escAttr(existingData.type || 'region')}" />
+                </div>
+                <div class="edit-field">
+                    <label>Icon path (filename from /data/places/)</label>
+                    <input type="text" id="edit-place-icon" value="${escAttr(existingData.icon ? existingData.icon.split('/').pop() : '')}" placeholder="e.g. place_icon.png" />
+                </div>
+                <div style="display:flex;gap:12px;margin-top:20px;">
+                    <button type="submit" class="tool-btn" style="border-color:#4ecdc4;color:#4ecdc4;">💾 Save</button>
+                    <button type="button" class="tool-btn" id="btn-cancel-edit-place">Cancel</button>
+                </div>
+            </div>
+        </form></div>`;
+        container.innerHTML = html;
 
-        const updatedData = { ...existingData, description: desc, type: type };
-        if (iconUrl) {
-            updatedData.icon = `../data/places/${iconUrl}`;
-        } else {
-            delete updatedData.icon;
-        }
+        document.getElementById('btn-cancel-edit-place').addEventListener('click', () => {
+            renderPlacesView();
+        });
 
-        await window.db.saveEntity('places', id, updatedData);
-        window.db.manifest = null;
-        await window.db.loadManifest();
-        renderPlacesView();
+        document.getElementById('place-edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const desc = document.getElementById('edit-place-desc').value;
+            const type = document.getElementById('edit-place-type').value;
+            const iconUrl = document.getElementById('edit-place-icon').value.trim();
+
+            const updatedData = { ...existingData, description: desc, type: type };
+            if (iconUrl) {
+                updatedData.icon = `../data/places/${iconUrl}`;
+            } else {
+                delete updatedData.icon;
+            }
+
+            await window.db.saveEntity('places', id, updatedData);
+            window.db.manifest = null;
+            await window.db.loadManifest();
+
+            // clear cache
+            if (window.db.cache) window.db.cache.delete(`places_${id}`);
+
+            renderPlacesView();
+        });
     }
 
     async function deletePlace(id) {
