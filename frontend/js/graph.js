@@ -128,7 +128,21 @@ class MapGraph {
             const edgeIndex = poly.edges.indexOf(edgeId);
             if (edgeIndex !== -1) {
                 // Must insert in same direction flow
-                poly.edges.splice(edgeIndex, 1, newEdge1, newEdge2);
+                let e1 = newEdge1;
+                let e2 = newEdge2;
+
+                if (poly.edges.length > 1) {
+                    const prevEdgeIndex = (edgeIndex - 1 + poly.edges.length) % poly.edges.length;
+                    const prevEdge = this.edges[poly.edges[prevEdgeIndex]];
+                    // If prevEdge connects to our old edge at n2, the polygon is traversing n2 -> n1.
+                    // Since newEdge1 is (n1, M) and newEdge2 is (M, n2), tracing n2->n1 means we first cross newEdge2 then newEdge1.
+                    if (prevEdge && (prevEdge.n1 === edge.n2 || prevEdge.n2 === edge.n2)) {
+                        e1 = newEdge2;
+                        e2 = newEdge1;
+                    }
+                }
+
+                poly.edges.splice(edgeIndex, 1, e1, e2);
             }
         }
         return { newNodeId, edges: [newEdge1, newEdge2] };

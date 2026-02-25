@@ -15,7 +15,7 @@ class MapTools {
         if (this.bound) return;
         this.bound = true;
 
-        const btns = document.querySelectorAll('#map-editor-header .tool-btn[data-tool]');
+        const btns = document.querySelectorAll('.map-tools-grid .tool-btn[data-tool]');
         btns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 btns.forEach(b => b.classList.remove('active'));
@@ -102,7 +102,7 @@ class MapTools {
         // Emulate clicking the assign tool button
         const assignBtn = document.querySelector('.tool-btn[data-tool="assign_region"]');
         if (assignBtn) {
-            document.querySelectorAll('#map-editor-header .tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.map-tools-grid .tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
             assignBtn.classList.add('active');
         }
         window.currentTool = 'assign_region';

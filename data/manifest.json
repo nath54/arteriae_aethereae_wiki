@@ -23,6 +23,12 @@
             "type": "continent",
             "description": ""
         },
+        "continent_2": {
+            "name": "continent_2",
+            "parent": "test_planete1",
+            "type": "continent",
+            "description": ""
+        },
         "continent_a": {
             "name": "continent_A",
             "parent": "continent_planet1",
@@ -49,6 +55,11 @@
         }
     },
     "maps": {
+        "map_teria": {
+            "name": "map_teria",
+            "parent": null,
+            "type": null
+        },
         "poly1": {
             "name": "poly1",
             "parent": null,
