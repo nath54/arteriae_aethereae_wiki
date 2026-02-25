@@ -1,0 +1,73 @@
+/* Arteriae Aethereae — Component Right Panel */
+
+/*
+══════════════════════════════════════════════════════════════
+RIGHT PANEL (Entity Card Overlay)
+══════════════════════════════════════════════════════════════
+*/
+#right-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 380px;
+    height: 100vh;
+    background: rgba(15, 12, 41, 0.95);
+    border-left: 1px solid var(--glass-border);
+    backdrop-filter: blur(15px);
+    padding: 20px;
+    overflow-y: auto;
+    z-index: 900;
+    transform: translateX(100%);
+    transition: transform var(--transition-smooth);
+}
+
+#right-panel.visible {
+    display: block !important;
+    transform: translateX(0);
+}
+
+.parchment-card {
+    background-color: var(--parchment-color);
+    color: var(--text-dark);
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    font-family: 'Warsuck', sans-serif;
+}
+
+.parchment-card h3 {
+    font-family: 'Balgruf', serif;
+    font-size: 2rem;
+    margin-top: 0;
+    border-bottom: 2px solid #a68b5e;
+    padding-bottom: 8px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--text-dark);
+    line-height: 1;
+}
+
+/* Markdown inside parchment */
+.markdown-content a {
+    color: #4A6B5C;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.markdown-content a:hover {
+    color: #2b453a;
+}
+
+.markdown-content img {
+    max-width: 100%;
+    border-radius: 8px;
+}

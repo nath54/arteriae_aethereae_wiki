@@ -1,0 +1,202 @@
+/* Arteriae Aethereae — Layout Styles Navigation bar */
+
+/*
+══════════════════════════════════════════════════════════════
+NAVIGATION BAR
+══════════════════════════════════════════════════════════════
+*/
+#nav-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--nav-height);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(10, 8, 32, 0.95) 0%, rgba(26, 21, 69, 0.9) 100%);
+    border-bottom: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 0 30px;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+body.map-editor-active #nav-bar {
+    display: none !important;
+}
+
+#nav-bar.hidden {
+    display: flex !important;
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+#nav-bar.visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.nav-links {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+}
+
+.nav-left {
+    justify-content: flex-end;
+    padding-right: 20px;
+}
+
+.nav-right {
+    justify-content: flex-start;
+    padding-left: 20px;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid rgba(0, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-family: 'Gothica', sans-serif;
+    font-size: 1.3rem;
+    transition: all var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, var(--aether-cyan-dim) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity var(--transition-smooth);
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+    color: var(--aether-cyan);
+    border-color: var(--aether-cyan-dim);
+    text-shadow: 0 0 10px var(--aether-cyan-dim);
+}
+
+.nav-btn:hover::before,
+.nav-btn.active::before {
+    opacity: 1;
+}
+
+.nav-btn.active {
+    background: rgba(0, 255, 255, 0.08);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1), inset 0 0 20px rgba(0, 255, 255, 0.05);
+}
+
+.nav-icon {
+    font-size: 1.2em;
+    position: relative;
+    z-index: 1;
+}
+
+.nav-label {
+    position: relative;
+    z-index: 1;
+}
+
+/*
+── Medallion
+*/
+.nav-medallion {
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+.medallion-frame {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+    border: 2px solid var(--aether-cyan-dim);
+    border-radius: 50%;
+    transition: all var(--transition-smooth);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.medallion-frame::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0%, var(--aether-cyan-dim) 25%, transparent 50%, var(--aether-cyan-dim) 75%, transparent 100%);
+    animation: medallion-rotate 8s linear infinite;
+    z-index: -1;
+}
+
+@keyframes medallion-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.medallion-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: all var(--transition-smooth);
+}
+
+.medallion-shine {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.6) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.nav-medallion:hover .medallion-frame {
+    border-color: var(--aether-cyan);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.4), 0 0 50px rgba(0, 255, 255, 0.15);
+    transform: scale(1.1);
+}
+
+.nav-medallion:hover .medallion-logo {
+    transform: scale(1.05);
+}
+
+.nav-medallion.shine-active .medallion-shine {
+    opacity: 1;
+    animation: shine-burst 0.8s ease-out forwards;
+}
+
+@keyframes shine-burst {
+    0% {
+        opacity: 1;
+        transform: scale(0.5);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.5);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(2.5);
+    }
+}

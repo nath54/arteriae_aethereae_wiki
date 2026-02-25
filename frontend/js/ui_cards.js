@@ -1,6 +1,10 @@
 /**
- * UICards — Entity card overlay panel
- * Updated for new right-panel overlay structure.
+ * UICards Module — Arteriae Aethereae Wiki
+ * Manages the right-panel overlay used to display quick summaries of entities.
+ *
+ * HOOK POINT (Card Layout): If you add new data types to your JSON that you want
+ * explicitly formatted in the card (e.g., custom rendering for "stats"),
+ * add a new `else if` block in `openCard()` below.
  */
 class UICards {
     constructor() {

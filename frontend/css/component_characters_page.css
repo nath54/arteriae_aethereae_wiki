@@ -1,0 +1,299 @@
+/* Arteriae Aethereae — Component Characters Page */
+
+/*
+══════════════════════════════════════════════════════════════
+CHARACTERS PAGE
+══════════════════════════════════════════════════════════════
+*/
+.char-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.char-card {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 24px 16px 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.char-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--aether-cyan), transparent);
+    opacity: 0;
+    transition: opacity var(--transition-smooth);
+}
+
+.char-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--aether-cyan-dim);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 255, 0.06);
+}
+
+.char-card:hover::before {
+    opacity: 1;
+}
+
+.char-card-icon {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--aether-cyan-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 255, 255, 0.05);
+    transition: all var(--transition-smooth);
+}
+
+.char-card:hover .char-card-icon {
+    border-color: var(--aether-cyan);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+}
+
+.char-card-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.char-card-placeholder {
+    font-size: 2.5rem;
+}
+
+.char-card-name {
+    font-family: 'Balgruf', serif;
+    font-size: 1.5rem;
+    color: var(--aether-cyan);
+    margin-bottom: 4px;
+}
+
+.char-card-type {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+}
+
+.char-add-card {
+    background: transparent;
+    border: 2px dashed var(--aether-cyan-dim);
+    border-radius: 14px;
+    padding: 24px 16px 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    min-height: 180px;
+}
+
+.char-add-card:hover {
+    border-color: var(--aether-cyan);
+    color: var(--aether-cyan);
+    background: rgba(0, 255, 255, 0.05);
+}
+
+.char-add-icon {
+    font-size: 3rem;
+    margin-bottom: 8px;
+}
+
+/*
+── Character Sheet
+*/
+.char-sheet {
+    max-width: 900px;
+    margin: 0 auto;
+    animation: landing-fade-in 0.5s ease-out;
+}
+
+.char-sheet-back {
+    margin-bottom: 20px;
+}
+
+.char-sheet-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+}
+
+.char-sheet-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--aether-cyan-dim);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 255, 255, 0.05);
+}
+
+.char-sheet-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.char-placeholder-large {
+    font-size: 3rem;
+}
+
+.char-sheet-title-block {
+    flex: 1;
+}
+
+.char-sheet-name {
+    font-family: 'Balgruf', serif;
+    font-size: 2.5rem;
+    color: var(--aether-cyan);
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+    margin: 0;
+}
+
+.char-sheet-subtitle {
+    color: var(--text-dim);
+    font-size: 1.2rem;
+    margin-top: 4px;
+}
+
+.char-sheet-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/*
+── Stats
+*/
+.char-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    margin-bottom: 30px;
+    padding: 16px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+}
+
+.stat-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-label {
+    font-family: 'Gothica', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    width: 35px;
+    text-align: right;
+}
+
+.stat-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s ease;
+}
+
+.stat-value {
+    font-size: 1rem;
+    color: var(--text-light);
+    width: 20px;
+}
+
+/*
+── Sections
+*/
+.char-section {
+    margin-bottom: 20px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    overflow: hidden;
+}
+
+.char-section-title {
+    font-family: 'Balgruf', serif;
+    font-size: 1.5rem;
+    color: var(--aether-cyan);
+    padding: 14px 18px;
+    margin: 0;
+    background: rgba(0, 255, 255, 0.03);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.char-section-body {
+    padding: 14px 18px;
+}
+
+.char-field {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.char-label {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+}
+
+.char-value {
+    color: var(--text-light);
+    font-size: 1.15rem;
+}
+
+/*
+── Gallery
+*/
+.char-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    padding: 14px 18px;
+}
+
+.char-gallery-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s;
+    border: 1px solid var(--glass-border);
+}
+
+.char-gallery-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.15);
+}

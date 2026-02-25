@@ -1,0 +1,14 @@
+/* Arteriae Aethereae — Component Edit Mode */
+
+/*
+══════════════════════════════════════════════════════════════
+EDIT MODE
+══════════════════════════════════════════════════════════════
+*/
+.edit-only {
+    display: none !important;
+}
+
+body.edit-mode .edit-only {
+    display: inline-flex !important;
+}

@@ -1,7 +1,10 @@
 /**
- * Timeline Page — Vertical 3-column scrollable timeline
- * Columns: Dates (center), Teria events (left), Maria events (right)
+ * Timeline Page Module — Arteriae Aethereae Wiki
+ * Renders a vertical, 3-column scrollable timeline (Teria events vs. Maria events).
  * Linked events span across columns.
+ *
+ * HOOK POINT (Timeline Logic): Event rendering happens in `renderTimelineRow`.
+ * If you want to add eras, tags, or custom event images, parse them out in `renderTimelineRow()` below.
  */
 (function () {
 

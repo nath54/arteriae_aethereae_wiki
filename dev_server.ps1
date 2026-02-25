@@ -11,7 +11,7 @@
 # Write-Host ""
 # Write-Host "  Mode:     EDIT MODE (CRUD API enabled)" -ForegroundColor Green
 # Write-Host "  URL:      http://localhost:8000" -ForegroundColor Yellow
-# Write-Host "  Frontend: http://localhost:8000/frontend/index.html" -ForegroundColor Yellow
+Write-Host "  Frontend: http://localhost:8000/frontend/index.html" -ForegroundColor Yellow
 # Write-Host ""
 # Write-Host "  Press Ctrl+C to stop."
 # Write-Host ""

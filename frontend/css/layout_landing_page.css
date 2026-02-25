@@ -1,0 +1,213 @@
+/* Arteriae Aethereae — Layout Styles Landing page */
+
+/*
+══════════════════════════════════════════════════════════════
+LANDING PAGE
+══════════════════════════════════════════════════════════════
+*/
+#page-landing {
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(0, 255, 255, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 50%, rgba(155, 89, 255, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 0%, rgba(0, 255, 255, 0.05) 0%, transparent 40%);
+}
+
+#page-landing.active {
+    display: flex;
+}
+
+.landing-content {
+    text-align: center;
+    max-width: 900px;
+    width: 100%;
+    padding: 40px 30px;
+    animation: landing-fade-in 1.2s ease-out;
+}
+
+@keyframes landing-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/*
+── Logo
+*/
+.landing-logo-wrap {
+    margin-bottom: 20px;
+    position: relative;
+    display: inline-block;
+}
+
+.landing-logo {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--aether-cyan-dim);
+    box-shadow:
+        0 0 30px rgba(0, 255, 255, 0.2),
+        0 0 60px rgba(0, 255, 255, 0.1),
+        inset 0 0 20px rgba(0, 255, 255, 0.1);
+    animation: logo-glow 4s ease-in-out infinite alternate;
+    transition: all 0.5s ease;
+}
+
+.landing-logo:hover {
+    box-shadow:
+        0 0 40px rgba(0, 255, 255, 0.4),
+        0 0 80px rgba(0, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+@keyframes logo-glow {
+    0% {
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.15), 0 0 40px rgba(0, 255, 255, 0.05);
+    }
+
+    100% {
+        box-shadow: 0 0 35px rgba(0, 255, 255, 0.3), 0 0 70px rgba(0, 255, 255, 0.1);
+    }
+}
+
+/*
+── Title
+*/
+.landing-title {
+    font-family: 'Balgruf', serif;
+    font-size: 4.5rem;
+    color: var(--aether-cyan);
+    text-shadow: 0 0 20px rgba(0, 255, 255, 0.4), 0 0 60px rgba(0, 255, 255, 0.1);
+    letter-spacing: 4px;
+    margin-bottom: 5px;
+    animation: title-shimmer 6s ease-in-out infinite alternate;
+}
+
+@keyframes title-shimmer {
+    0% {
+        text-shadow: 0 0 15px rgba(0, 255, 255, 0.3), 0 0 40px rgba(0, 255, 255, 0.1);
+    }
+
+    100% {
+        text-shadow: 0 0 25px rgba(0, 255, 255, 0.5), 0 0 60px rgba(0, 255, 255, 0.15);
+    }
+}
+
+.landing-subtitle {
+    font-family: 'Gothica', cursive;
+    font-size: 1.8rem;
+    color: var(--text-dim);
+    letter-spacing: 6px;
+    margin-bottom: 50px;
+}
+
+/*
+── Menu Cards
+*/
+.landing-menu {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-width: 750px;
+    margin: 0 auto 40px;
+}
+
+.menu-card {
+    position: relative;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 30px 24px 24px;
+    text-decoration: none;
+    color: var(--text-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all var(--transition-smooth);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.menu-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--aether-cyan), transparent);
+    opacity: 0;
+    transition: opacity var(--transition-smooth);
+}
+
+.menu-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(0, 255, 255, 0.08) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity var(--transition-smooth);
+}
+
+.menu-card:hover {
+    border-color: var(--aether-cyan-dim);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 255, 255, 0.08);
+}
+
+.menu-card:hover::before,
+.menu-card:hover::after {
+    opacity: 1;
+}
+
+.menu-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.menu-card-title {
+    font-family: 'Balgruf', serif;
+    font-size: 1.7rem;
+    color: var(--aether-cyan);
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+    transition: text-shadow var(--transition-smooth);
+}
+
+.menu-card:hover .menu-card-title {
+    text-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+}
+
+.menu-card-desc {
+    font-family: 'Gothica', sans-serif;
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+    position: relative;
+    z-index: 1;
+}
+
+/*
+── Quote
+*/
+.landing-quote {
+    font-family: 'Cardinal', serif;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    font-style: italic;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+    opacity: 0.7;
+}

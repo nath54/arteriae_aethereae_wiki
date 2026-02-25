@@ -1,3 +1,11 @@
+/**
+ * MapTools Class
+ * Manages the state and user interactions of the interactive map editor tools
+ * (view, move point, subdivide edge, split polygon, assign regions, etc.).
+ *
+ * HOOK POINT (New Editor Tools): If you add a new tool button in `index.html`
+ * (e.g., `data-tool="flood_fill"`), register it here and add logic in `handlePointerDown`.
+ */
 class MapTools {
     constructor() {
         window.currentTool = 'view';

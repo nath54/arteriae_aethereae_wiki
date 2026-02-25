@@ -1,0 +1,198 @@
+/* Arteriae Aethereae — Component Timeline Page */
+
+/*
+══════════════════════════════════════════════════════════════
+TIMELINE PAGE
+══════════════════════════════════════════════════════════════
+*/
+.timeline-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.timeline-wrapper {
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.timeline-header-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 1fr;
+    gap: 0;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.timeline-col-header {
+    font-family: 'Balgruf', serif;
+    font-size: 1.6rem;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.teria-header {
+    color: var(--aether-cyan);
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.date-header {
+    color: var(--text-dim);
+}
+
+.maria-header {
+    color: var(--aether-gold);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.timeline-body {
+    position: relative;
+}
+
+.timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg,
+            transparent,
+            var(--aether-cyan-dim) 10%,
+            var(--aether-cyan-dim) 90%,
+            transparent);
+    transform: translateX(-50%);
+    z-index: 0;
+}
+
+.timeline-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 1fr;
+    gap: 0;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-col {
+    padding: 4px 10px;
+}
+
+.teria-col {
+    text-align: right;
+}
+
+.maria-col {
+    text-align: left;
+}
+
+.date-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-date-marker {
+    background: var(--bg-violet);
+    border: 1px solid var(--aether-cyan-dim);
+    border-radius: 20px;
+    padding: 4px 12px;
+    position: relative;
+    z-index: 2;
+}
+
+.timeline-date {
+    font-family: 'Gothica', sans-serif;
+    font-size: 1rem;
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
+/*
+── Events
+*/
+.timeline-event {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all var(--transition-smooth);
+    display: inline-block;
+    max-width: 100%;
+}
+
+.timeline-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.teria-event {
+    border-left: 3px solid var(--aether-cyan);
+}
+
+.teria-event:hover {
+    border-color: var(--aether-cyan);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+}
+
+.maria-event {
+    border-right: 3px solid var(--aether-gold);
+    border-left: none;
+}
+
+.maria-event:hover {
+    border-color: var(--aether-gold);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+}
+
+.timeline-event-title {
+    font-family: 'Balgruf', serif;
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 4px;
+}
+
+.timeline-event-desc {
+    font-size: 1rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.timeline-event.expanded .timeline-event-desc {
+    max-height: 200px;
+}
+
+/*
+── Linked events
+*/
+.timeline-linked {
+    background: rgba(255, 215, 0, 0.02);
+}
+
+.timeline-linked .timeline-date-marker {
+    border-color: var(--aether-gold);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+
+    .timeline-row,
+    .timeline-header-row {
+        grid-template-columns: 1fr 80px 1fr;
+    }
+
+    .timeline-event {
+        font-size: 0.9rem;
+        padding: 8px 10px;
+    }
+
+    .timeline-event-title {
+        font-size: 1rem;
+    }
+}

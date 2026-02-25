@@ -1,3 +1,13 @@
+/**
+ * DataManager Class
+ * Handles caching, loading, saving, and deleting entities.
+ * Abstracts the difference between Read-Only mode (fetching static JSON)
+ * and Edit Mode (communicating with the Python API).
+ *
+ * HOOK POINT (Variables):
+ * - `this.cache` (Map): In-memory data store to avoid redundant network requests.
+ * - `this.manifest` (Object): The central registry of all entities.
+ */
 class DataManager {
     constructor() {
         this.cache = new Map();
@@ -5,14 +15,26 @@ class DataManager {
         this.manifest = null;
     }
 
+    /**
+     * Helper to check if the app is connected to the backend edit server.
+     * @returns {boolean} True if the server responded previously.
+     */
     get isEditMode() {
         return window.isEditMode || false;
     }
 
+    /**
+     * Determines the base URL for fetching data based on the current mode.
+     * @returns {string} The base API or static folder path.
+     */
     get apiBase() {
         return this.isEditMode ? 'http://127.0.0.1:8000/api' : '../data';
     }
 
+    /**
+     * Fetches the global manifest of all content.
+     * @returns {Promise<Object>} The manifest dictionary.
+     */
     async loadManifest() {
         if (this.manifest) return this.manifest;
         try {
@@ -27,6 +49,14 @@ class DataManager {
         }
     }
 
+    /**
+     * Fetches a specific entity's data. Hits the in-memory cache first.
+     * memory limits apply to avoid blowing up memory over time.
+     *
+     * @param {string} type - The entity category (e.g., 'characters').
+     * @param {string} id - The specific alphanumeric ID.
+     * @returns {Promise<Object|null>} The entity data, or null if failed.
+     */
     async getEntity(type, id) {
         // 1. Check memory cache
         const cacheKey = `${type}_${id}`;
@@ -56,6 +86,17 @@ class DataManager {
         }
     }
 
+    /**
+     * Saves an entity's data to the server (only works in edit mode).
+     * Automatically updates the local cache.
+     *
+     * HOOK POINT: Pre-save validation (e.g. checking required fields) can be added here.
+     *
+     * @param {string} type - The category.
+     * @param {string} id - The ID.
+     * @param {Object} data - The JSON payload to save.
+     * @returns {Promise<void>}
+     */
     async saveEntity(type, id, data) {
         if (!this.isEditMode) {
             console.warn("Save called in View Mode (Not connected to Edit Server).");
@@ -78,6 +119,14 @@ class DataManager {
         }
     }
 
+    /**
+     * Deletes an entity from the server and removes it from the local cache.
+     * Re-fetches the manifest to ensure consistency.
+     *
+     * @param {string} type - The category.
+     * @param {string} id - The ID.
+     * @returns {Promise<boolean>} True if deleted successfully.
+     */
     async deleteEntity(type, id) {
         if (!this.isEditMode) {
             console.warn("Delete called in View Mode.");

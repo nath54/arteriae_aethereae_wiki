@@ -1,6 +1,10 @@
 /**
- * UIMenu — Utility for building tree menus from manifest data.
- * Used by page-specific modules (not a standalone sidebar anymore).
+ * UIMenu Module — Arteriae Aethereae Wiki
+ * Utility class for building hierarchical tree menus from manifest data.
+ * Used dynamically by other pages; does not auto-render globally.
+ *
+ * HOOK POINT (Nav Tree Labels): If you add a new category to the manifest
+ * (e.g., "items"), add its display label to the `labels` dictionary inside `renderInto`.
  */
 class UIMenu {
     constructor() {

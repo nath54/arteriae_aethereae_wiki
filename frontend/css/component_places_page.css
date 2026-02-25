@@ -1,0 +1,235 @@
+/* Arteriae Aethereae — Component Places Page */
+
+/*
+══════════════════════════════════════════════════════════════
+PLACES PAGE
+══════════════════════════════════════════════════════════════
+*/
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    font-size: 1.2rem;
+}
+
+#places-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.places-sidebar {
+    flex: 1 1 350px;
+    min-width: 320px;
+    max-width: 450px;
+    position: sticky;
+    top: calc(var(--nav-height) + 20px);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    padding: 14px 18px;
+}
+
+.places-grid-container {
+    flex: 2 1 500px;
+    width: 100%;
+}
+
+#map-create-popup {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    top: 20%;
+    left: 20%;
+    right: 20%;
+    bottom: 20%;
+    z-index: 1000;
+    background: var(--bg-dark);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    color: var(--text-light);
+}
+
+#map-create-popup label {
+    margin-top: 10px;
+    color: var(--text-light);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-family: 'Gothica', sans-serif;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+}
+
+.form-group input {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #a68b5e;
+    border-radius: 4px;
+    font-family: 'Gothica', sans-serif;
+    font-size: 1.1rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.breadcrumb-link {
+    color: var(--aether-cyan);
+    text-decoration: none;
+    transition: text-shadow 0.2s;
+}
+
+.breadcrumb-link:hover {
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+}
+
+.breadcrumb-sep {
+    color: var(--text-dim);
+    font-size: 1.3rem;
+}
+
+.places-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.place-card {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.place-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--aether-purple), transparent);
+    opacity: 0;
+    transition: opacity var(--transition-smooth);
+}
+
+.place-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--aether-purple);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(155, 89, 255, 0.08);
+}
+
+.place-card:hover::before {
+    opacity: 1;
+}
+
+.place-card-thumb {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(155, 89, 255, 0.1);
+    border: 1px solid rgba(155, 89, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.place-card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.place-card-emoji {
+    font-size: 2rem;
+}
+
+.place-card-body {
+    flex: 1;
+}
+
+.place-card-name {
+    font-family: 'Balgruf', serif;
+    font-size: 1.4rem;
+    color: var(--aether-cyan);
+    margin: 0 0 2px;
+}
+
+.place-card-type {
+    color: var(--text-dim);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.place-card-desc {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin: 6px 0 0;
+    opacity: 0.8;
+    line-height: 1.4;
+}
+
+.place-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.place-add-card {
+    background: transparent;
+    border: 2px dashed rgba(155, 89, 255, 0.3);
+    border-radius: 14px;
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    min-height: 160px;
+}
+
+.place-add-card:hover {
+    border-color: var(--aether-purple);
+    color: var(--aether-purple);
+    background: rgba(155, 89, 255, 0.05);
+}
+
+@media (max-width: 900px) {
+    #places-content {
+        flex-direction: column;
+    }
+
+    .places-sidebar {
+        position: relative;
+        max-width: 100%;
+        top: 0;
+    }
+}

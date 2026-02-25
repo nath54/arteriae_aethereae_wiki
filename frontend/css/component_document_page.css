@@ -1,0 +1,216 @@
+/* Arteriae Aethereae — Component Documents Page */
+
+/*
+══════════════════════════════════════════════════════════════
+DOCUMENTS PAGE
+══════════════════════════════════════════════════════════════
+*/
+.doc-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.doc-search-wrap {
+    flex: 1;
+    min-width: 200px;
+}
+
+.doc-search {
+    width: 100%;
+    padding: 10px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    color: var(--text-light);
+    font-family: 'Gothica', sans-serif;
+    font-size: 1.2rem;
+    outline: none;
+    transition: border-color var(--transition-smooth);
+}
+
+.doc-search:focus {
+    border-color: var(--aether-cyan);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+}
+
+.doc-search::placeholder {
+    color: var(--text-dim);
+}
+
+.doc-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    min-height: 500px;
+}
+
+.doc-tree {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 8px;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+.doc-tree-folder {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s;
+    color: var(--text-light);
+    font-size: 1.15rem;
+    user-select: none;
+}
+
+.doc-tree-folder:hover {
+    background: rgba(0, 255, 255, 0.05);
+}
+
+.folder-toggle {
+    font-size: 0.8rem;
+    transition: transform 0.2s;
+    width: 12px;
+    display: inline-block;
+}
+
+.doc-tree-folder:not(.folder-open) .folder-toggle {
+    transform: rotate(-90deg);
+}
+
+.folder-icon {
+    font-size: 1.1rem;
+}
+
+.folder-name {
+    font-family: 'Gothica', sans-serif;
+}
+
+.doc-tree-children {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.doc-tree-children.collapsed {
+    display: none;
+}
+
+.doc-tree-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    color: var(--text-dim);
+    font-size: 1.05rem;
+}
+
+.doc-tree-item:hover {
+    background: rgba(0, 255, 255, 0.05);
+    color: var(--text-light);
+}
+
+.doc-tree-item.active {
+    background: rgba(0, 255, 255, 0.1);
+    color: var(--aether-cyan);
+    border-left: 2px solid var(--aether-cyan);
+}
+
+.doc-icon {
+    font-size: 1rem;
+}
+
+.doc-name {
+    font-family: 'Gothica', sans-serif;
+}
+
+/*
+── Viewer
+*/
+.doc-viewer {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 24px;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+.doc-viewer-empty {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 60px 20px;
+}
+
+.doc-viewer-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.doc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.doc-title {
+    font-family: 'Balgruf', serif;
+    font-size: 2rem;
+    color: var(--aether-cyan);
+    margin: 0;
+}
+
+.doc-body {
+    color: var(--text-light);
+    line-height: 1.7;
+    font-size: 1.1rem;
+}
+
+.doc-body h1,
+.doc-body h2,
+.doc-body h3 {
+    font-family: 'Balgruf', serif;
+    color: var(--aether-cyan);
+    margin-top: 20px;
+}
+
+.doc-body ul,
+.doc-body ol {
+    margin-left: 20px;
+}
+
+.doc-body code {
+    background: rgba(0, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.95em;
+}
+
+.doc-loading {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 40px;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .doc-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .doc-tree {
+        max-height: 300px;
+    }
+}

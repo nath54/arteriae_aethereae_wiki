@@ -6,6 +6,11 @@
  * Detection strategy:
  * 1. If we're already served by FastAPI (same origin includes /api), detect immediately
  * 2. Otherwise, ping http://127.0.0.1:8000/api/manifest to check if the server is running
+ *
+ * HOOK POINT (Auth): If you decide to add authentication layers, this is the best
+ * place to ping an auth endpoint instead of just `manifest`.
+ *
+ * @returns {Promise<void>} Resolves when detection is complete. Sets window.isEditMode.
  */
 async function detectServer() {
     window.isEditMode = false;

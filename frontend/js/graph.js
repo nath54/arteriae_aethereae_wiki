@@ -1,3 +1,11 @@
+/**
+ * MapGraph Class
+ * Represents the mathematical map data structure (nodes, edges, regions, and layers).
+ * Handles graph manipulation logic independent of its visual representation.
+ *
+ * HOOK POINT (Topology data): If you add specialized properties to nodes/edges
+ * (e.g. edge traversal costs, node elevation), store them inside these data structures.
+ */
 class MapGraph {
     constructor() {
         this.nodes = {};

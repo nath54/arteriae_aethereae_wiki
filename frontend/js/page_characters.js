@@ -1,6 +1,11 @@
 /**
- * Characters Page — Card grid with detail sheet view
- * Renders character cards from manifest, with expandable full-sheet view.
+ * Characters Page Module — Arteriae Aethereae Wiki
+ * Renders the character grid from the manifest and manages the detailed character sheet view
+ * alongside the edit mode form.
+ *
+ * HOOK POINT (Character Data): If you want to add new sections or stats
+ * (e.g., "Relationships Grid" or "Inventory UI"), add keys to the `TEMPLATE_SECTIONS`
+ * array below and update `createEmptyCharacter` accordingly.
  */
 (function () {
     const TEMPLATE_SECTIONS = [

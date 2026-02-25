@@ -1,3 +1,11 @@
+/**
+ * MapRenderer Class
+ * Responsible for drawing the interactive SVG map in the editor.
+ * Handles pan/zoom mechanics and SVG DOM element construction based on the `MapGraph`.
+ *
+ * HOOK POINT (Custom Drawing): If you need to render new layers (e.g., Points of Interest,
+ * player avatars, or animated weather effects), add the rendering logic to the `render()` method below.
+ */
 class MapRenderer {
     constructor() {
         this.svg = document.getElementById('map-svg');

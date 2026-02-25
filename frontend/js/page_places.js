@@ -1,6 +1,10 @@
 /**
- * Places Page — Recursive card sheet browser for planets, continents, regions, cities
- * Navigation: click card → drill into children. "View Map" opens the map editor overlay.
+ * Places Page Module — Arteriae Aethereae Wiki
+ * Handles the recursive card browser for planets, continents, regions, and cities.
+ * Manages the "Places" view, sidebar info, grid rendering, and triggers the Map Editor overlay.
+ *
+ * HOOK POINT (Custom UI): If you add new data fields to place JSON files (e.g., "climate", "population"),
+ * you should render them by extending the `sections` array inside `renderSidebar()` below.
  */
 (function () {
     let currentPath = []; // breadcrumb: ['teria', 'risnia', 'bruine']

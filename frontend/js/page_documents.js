@@ -1,7 +1,10 @@
 /**
- * Documents Page — File explorer with markdown viewer
- * Reads from a documents manifest (static JSON or folder structure).
- * Supports folder hierarchy, markdown rendering, and search.
+ * Documents Page Module — Arteriae Aethereae Wiki
+ * Handles the file explorer UI and markdown viewer for lore and story drafts.
+ *
+ * HOOK POINT (Nav Tree): Currently uses a hardcoded `DOCUMENT_TREE`.
+ * If you add new markdown files in `res_tmp/...`, add their references here
+ * manually to display them in the UI.
  */
 (function () {
     // Document tree structure — static definition for now
