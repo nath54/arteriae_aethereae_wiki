@@ -37,13 +37,13 @@ Des yeux et des cheveux, hérissés en multiples pointes orientées vers le ciel
 
 D'un seul coup d'épée, un chevalier vétu d'une armure d'un noir d'obsidienne trancha la tête de la dernière personne qui essayait de protéger l'homme, la femme ainsi que les deux bébés qui se trouvaient dans ses bras, tous les quatre situés en haut de la colline, arrivés aux côtés de la statue après une course effrénée.
 
-L'homme, d'un grand coup d'épée, transperca le crystal de la statue, le faisant exploser en plusieurs morceaux, et qui surtout dégagea une grande quantité d'énergie que l'homme absorba, ses yeux et cheveux se mettant à radier d'une lumière turquoise, ainsi que l'entièreté de son corps qui commencea à émaner une forte aura turquoise.
+L'homme en haut de la colline, d'un grand coup d'épée, transperca le crystal de la statue, le faisant exploser en plusieurs morceaux, et qui surtout dégagea une grande quantité d'énergie que ce dernier absorba, ses yeux et cheveux se mettant à radier d'une lumière turquoise, ainsi que l'entièreté de son corps qui commencea à émaner une forte aura turquoise.
 
 De son bras droit, dirigé de l'autre versant de la colline, il fit apparaître un portail, et de son bras gauche, dirigé vers les assaillants, il évoquait une sorte vent magique afin de repousser les adversaires.
 
 La femme d'abord hésitante, commenca à courir vers le portail, mais tout en se retournant régulièrement pour jeter un coup d'oeil rempli de larmes en direction de l'homme au sommet de la colline.
 
-Tous ces instants d'hésitations et de regards en arrière furent une grande perte de temps, et lorsqu'elle arriva au niveau du portail, elle vit les soldats en armure noire atteindre l'homme au sommet de la coline, ce qui stoppa la femme dans son élan et crier de désespoir, mais à ce moment, une flèche lui transperca l'abdomen, et la fit tomber dans le portail.
+Tous ces instants d'hésitations et de regards en arrière furent une grande perte de temps, et lorsqu'elle arriva au niveau du portail, elle vit les soldats en armure noire atteindre l'homme au sommet de la colline, ce qui stoppa la femme dans son élan et crier de désespoir, mais à ce moment, une flèche lui transperca l'abdomen, et la fit tomber dans le portail.
 
 #### Actions qui se passent juste après la scène, cachées au lecteur/spectateur:
 
