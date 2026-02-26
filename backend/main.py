@@ -216,6 +216,9 @@ def remove_entity(category: str, entity_id: str) -> dict[str, Any]:
 
 @app.post("/api/documents/new")
 def api_create_document(path: str = Form(...)) -> dict[str, Any]:
+    """
+    Creates a new document in the data/docs directory.
+    """
     if create_document(path):
         return {"status": "success", "path": path}
     raise HTTPException(
@@ -227,6 +230,9 @@ def api_create_document(path: str = Form(...)) -> dict[str, Any]:
 def api_write_document(
     path: str = Form(...), content: str = Form(...)
 ) -> dict[str, Any]:
+    """
+    Writes a document to the data/docs directory.
+    """
     if write_document(path, content):
         return {"status": "success", "path": path}
     raise HTTPException(status_code=400, detail="Failed to write document")
@@ -234,6 +240,9 @@ def api_write_document(
 
 @app.post("/api/folders/new")
 def api_create_folder(path: str = Form(...)) -> dict[str, Any]:
+    """
+    Creates a new folder in the data/docs directory.
+    """
     if create_folder(path):
         return {"status": "success", "path": path}
     raise HTTPException(status_code=400, detail="Folder already exists or invalid path")
@@ -243,6 +252,9 @@ def api_create_folder(path: str = Form(...)) -> dict[str, Any]:
 def api_rename_document(
     old_path: str = Form(...), new_name: str = Form(...)
 ) -> dict[str, Any]:
+    """
+    Renames a document or folder in the data/docs directory.
+    """
     if rename_document(old_path, new_name):
         return {"status": "success"}
     raise HTTPException(
@@ -254,6 +266,9 @@ def api_rename_document(
 def api_move_document(
     old_path: str = Form(...), new_dest_dir: str = Form(...)
 ) -> dict[str, Any]:
+    """
+    Moves a document or folder in the data/docs directory.
+    """
     if move_document(old_path, new_dest_dir):
         return {"status": "success"}
     raise HTTPException(status_code=400, detail="Move failed")
@@ -261,6 +276,9 @@ def api_move_document(
 
 @app.post("/api/documents/copy")
 def api_copy_document(path: str = Form(...)) -> dict[str, Any]:
+    """
+    Copies a document or folder in the data/docs directory.
+    """
     new_path = copy_document(path)
     if new_path:
         return {"status": "success", "new_path": new_path}
@@ -269,6 +287,9 @@ def api_copy_document(path: str = Form(...)) -> dict[str, Any]:
 
 @app.delete("/api/documents/{path:path}")
 def api_delete_document(path: str) -> dict[str, Any]:
+    """
+    Deletes a document or folder from the data/docs directory.
+    """
     if delete_document_file(path):
         return {"status": "deleted", "path": path}
     raise HTTPException(status_code=404, detail="File or folder not found")
@@ -278,14 +299,23 @@ def api_delete_document(path: str) -> dict[str, Any]:
 def api_upload_document(
     path: str = Form(...), file: UploadFile = File(...)
 ) -> dict[str, Any]:
+    """
+    Uploads a document or image to the data/docs directory.
+    """
+
     docs_dir = get_docs_dir()
 
     # We want to upload directly to a certain folder context, so path is the destination directory
     dest_dir = safe_join(docs_dir, path) if path else docs_dir
     os.makedirs(dest_dir, exist_ok=True)
 
+    file_name: str = file.filename if file.filename else ""
+
+    if file_name == "":
+        raise HTTPException(status_code=400, detail="No filename provided")
+
     # The uploaded file might be an image or a document
-    file_path = safe_join(dest_dir, file.filename)
+    file_path = safe_join(dest_dir, file_name)
 
     with open(file_path, "wb") as f:
         f.write(file.file.read())
@@ -310,7 +340,13 @@ def api_upload_image(
     Uploads an image to data/images/<path>/.
     Assigns it a slug-based ID during the next manifest rebuild.
     """
-    img_url = upload_image(path, file.filename, file.file.read())
+
+    file_name: str = file.filename if file.filename else ""
+
+    if file_name == "":
+        raise HTTPException(status_code=400, detail="No filename provided")
+
+    img_url = upload_image(path, file_name, file.file.read())
     if img_url:
         return {"status": "success", "url": img_url}
     raise HTTPException(
@@ -320,13 +356,17 @@ def api_upload_image(
 
 @app.get("/api/images/list")
 def api_list_images() -> dict[str, Any]:
-    """Returns all images tracked in the manifest."""
+    """
+    Returns all images tracked in the manifest.
+    """
     return list_images()
 
 
 @app.delete("/api/images/{img_path:path}")
 def api_delete_image(img_path: str) -> dict[str, Any]:
-    """Deletes an image from data/images/."""
+    """
+    Deletes an image from data/images/.
+    """
     if delete_image(img_path):
         return {"status": "deleted", "path": img_path}
     raise HTTPException(status_code=404, detail="Image not found")

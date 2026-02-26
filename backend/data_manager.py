@@ -17,6 +17,7 @@ HOOK POINTS:
 from typing import Any, Optional
 
 # Import os for file management and json to manage json files
+import re
 import os
 import json
 import shutil
@@ -29,7 +30,7 @@ DATA_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 DIRECTORIES: list[str] = ["characters", "places", "maps", "events"]
 
 # Image extensions supported
-IMAGE_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".avif"}
+IMAGE_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
 
 
 # Function to initialize the data directories
@@ -289,7 +290,9 @@ def delete_entity(category: str, entity_id: str) -> bool:
 
 # Function to safely join paths within a base directory
 def safe_join(base: str, *paths: str) -> str:
-    """Safely join paths ensuring the result stays within the base directory."""
+    """
+    Safely join paths ensuring the result stays within the base directory.
+    """
     final_path = os.path.abspath(os.path.join(base, *paths))
     if not final_path.startswith(os.path.abspath(base)):
         raise ValueError("Path manipulation detected. Directory traversal blocked.")
@@ -298,11 +301,17 @@ def safe_join(base: str, *paths: str) -> str:
 
 # Helper to ensure documents dir exists
 def get_docs_dir() -> str:
+    """
+    Returns the path to the data/docs directory.
+    """
     return os.path.join(DATA_DIR, "documents")
 
 
 # Function to get document context
 def create_document(rel_path: str) -> bool:
+    """
+    Creates a new document in the data/docs directory.
+    """
     docs_dir = get_docs_dir()
     f_path = safe_join(docs_dir, rel_path)
     if os.path.exists(f_path):
@@ -316,6 +325,9 @@ def create_document(rel_path: str) -> bool:
 
 # Function to write document context
 def write_document(rel_path: str, content: str) -> bool:
+    """
+    Writes a document to the data/docs directory.
+    """
     docs_dir = get_docs_dir()
     f_path = safe_join(docs_dir, rel_path)
     os.makedirs(os.path.dirname(f_path), exist_ok=True)
@@ -327,6 +339,9 @@ def write_document(rel_path: str, content: str) -> bool:
 
 # Function to create a folder
 def create_folder(rel_path: str) -> bool:
+    """
+    Creates a new folder in the data/docs directory.
+    """
     docs_dir = get_docs_dir()
     f_path = safe_join(docs_dir, rel_path)
     if os.path.exists(f_path):
@@ -338,6 +353,9 @@ def create_folder(rel_path: str) -> bool:
 
 # Function to rename a document or folder
 def rename_document(old_rel_path: str, new_name: str) -> bool:
+    """
+    Renames a document or folder in the data/docs directory.
+    """
     docs_dir = get_docs_dir()
     old_path = safe_join(docs_dir, old_rel_path)
     if not os.path.exists(old_path):
@@ -356,6 +374,9 @@ def rename_document(old_rel_path: str, new_name: str) -> bool:
 
 # Function to move a document or folder
 def move_document(old_rel_path: str, new_rel_dest_dir: str) -> bool:
+    """
+    Moves a document or folder in the data/docs directory.
+    """
     docs_dir = get_docs_dir()
     old_path = safe_join(docs_dir, old_rel_path)
     if not os.path.exists(old_path):
@@ -375,6 +396,9 @@ def move_document(old_rel_path: str, new_rel_dest_dir: str) -> bool:
 
 # Function to copy a document
 def copy_document(rel_path: str) -> Optional[str]:
+    """
+    Copies a document or folder in the data/docs directory.
+    """
     docs_dir = get_docs_dir()
     old_path = safe_join(docs_dir, rel_path)
     if not os.path.exists(old_path):
@@ -388,8 +412,6 @@ def copy_document(rel_path: str) -> Optional[str]:
     name, ext = os.path.splitext(base_name)
 
     # Strip any existing _copy_XX from name to avoid _copy_01_copy_01
-    import re
-
     base_name_no_copy = re.sub(r"_copy_\d+$", "", name)
 
     counter = 1
@@ -409,6 +431,9 @@ def copy_document(rel_path: str) -> Optional[str]:
 
 # Function to delete a document or folder
 def delete_document_file(rel_path: str) -> bool:
+    """
+    Deletes a document or folder from the data/docs directory.
+    """
     docs_dir = get_docs_dir()
     f_path = safe_join(docs_dir, rel_path)
     if not os.path.exists(f_path):
@@ -427,7 +452,9 @@ def delete_document_file(rel_path: str) -> bool:
 
 
 def get_images_dir() -> str:
-    """Returns the absolute path to the data/images directory."""
+    """
+    Returns the absolute path to the data/images directory.
+    """
     return os.path.join(DATA_DIR, "images")
 
 
@@ -456,7 +483,9 @@ def upload_image(rel_dir: str, filename: str, data: bytes) -> Optional[str]:
 
 
 def list_images() -> dict[str, Any]:
-    """Returns the images section of the manifest."""
+    """
+    Returns the images section of the manifest.
+    """
     manifest_path = os.path.join(DATA_DIR, "manifest.json")
     if os.path.exists(manifest_path):
         with open(manifest_path, "r", encoding="utf-8") as f:
@@ -466,7 +495,9 @@ def list_images() -> dict[str, Any]:
 
 
 def delete_image(rel_path: str) -> bool:
-    """Deletes an image file from the images directory."""
+    """
+    Deletes an image file from the images directory.
+    """
     images_dir = get_images_dir()
     f_path = safe_join(images_dir, rel_path)
     if not os.path.exists(f_path) or not os.path.isfile(f_path):
