@@ -22,7 +22,7 @@ RIGHT PANEL (Entity Card Overlay)
 }
 
 #right-panel.visible {
-    display: block !important;
+    display: block;
     transform: translateX(0);
 }
 

@@ -104,7 +104,7 @@ MAP EDITOR (inside #page-places)
 }
 
 #map-editor-overlay.hidden {
-    display: none !important;
+    display: none;
 }
 
 #map-editor-header {

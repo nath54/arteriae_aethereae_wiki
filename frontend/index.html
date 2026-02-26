@@ -39,6 +39,8 @@
     <script src="js/page_documents.js" defer></script>
     <script src="js/page_places.js" defer></script>
     <script src="js/page_timeline.js" defer></script>
+    <script src="js/component_image_picker.js" defer></script>
+    <script src="js/page_graph.js" defer></script>
     <script src="js/router.js" defer></script>
     <script src="js/app.js" defer></script>
 </head>
@@ -131,7 +133,8 @@
         </div>
 
         <!-- Document Context Menu (hidden) -->
-        <div id="doc-context-menu" class="edit-only context-menu" style="display:none; position:fixed; z-index:3000;">
+        <div id="doc-context-menu" class="edit-only context-menu" style="display: none;"
+            style="position:fixed; z-index:3000;">
             <ul>
                 <li id="ctx-btn-rename">✏️ Rename</li>
                 <li id="ctx-btn-move">📂 Move</li>
@@ -141,7 +144,7 @@
         </div>
 
         <!-- Rename Modal (hidden) -->
-        <div id="doc-rename-modal" class="edit-only modal-overlay" style="display:none !important;">
+        <div id="doc-rename-modal" class="edit-only modal-overlay" style="display: none;">
             <div class="parchment-card modal-content">
                 <h3>✏️ Rename Item</h3>
                 <div class="form-group">
@@ -156,7 +159,7 @@
         </div>
 
         <!-- Move Modal (hidden) -->
-        <div id="doc-move-modal" class="edit-only modal-overlay" style="display:none !important;">
+        <div id="doc-move-modal" class="edit-only modal-overlay" style="display: none;">
             <div class="parchment-card modal-content">
                 <h3>📂 Move Item</h3>
                 <p style="color: var(--text-dim); margin-bottom: 10px;">Select destination folder:</p>
@@ -292,6 +295,27 @@
             <div id="card-content"></div>
         </div>
     </aside>
+
+    <!-- ═════════════════════════════════════════ -->
+    <!-- GLOBAL IMAGE PICKER MODAL                -->
+    <!-- ═════════════════════════════════════════ -->
+    <div id="image-picker-modal" class="modal-overlay" style="display: none;">
+        <div class="parchment-card modal-content image-picker-content">
+            <div class="image-picker-header">
+                <h3 class="image-picker-title">Select Image</h3>
+                <button class="close-btn" id="image-picker-close">&times;</button>
+            </div>
+            <div class="image-picker-toolbar">
+                <input type="text" id="image-picker-search" class="doc-search" placeholder="🔍 Search images…"
+                    style="max-width:300px;">
+                <button class="tool-btn" id="image-picker-done" style="display:none;">✔ Done</button>
+                <button class="tool-btn btn-muted" id="image-picker-cancel">✖ Cancel</button>
+            </div>
+            <div id="image-picker-gallery" class="picker-gallery">
+                <!-- Populated dynamically by component_image_picker.js -->
+            </div>
+        </div>
+    </div>
 
 </body>
 

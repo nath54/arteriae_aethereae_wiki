@@ -24,11 +24,11 @@ NAVIGATION BAR
 }
 
 body.map-editor-active #nav-bar {
-    display: none !important;
+    display: none;
 }
 
 #nav-bar.hidden {
-    display: flex !important;
+    display: flex;
     transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;

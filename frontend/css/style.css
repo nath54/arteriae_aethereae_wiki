@@ -135,8 +135,10 @@ body {
 }
 
 .hidden {
-    display: none !important;
+    display: none;
 }
+
+
 
 /*
 ── Edit Mode
@@ -146,14 +148,14 @@ body {
 Hidden by default (view-only / GitHub Pages mode)
 */
 .edit-only {
-    display: none !important;
+    display: none;
 }
 
 /*
 Shown only when running the FastAPI edit server
 */
 body.edit-mode .edit-only {
-    display: revert !important;
+    display: revert;
 }
 
 /*

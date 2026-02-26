@@ -3,81 +3,77 @@ Data Manager for Arteriae Aethereae
 Handles the underlying file system operations: reading, writing, and deleting JSON entities,
 as well as building the central `manifest.json`.
 
-VARIABLES AVAILABLE TO DEVELOPERS:
-- `DATA_DIR` (str): Absolute file path to the `/data` directory where JSON files are stored.
-- `DIRECTORIES` (list[str]): The supported core data categories.
+ID SYSTEM:
+  All entity IDs are their relative path under data/, with the extension stripped.
+  Examples:
+    characters/protagonists/aeron  (from data/characters/protagonists/aeron.json)
+    places/teria/risnia             (from data/places/teria/risnia/place.json)
+    documents/Histoire/v0/draft     (from data/documents/Histoire/v0/draft.md)
+    images/portraits/aeron          (from data/images/portraits/aeron.png)
 
 HOOK POINTS:
-- If you want to add a new category
-    (e.g., "items", "spells", "factions"),
-    simply add it to the `DIRECTORIES` list.
+  - To add a new entity category, add it to `DIRECTORIES`.
+  - To add new manifest fields, extend the `entry` dict in `build_manifest()`.
 """
 
-# Import Any to easily type dictionnaries and Optional for optional values
 from typing import Any, Optional
-
-# Import os for file management and json to manage json files
 import re
 import os
 import json
 import shutil
 
 
-# Define the path to the data directory
+# ── Constants ──────────────────────────────────────────────────────────────────
+
+# Absolute path to the /data directory
 DATA_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
-# Define the list of directories to scan for JSON files
+# Core entity categories stored as JSON files
 DIRECTORIES: list[str] = ["characters", "places", "maps", "events"]
 
-# Image extensions supported
+# Image file extensions supported by the image library
 IMAGE_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
 
 
-# Function to initialize the data directories
+# ── Initialisation ─────────────────────────────────────────────────────────────
+
+
 def init_data_dirs() -> None:
     """
-    Initializes the required data directories if they don't exist.
-    Called once during server startup (by `main.py`).
-    Creates the main `data` dir, subdirectories for each category,
-    and builds an initial manifest if missing.
+    Creates all required data directories if they don't exist.
+    Called once during server startup. Always rebuilds the manifest to ensure
+    it reflects the current filesystem state.
     """
-
-    # Create the data directory if it doesn't exist
     os.makedirs(DATA_DIR, exist_ok=True)
-
-    # Create the subdirectories if they don't exist
     for d in DIRECTORIES:
         os.makedirs(os.path.join(DATA_DIR, d), exist_ok=True)
-
-    # Create the images directory
     os.makedirs(os.path.join(DATA_DIR, "images"), exist_ok=True)
-
-    # Create the documents directory
     os.makedirs(os.path.join(DATA_DIR, "documents"), exist_ok=True)
-
-    # Always rebuild manifest to ensure it is up-to-date with filesystem
     build_manifest()
 
 
-# Function to build the manifest
+# ── Manifest ───────────────────────────────────────────────────────────────────
+
+
 def build_manifest() -> dict[str, Any]:
     """
-    Scans all JSON files in the `DIRECTORIES` and builds a summarized `manifest.json`.
-    This manifest is used by the frontend for fast initial loading
-    and displaying the knowledge graph without reading every single file.
+    Scans the entire data/ directory and builds a summarized manifest.json.
+
+    Entity IDs are path-based (relative to data/, no extension), making them:
+      - Globally unique (filesystem uniqueness)
+      - Human-readable and stable
+      - No collision between same-name files in different folders
+
+    Sections produced:
+      characters, places, maps, events  — from recursive JSON walks
+      documents                         — from data/documents/ (.md files)
+      images                            — from data/images/ (image files)
 
     Returns:
-        dict: The global manifest dictionary organized by category.
-
-    HOOK POINT: If you add new top-level data fields to your entities (like "tags", "aliases")
-    that need to be globally searchable or visible in the graph,
-    extract them here into the `entry` dictionary.
+        dict: The full manifest dictionary, also written to data/manifest.json.
     """
+    manifest_path = os.path.join(DATA_DIR, "manifest.json")
 
-    # Get the path to the manifest file
-    manifest_path: str = os.path.join(DATA_DIR, "manifest.json")
-
-    # Initialize the manifest dictionary for each category
     manifest: dict[str, Any] = {
         "characters": {},
         "places": {},
@@ -87,230 +83,204 @@ def build_manifest() -> dict[str, Any]:
         "images": {},
     }
 
-    # Helper function to slugify paths/names
-    def slugify(text: str) -> str:
-        return text.lower().replace(" ", "_").replace("/", "_").replace("\\", "_")
-
-    # Type hinting, category is a string
-    category: str
-
-    # Loop through each category
+    # ── Scan entity JSON categories ──
     for category in DIRECTORIES:
-        #
-        # Get the path to the category directory
-        cat_dir: str = os.path.join(DATA_DIR, category)
-
-        # Skip if the category directory doesn't exist
+        cat_dir = os.path.join(DATA_DIR, category)
         if not os.path.exists(cat_dir):
             continue
 
-        # Type hinting, filename is a string
-        filename: str
+        # Walk recursively so nested folders (characters/protagonists/, places/teria/) work
+        for root, _, files in os.walk(cat_dir):
+            for filename in files:
+                if not filename.endswith(".json"):
+                    continue
 
-        # Loop through each file in the category directory
-        for filename in os.listdir(cat_dir):
-            #
-            # Skip if the file is not a JSON file
-            if filename.endswith(".json"):
-                #
-                # Get the path to the file
-                f_path: str = os.path.join(cat_dir, filename)
+                # Skip internal config files (prefixed with _)
+                if filename.startswith("_"):
+                    continue
 
-                # Get the entity ID from the filename
-                entity_id: str = filename[:-5]
+                f_path = os.path.join(root, filename)
 
-                # Try to open and read the file
+                # Path-based ID: relative to data/ category dir, no extension
+                rel_from_cat = os.path.relpath(f_path, cat_dir)
+                entity_id = os.path.splitext(rel_from_cat)[0].replace("\\", "/")
+
                 try:
-                    #
-                    # Open the file
                     with open(f_path, "r", encoding="utf-8") as f:
-                        #
-                        # Load the data into a json file
                         data: dict[str, Any] = json.load(f)
 
-                        # Extract minimalist info for manifest
-                        entry: dict[str, Any] = {
-                            "name": data.get("name", entity_id),
-                            "parent": data.get("parent", None),
-                            "type": data.get("type", None),
-                        }
+                    entry: dict[str, Any] = {
+                        "name": data.get("name", entity_id.split("/")[-1]),
+                        "parent": data.get("parent", None),
+                        "type": data.get("type", None),
+                        "_type": data.get(
+                            "_type", category.rstrip("s")
+                        ),  # e.g. "character"
+                        "file": rel_from_cat.replace("\\", "/"),
+                    }
 
-                        # Add description if the category is "places"
-                        if category == "places" and "description" in data:
-                            entry["description"] = data["description"]
+                    # Category-specific extra fields for manifest
+                    if category == "characters":
+                        entry["linked_characters"] = data.get("linked_characters", [])
+                        entry["folder"] = data.get("folder", "")
+                        if "icon" in data:
+                            entry["icon"] = data["icon"]
 
-                        # Add the entry to the manifest
-                        manifest[category][entity_id] = entry
+                    if category == "places":
+                        if "description" in data:
+                            entry["description"] = str(data["description"])[:200]
 
-                # Catch any errors that may occur while reading the file
-                except Exception as e:  # pylint: disable=broad-except
-                    #
-                    # Print an error message
-                    print(f"Error reading {filename}: {e}")
+                    manifest[category][entity_id] = entry
 
-    # Scan for markdown documents in data/documents
+                except Exception as e:
+                    print(f"[manifest] Error reading {f_path}: {e}")
+
+    # ── Scan documents (data/documents/**/*.md) ──
     docs_dir = os.path.join(DATA_DIR, "documents")
     if os.path.exists(docs_dir):
         for root, _, files in os.walk(docs_dir):
             for file in files:
-                if file.endswith(".md"):
-                    # Calculate relative path from docs_dir for unique ID
-                    rel_path = os.path.relpath(os.path.join(root, file), docs_dir)
-                    # Convert path separators to underscore to create a unique ID
-                    doc_id = slugify(rel_path[:-3])  # exclude '.md'
+                if not file.endswith(".md"):
+                    continue
+                f_path = os.path.join(root, file)
+                rel = os.path.relpath(f_path, docs_dir).replace("\\", "/")
+                doc_id = os.path.splitext(rel)[0]  # e.g. "Histoire/v0/draft"
+                doc_name = os.path.splitext(file)[0].replace("_", " ").title()
 
-                    doc_name = file[:-3].replace("_", " ").title()
+                manifest["documents"][doc_id] = {
+                    "name": doc_name,
+                    "_type": "document",
+                    "file": rel,  # real filesystem path
+                }
 
-                    manifest["documents"][doc_id] = {
-                        "name": doc_name,
-                        "type": "doc",
-                        "file": rel_path.replace(
-                            "\\", "/"
-                        ),  # store path with forward slashes
-                    }
-
-    # Scan for images in data/images
+    # ── Scan images (data/images/**/*) ──
     images_dir = os.path.join(DATA_DIR, "images")
     if os.path.exists(images_dir):
         for root, _, files in os.walk(images_dir):
             for file in files:
                 ext = os.path.splitext(file)[1].lower()
-                if ext in IMAGE_EXTENSIONS:
-                    rel_path = os.path.relpath(os.path.join(root, file), images_dir)
-                    img_id = slugify(os.path.splitext(rel_path)[0])  # exclude extension
-                    img_name = (
-                        os.path.splitext(file)[0]
-                        .replace("_", " ")
-                        .replace("-", " ")
-                        .title()
-                    )
-                    img_url = "/data/images/" + rel_path.replace("\\", "/")
-                    manifest["images"][img_id] = {
-                        "name": img_name,
-                        "type": "image",
-                        "file": rel_path.replace("\\", "/"),
-                        "url": img_url,
-                        "ext": ext,
-                    }
+                if ext not in IMAGE_EXTENSIONS:
+                    continue
+                f_path = os.path.join(root, file)
+                rel = os.path.relpath(f_path, images_dir).replace("\\", "/")
+                img_id = os.path.splitext(rel)[0]  # e.g. "portraits/aeron"
+                img_name = (
+                    os.path.splitext(file)[0]
+                    .replace("_", " ")
+                    .replace("-", " ")
+                    .title()
+                )
+                img_url = "/data/images/" + rel
 
-    # Open the manifest file and write the manifest to it
+                manifest["images"][img_id] = {
+                    "name": img_name,
+                    "_type": "image",
+                    "file": rel,
+                    "url": img_url,
+                    "ext": ext,
+                }
+
+    # ── Write manifest ──
     with open(manifest_path, "w", encoding="utf-8") as f:
-        json.dump(manifest, f, indent=4)
+        json.dump(manifest, f, indent=4, ensure_ascii=False)
 
     return manifest
 
 
-# Function to get an entity
+# ── Generic Entity CRUD ────────────────────────────────────────────────────────
+
+
+def _entity_path(category: str, entity_id: str) -> str:
+    """
+    Resolves the filesystem path for an entity given its category and path-based ID.
+
+    Handles both:
+      - Simple IDs: "aeron"             → data/characters/aeron.json
+      - Nested IDs: "protagonists/aeron" → data/characters/protagonists/aeron.json
+    """
+    safe_id = entity_id.replace("\\", "/").strip("/")
+    return os.path.join(DATA_DIR, category, safe_id + ".json")
+
+
 def get_entity(category: str, entity_id: str) -> Optional[dict[str, Any]]:
     """
-    Retrieves the raw data for a requested entity.
+    Retrieves raw JSON data for an entity by category and path-based ID.
 
     Args:
-        category (str): The category folder to look in (e.g., "characters").
-        entity_id (str): The file name without the .json extension.
+        category:  Data category folder (e.g. "characters").
+        entity_id: Path-based ID (e.g. "protagonists/aeron").
 
     Returns:
-        dict: The loaded JSON data.
-        None: If the file doesn't exist.
+        dict if found, None if the file does not exist.
     """
-
-    # Get the path to the entity file
-    f_path = os.path.join(DATA_DIR, category, f"{entity_id}.json")
-
-    # Return None if the file doesn't exist
+    f_path = _entity_path(category, entity_id)
     if not os.path.exists(f_path):
         return None
-
-    # Open the file and return the data
     with open(f_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
-# Function to save an entity
 def save_entity(category: str, entity_id: str, data: dict) -> None:
     """
-    Saves the provided data dictionary into a JSON file, creating directories if needed.
-    Also triggers a rebuild of the manifest,
-    because new or updated items must appear in the global list immediately.
+    Saves data to an entity JSON file (creates parent directories as needed).
+    Rebuilds the manifest after saving.
 
     Args:
-        category (str): The category folder.
-        entity_id (str): The unique ID/filename.
-        data (dict): The payload to save.
-
-    HOOK POINT: You could add data validation schemas,
-    type checking, or preprocessing hooks here before writing to disk.
+        category:  Data category folder (e.g. "characters").
+        entity_id: Path-based ID (e.g. "protagonists/aeron").
+        data:      Payload to serialize as JSON.
     """
-
-    # Create the category directory if it doesn't exist
-    os.makedirs(os.path.join(DATA_DIR, category), exist_ok=True)
-
-    # Get the path to the entity file
-    f_path = os.path.join(DATA_DIR, category, f"{entity_id}.json")
-
-    # Open the file and write the data
+    f_path = _entity_path(category, entity_id)
+    os.makedirs(os.path.dirname(f_path), exist_ok=True)
     with open(f_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4)
-
-    # Rebuild manifest when a file is saved
+        json.dump(data, f, indent=4, ensure_ascii=False)
     build_manifest()
 
 
-# Function to delete an entity
 def delete_entity(category: str, entity_id: str) -> bool:
     """
     Deletes an entity JSON file and rebuilds the manifest.
 
-    Args:
-        category (str): The category folder.
-        entity_id (str): The unique ID/filename.
-
     Returns:
-        bool: True if successfully deleted, False if the file didn't exist.
+        True if the file was found and deleted, False otherwise.
     """
-
-    # Get the path to the entity file
-    f_path = os.path.join(DATA_DIR, category, f"{entity_id}.json")
-
-    # Delete the file if it exists
-    if os.path.exists(f_path):
-        #
-        # Delete the file
-        os.remove(f_path)
-
-        # Rebuild the manifest
-        build_manifest()
-
-        # Return True if the file was deleted
-        return True
-
-    # Return False if the file doesn't exist
-    return False
+    f_path = _entity_path(category, entity_id)
+    if not os.path.exists(f_path):
+        return False
+    os.remove(f_path)
+    build_manifest()
+    return True
 
 
-# Function to safely join paths within a base directory
+# ── Path Safety ────────────────────────────────────────────────────────────────
+
+
 def safe_join(base: str, *paths: str) -> str:
     """
-    Safely join paths ensuring the result stays within the base directory.
+    Joins paths ensuring the result stays within the base directory.
+    Raises ValueError on directory traversal attempts.
     """
     final_path = os.path.abspath(os.path.join(base, *paths))
     if not final_path.startswith(os.path.abspath(base)):
-        raise ValueError("Path manipulation detected. Directory traversal blocked.")
+        raise ValueError(f"Path traversal blocked: {final_path!r} is outside {base!r}")
     return final_path
 
 
-# Helper to ensure documents dir exists
+# ── Document Operations ────────────────────────────────────────────────────────
+
+
 def get_docs_dir() -> str:
-    """
-    Returns the path to the data/docs directory.
-    """
+    """Returns the absolute path to data/documents/."""
     return os.path.join(DATA_DIR, "documents")
 
 
-# Function to get document context
 def create_document(rel_path: str) -> bool:
     """
-    Creates a new document in the data/docs directory.
+    Creates a new empty Markdown document at data/documents/<rel_path>.
+    Creates parent directories automatically.
+
+    Returns:
+        True if created, False if the file already exists.
     """
     docs_dir = get_docs_dir()
     f_path = safe_join(docs_dir, rel_path)
@@ -318,15 +288,16 @@ def create_document(rel_path: str) -> bool:
         return False
     os.makedirs(os.path.dirname(f_path), exist_ok=True)
     with open(f_path, "w", encoding="utf-8") as f:
-        f.write("# New Document\n")
+        name = os.path.splitext(os.path.basename(rel_path))[0].replace("_", " ").title()
+        f.write(f"# {name}\n\n")
     build_manifest()
     return True
 
 
-# Function to write document context
 def write_document(rel_path: str, content: str) -> bool:
     """
-    Writes a document to the data/docs directory.
+    Overwrites the content of a document at data/documents/<rel_path>.
+    Creates the file (and parent dirs) if it does not exist.
     """
     docs_dir = get_docs_dir()
     f_path = safe_join(docs_dir, rel_path)
@@ -337,24 +308,42 @@ def write_document(rel_path: str, content: str) -> bool:
     return True
 
 
-# Function to create a folder
 def create_folder(rel_path: str) -> bool:
     """
-    Creates a new folder in the data/docs directory.
+    Creates a new folder at data/<rel_path>.
+
+    Returns:
+        True if created, False if it already exists.
     """
-    docs_dir = get_docs_dir()
-    f_path = safe_join(docs_dir, rel_path)
+
+    # Prepare the path.
+    f_path = safe_join(DATA_DIR, rel_path)
+
+    # Check if the path already exists.
     if os.path.exists(f_path):
+        # Return False if it already exists.
         return False
+
+    # Create the path.
     os.makedirs(f_path, exist_ok=True)
+
+    # Rebuild the manifest.
     build_manifest()
+
+    # Return True if created.
     return True
 
 
-# Function to rename a document or folder
 def rename_document(old_rel_path: str, new_name: str) -> bool:
     """
-    Renames a document or folder in the data/docs directory.
+    Renames a document or folder.
+
+    Args:
+        old_rel_path: Relative path from data/documents/ (e.g. "Histoire/v0/draft.md")
+        new_name:     New filename only, not a full path (e.g. "brouillon.md")
+
+    Returns:
+        True on success, False if source not found or target already exists.
     """
     docs_dir = get_docs_dir()
     old_path = safe_join(docs_dir, old_rel_path)
@@ -363,7 +352,6 @@ def rename_document(old_rel_path: str, new_name: str) -> bool:
 
     parent_dir = os.path.dirname(old_path)
     new_path = safe_join(parent_dir, new_name)
-
     if os.path.exists(new_path):
         return False
 
@@ -372,17 +360,23 @@ def rename_document(old_rel_path: str, new_name: str) -> bool:
     return True
 
 
-# Function to move a document or folder
 def move_document(old_rel_path: str, new_rel_dest_dir: str) -> bool:
     """
-    Moves a document or folder in the data/docs directory.
+    Moves a document or folder to a different directory.
+
+    Args:
+        old_rel_path:    Source relative path from data/documents/
+        new_rel_dest_dir: Destination DIRECTORY relative path (not the full target path)
+
+    Returns:
+        True on success, False if source not found or target already exists.
     """
     docs_dir = get_docs_dir()
     old_path = safe_join(docs_dir, old_rel_path)
     if not os.path.exists(old_path):
         return False
 
-    dest_dir = safe_join(docs_dir, new_rel_dest_dir)
+    dest_dir = safe_join(docs_dir, new_rel_dest_dir) if new_rel_dest_dir else docs_dir
     os.makedirs(dest_dir, exist_ok=True)
 
     new_path = safe_join(dest_dir, os.path.basename(old_path))
@@ -394,29 +388,27 @@ def move_document(old_rel_path: str, new_rel_dest_dir: str) -> bool:
     return True
 
 
-# Function to copy a document
 def copy_document(rel_path: str) -> Optional[str]:
     """
-    Copies a document or folder in the data/docs directory.
+    Copies a document (files only) with a _copy_NN suffix to avoid name conflicts.
+
+    Returns:
+        Relative path of the new copy, or None on failure.
     """
     docs_dir = get_docs_dir()
     old_path = safe_join(docs_dir, rel_path)
-    if not os.path.exists(old_path):
+    if not os.path.exists(old_path) or not os.path.isfile(old_path):
         return None
 
-    if not os.path.isfile(old_path):
-        return None  # Only copy files for now
-
     dir_name = os.path.dirname(old_path)
-    base_name = os.path.basename(old_path)
-    name, ext = os.path.splitext(base_name)
-
-    # Strip any existing _copy_XX from name to avoid _copy_01_copy_01
-    base_name_no_copy = re.sub(r"_copy_\d+$", "", name)
+    base = os.path.basename(old_path)
+    name, ext = os.path.splitext(base)
+    # Strip any existing _copy_NN to avoid stacking suffixes
+    base_clean = re.sub(r"_copy_\d+$", "", name)
 
     counter = 1
     while True:
-        new_name = f"{base_name_no_copy}_copy_{counter:02d}{ext}"
+        new_name = f"{base_clean}_copy_{counter:02d}{ext}"
         new_path = safe_join(dir_name, new_name)
         if not os.path.exists(new_path):
             break
@@ -424,15 +416,15 @@ def copy_document(rel_path: str) -> Optional[str]:
 
     shutil.copy2(old_path, new_path)
     build_manifest()
-
-    # Return the new relative path
     return os.path.relpath(new_path, docs_dir).replace("\\", "/")
 
 
-# Function to delete a document or folder
 def delete_document_file(rel_path: str) -> bool:
     """
-    Deletes a document or folder from the data/docs directory.
+    Deletes a document file or an entire folder (recursively) from data/documents/.
+
+    Returns:
+        True if deleted, False if not found.
     """
     docs_dir = get_docs_dir()
     f_path = safe_join(docs_dir, rel_path)
@@ -448,26 +440,96 @@ def delete_document_file(rel_path: str) -> bool:
     return True
 
 
-# ── Image Management ──
+# ── Place Folder Operations ────────────────────────────────────────────────────
+
+
+def create_place(name: str, parent_id: Optional[str] = None) -> Optional[str]:
+    """
+    Creates a new place by making a real folder on disk and writing empty
+    place.json and map.json files inside it.
+
+    Folder structure:
+      data/places/<name>/place.json          (root place)
+      data/places/<parent>/<name>/place.json (nested sub-place)
+
+    Args:
+        name:      The place name (used as the folder name, slugified).
+        parent_id: Optional parent place path-based ID (e.g. "teria").
+
+    Returns:
+        The new place's path-based ID (e.g. "teria/risnia"), or None if it already exists.
+    """
+    places_dir = os.path.join(DATA_DIR, "places")
+    folder_name = name.lower().replace(" ", "_").replace("/", "_")
+
+    if parent_id:
+        # Nested: resolve parent folder path
+        parent_rel = parent_id.replace("/", os.sep)
+        place_dir = safe_join(places_dir, parent_rel, folder_name)
+        place_id = f"{parent_id}/{folder_name}"
+    else:
+        place_dir = safe_join(places_dir, folder_name)
+        place_id = folder_name
+
+    if os.path.exists(place_dir):
+        return None  # Already exists
+
+    os.makedirs(place_dir, exist_ok=True)
+
+    # Write initial place.json
+    place_data: dict[str, Any] = {
+        "_type": "place",
+        "name": name,
+        "type": "region",
+        "parent": parent_id,
+        "description": "",
+        "gallery": [],
+        "icon": None,
+    }
+    with open(os.path.join(place_dir, "place.json"), "w", encoding="utf-8") as f:
+        json.dump(place_data, f, indent=4, ensure_ascii=False)
+
+    # Write initial map.json
+    map_data: dict[str, Any] = {
+        "_type": "map",
+        "name": name,
+        "nodes": {},
+        "edges": {},
+        "polygons": {},
+        "layers": {},
+    }
+    with open(os.path.join(place_dir, "map.json"), "w", encoding="utf-8") as f:
+        json.dump(map_data, f, indent=4, ensure_ascii=False)
+
+    build_manifest()
+    return place_id
+
+
+# ── Image Operations ───────────────────────────────────────────────────────────
 
 
 def get_images_dir() -> str:
-    """
-    Returns the absolute path to the data/images directory.
-    """
+    """Returns the absolute path to data/images/."""
     return os.path.join(DATA_DIR, "images")
 
 
 def upload_image(rel_dir: str, filename: str, data: bytes) -> Optional[str]:
     """
     Saves a binary image to data/images/<rel_dir>/<filename>.
-    Returns the relative URL path on success, or None on failure.
+
+    Args:
+        rel_dir:  Sub-directory within data/images/ (may be empty string for root).
+        filename: Original filename; sanitized before saving.
+        data:     Raw bytes of the image file.
+
+    Returns:
+        The public URL path (e.g. "/data/images/portraits/aeron.png") on success,
+        or None if the file extension is not allowed.
     """
     images_dir = get_images_dir()
     dest_dir = safe_join(images_dir, rel_dir) if rel_dir else images_dir
     os.makedirs(dest_dir, exist_ok=True)
 
-    # Sanitize filename
     safe_filename = os.path.basename(filename)
     ext = os.path.splitext(safe_filename)[1].lower()
     if ext not in IMAGE_EXTENSIONS:
@@ -478,25 +540,25 @@ def upload_image(rel_dir: str, filename: str, data: bytes) -> Optional[str]:
         f.write(data)
 
     build_manifest()
-    rel_url_path = os.path.relpath(file_path, DATA_DIR).replace("\\", "/")
-    return f"/data/{rel_url_path}"
+    rel_url = os.path.relpath(file_path, DATA_DIR).replace("\\", "/")
+    return f"/data/{rel_url}"
 
 
 def list_images() -> dict[str, Any]:
-    """
-    Returns the images section of the manifest.
-    """
+    """Returns the images section of the current manifest."""
     manifest_path = os.path.join(DATA_DIR, "manifest.json")
     if os.path.exists(manifest_path):
         with open(manifest_path, "r", encoding="utf-8") as f:
-            m = json.load(f)
-            return m.get("images", {})
+            return json.load(f).get("images", {})
     return {}
 
 
 def delete_image(rel_path: str) -> bool:
     """
-    Deletes an image file from the images directory.
+    Deletes a single image file from data/images/<rel_path>.
+
+    Returns:
+        True if deleted, False if not found or not a file.
     """
     images_dir = get_images_dir()
     f_path = safe_join(images_dir, rel_path)

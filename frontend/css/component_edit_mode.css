@@ -6,9 +6,9 @@ EDIT MODE
 ══════════════════════════════════════════════════════════════
 */
 .edit-only {
-    display: none !important;
+    display: none;
 }
 
 body.edit-mode .edit-only {
-    display: inline-flex !important;
+    display: inline-flex;
 }

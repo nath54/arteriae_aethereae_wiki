@@ -17,11 +17,17 @@
             id, ...data
         }));
 
-        // Sort by structured date (year, month, day)
+        // Robust year parser: handles empty string, undefined, and negative integers
+        const parseYear = e => {
+            const raw = e.date_year !== undefined && e.date_year !== '' ? e.date_year : e.date;
+            const n = parseInt(raw);
+            return isNaN(n) ? 0 : n;
+        };
+
+        // Sort by structured date (year, month, day) — supports negative years (BCE)
         eventList.sort((a, b) => {
-            const yA = parseInt(a.date_year || a.date || 0);
-            const yB = parseInt(b.date_year || b.date || 0);
-            if (yA !== yB) return yA - yB;
+            const yDiff = parseYear(a) - parseYear(b);
+            if (yDiff !== 0) return yDiff;
 
             const mA = parseInt(a.date_month || 0);
             const mB = parseInt(b.date_month || 0);
@@ -82,8 +88,7 @@
         // Click to expand/open sidebar
         container.querySelectorAll('.timeline-event').forEach(evt => {
             evt.addEventListener('click', () => {
-                const isEditMode = document.body.classList.contains('server-active');
-                if (isEditMode) {
+                if (window.isEditMode) {
                     const eventData = eventList.find(e => e.id === evt.dataset.id) || events[evt.dataset.id];
                     openTimelineSidebar(evt.dataset.id, eventData);
                 } else {
@@ -117,11 +122,16 @@
         }
         html += '</div>';
 
-        // Date formatting based on Calendrier de l'Ancien Monde
+        // Date formatting — negative years shown as "−N AE" (Avant Éther)
         let dateDisplay = '';
-        if (evt.date_year !== undefined) {
-            dateDisplay += `An ${evt.date_year}`;
-            if (evt.date_month) dateDisplay += ` - ${getMonthName(evt.date_month)}`;
+        if (evt.date_year !== undefined && evt.date_year !== '') {
+            const y = parseInt(evt.date_year);
+            if (!isNaN(y) && y < 0) {
+                dateDisplay = `${Math.abs(y)} AE`;
+            } else {
+                dateDisplay = `An ${evt.date_year}`;
+            }
+            if (evt.date_month) dateDisplay += ` — ${getMonthName(evt.date_month)}`;
             if (evt.date_day) dateDisplay += ` ${evt.date_day}`;
         } else {
             dateDisplay = evt.date || '?';
@@ -218,11 +228,11 @@
 
                         <div class="edit-field" style="display: flex; flex-direction: column;">
                             <label>Year</label>
-                            <input type="number" id="ev-year" value="${existingData.date_year || existingData.date || ''}" placeholder="e.g. 15" />
+                            <input type="number" id="ev-year" value="${existingData.date_year ?? ''}" placeholder="e.g. 15 — use −15 for AE" />
                         </div>
                         <div class="edit-field" style="display: flex; flex-direction: column;">
                             <label>Month</label>
-                            <select id="ev-month" style="padding:8px; background:var(--bg-lighter); color:white; border:1px solid var(--border-color); border-radius:4px; width:100%;">
+                            <select id="ev-month" style="padding:8px; background:var(--glass-bg); color:white; border:1px solid var(--border-color); border-radius:4px; width:100%;">
                                 <option value="">-- None --</option>
                                 <option value="1" ${existingData.date_month == 1 ? 'selected' : ''}>1. Nouvelle-Lune</option>
                                 <option value="2" ${existingData.date_month == 2 ? 'selected' : ''}>2. Fleur-Naissante</option>
@@ -248,7 +258,7 @@
 
                     <div class="edit-field">
                         <label>World</label>
-                        <select id="ev-world" style="padding:8px; background:var(--bg-lighter); color:white; border:1px solid var(--border-color); border-radius:4px; width:100%;">
+                        <select id="ev-world" style="padding:8px; background:var(--glass-bg); color:white; border:1px solid var(--border-color); border-radius:4px; width:100%;">
                             <option value="teria" ${existingData.world === 'teria' && !existingData.linked ? 'selected' : ''}>Teria</option>
                             <option value="maria" ${existingData.world === 'maria' && !existingData.linked ? 'selected' : ''}>Maria</option>
                             <option value="linked" ${existingData.linked ? 'selected' : ''}>Linked (Both Worlds)</option>
@@ -297,8 +307,7 @@
             delBtn.addEventListener('click', async () => {
                 if (confirm(`Delete event "${existingData.name}"?`)) {
                     await window.db.deleteEntity('events', eventId);
-                    window.db.manifest = null;
-                    await window.db.loadManifest();
+                    await window.db.reloadManifest();
                     sidebar.classList.remove('visible');
                     renderTimeline(document.getElementById('timeline-content'));
                 }
@@ -327,8 +336,7 @@
             };
 
             await window.db.saveEntity('events', id, eventData);
-            window.db.manifest = null;
-            await window.db.loadManifest();
+            await window.db.reloadManifest();
             sidebar.classList.remove('visible');
             renderTimeline(document.getElementById('timeline-content'));
         });

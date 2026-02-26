@@ -308,7 +308,7 @@
                         </div>
                         <div class="edit-field">
                             <label>Type</label>
-                            <select id="new-place-type" style="padding:8px; background:var(--bg-lighter); color:white; border:1px solid var(--border-color); border-radius:4px; width:100%;">
+                            <select id="new-place-type" style="padding:8px; background:var(--glass-bg); color:white; border:1px solid var(--border-color); border-radius:4px; width:100%;">
                                 <option value="planet">Planet</option>
                                 <option value="continent">Continent</option>
                                 <option value="country">Country</option>

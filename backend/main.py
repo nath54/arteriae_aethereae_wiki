@@ -21,7 +21,7 @@ from typing import Any
 import os
 import json
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -44,6 +44,7 @@ from backend.data_manager import (
     upload_image,
     list_images,
     delete_image,
+    create_place,
 )
 
 # Main entry point of the application.
@@ -215,74 +216,139 @@ def remove_entity(category: str, entity_id: str) -> dict[str, Any]:
 
 
 @app.post("/api/documents/new")
-def api_create_document(path: str = Form(...)) -> dict[str, Any]:
+async def api_create_document(request: Request) -> dict[str, Any]:
     """
     Creates a new document in the data/docs directory.
     """
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    path = data.get("path")
+    if not path:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'path'")
+
     if create_document(path):
         return {"status": "success", "path": path}
     raise HTTPException(
-        status_code=400, detail="Document already exists or invalid path"
+        status_code=400, detail=f"Document '{path}' already exists or invalid path"
     )
 
 
 @app.post("/api/documents/write")
-def api_write_document(
-    path: str = Form(...), content: str = Form(...)
-) -> dict[str, Any]:
+async def api_write_document(request: Request) -> dict[str, Any]:
     """
     Writes a document to the data/docs directory.
     """
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    path = data.get("path")
+    content = data.get("content")
+
+    if not path:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'path'")
+    if content is None:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'content'")
+
     if write_document(path, content):
         return {"status": "success", "path": path}
-    raise HTTPException(status_code=400, detail="Failed to write document")
+    raise HTTPException(status_code=400, detail=f"Failed to write document at '{path}'")
 
 
 @app.post("/api/folders/new")
-def api_create_folder(path: str = Form(...)) -> dict[str, Any]:
+async def api_create_folder(request: Request) -> dict[str, Any]:
     """
     Creates a new folder in the data/docs directory.
     """
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    path = data.get("path")
+    if not path:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'path'")
+
     if create_folder(path):
         return {"status": "success", "path": path}
-    raise HTTPException(status_code=400, detail="Folder already exists or invalid path")
+    raise HTTPException(
+        status_code=400, detail=f"Folder '{path}' already exists or invalid path"
+    )
 
 
 @app.post("/api/documents/rename")
-def api_rename_document(
-    old_path: str = Form(...), new_name: str = Form(...)
-) -> dict[str, Any]:
+async def api_rename_document(request: Request) -> dict[str, Any]:
     """
     Renames a document or folder in the data/docs directory.
     """
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    old_path = data.get("old_path")
+    new_name = data.get("new_name")
+
+    if not old_path:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'old_path'")
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'new_name'")
+
     if rename_document(old_path, new_name):
         return {"status": "success"}
     raise HTTPException(
-        status_code=400, detail="Rename failed (file might not exist or name taken)"
+        status_code=400,
+        detail=f"Rename failed for '{old_path}' to '{new_name}' (file might not exist or name taken)",
     )
 
 
 @app.post("/api/documents/move")
-def api_move_document(
-    old_path: str = Form(...), new_dest_dir: str = Form(...)
-) -> dict[str, Any]:
+async def api_move_document(request: Request) -> dict[str, Any]:
     """
     Moves a document or folder in the data/docs directory.
     """
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    old_path = data.get("old_path")
+    new_dest_dir = data.get("new_dest_dir")
+
+    if not old_path:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'old_path'")
+    if new_dest_dir is None:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'new_dest_dir'")
+
     if move_document(old_path, new_dest_dir):
         return {"status": "success"}
-    raise HTTPException(status_code=400, detail="Move failed")
+    raise HTTPException(
+        status_code=400, detail=f"Move failed for '{old_path}' to '{new_dest_dir}'"
+    )
 
 
 @app.post("/api/documents/copy")
-def api_copy_document(path: str = Form(...)) -> dict[str, Any]:
+async def api_copy_document(request: Request) -> dict[str, Any]:
     """
     Copies a document or folder in the data/docs directory.
     """
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    path = data.get("path")
+    if not path:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'path'")
+
     new_path = copy_document(path)
     if new_path:
         return {"status": "success", "new_path": new_path}
-    raise HTTPException(status_code=400, detail="Copy failed")
+    raise HTTPException(status_code=400, detail=f"Copy failed for '{path}'")
 
 
 @app.delete("/api/documents/{path:path}")
@@ -327,6 +393,38 @@ def api_upload_document(
         file_path, os.path.join(os.path.dirname(docs_dir))
     ).replace("\\", "/")
     return {"status": "success", "file_url": f"/data/{rel_file_path}"}
+
+
+# ── Place Folder Endpoints ──
+
+
+@app.post("/api/places/new")
+async def api_create_place(request: Request) -> dict[str, Any]:
+    """
+    Creates a new place folder on disk (place.json + map.json) under data/places/.
+    Nested places are created as subfolders of their parent.
+
+    Args:
+        name:      Human-readable place name.
+        parent_id: Optional parent place path-based ID (e.g. "teria"). Empty = root.
+    """
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    name = data.get("name")
+    parent_id = data.get("parent_id", "")
+
+    if not name:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'name'")
+
+    place_id = create_place(name, parent_id.strip() or None)
+    if place_id:
+        return {"status": "success", "place_id": place_id}
+    raise HTTPException(
+        status_code=400, detail=f"Place '{name}' already exists or invalid name"
+    )
 
 
 # ── Image Endpoints ──
