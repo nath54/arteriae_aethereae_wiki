@@ -19,6 +19,7 @@ from typing import Any, Optional
 # Import os for file management and json to manage json files
 import os
 import json
+import shutil
 
 
 # Define the path to the data directory
@@ -26,6 +27,9 @@ DATA_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 # Define the list of directories to scan for JSON files
 DIRECTORIES: list[str] = ["characters", "places", "maps", "events"]
+
+# Image extensions supported
+IMAGE_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".avif"}
 
 
 # Function to initialize the data directories
@@ -43,6 +47,12 @@ def init_data_dirs() -> None:
     # Create the subdirectories if they don't exist
     for d in DIRECTORIES:
         os.makedirs(os.path.join(DATA_DIR, d), exist_ok=True)
+
+    # Create the images directory
+    os.makedirs(os.path.join(DATA_DIR, "images"), exist_ok=True)
+
+    # Create the documents directory
+    os.makedirs(os.path.join(DATA_DIR, "documents"), exist_ok=True)
 
     # Always rebuild manifest to ensure it is up-to-date with filesystem
     build_manifest()
@@ -73,6 +83,7 @@ def build_manifest() -> dict[str, Any]:
         "maps": {},
         "events": {},
         "documents": {},
+        "images": {},
     }
 
     # Helper function to slugify paths/names
@@ -155,6 +166,30 @@ def build_manifest() -> dict[str, Any]:
                         "file": rel_path.replace(
                             "\\", "/"
                         ),  # store path with forward slashes
+                    }
+
+    # Scan for images in data/images
+    images_dir = os.path.join(DATA_DIR, "images")
+    if os.path.exists(images_dir):
+        for root, _, files in os.walk(images_dir):
+            for file in files:
+                ext = os.path.splitext(file)[1].lower()
+                if ext in IMAGE_EXTENSIONS:
+                    rel_path = os.path.relpath(os.path.join(root, file), images_dir)
+                    img_id = slugify(os.path.splitext(rel_path)[0])  # exclude extension
+                    img_name = (
+                        os.path.splitext(file)[0]
+                        .replace("_", " ")
+                        .replace("-", " ")
+                        .title()
+                    )
+                    img_url = "/data/images/" + rel_path.replace("\\", "/")
+                    manifest["images"][img_id] = {
+                        "name": img_name,
+                        "type": "image",
+                        "file": rel_path.replace("\\", "/"),
+                        "url": img_url,
+                        "ext": ext,
                     }
 
     # Open the manifest file and write the manifest to it
@@ -250,3 +285,192 @@ def delete_entity(category: str, entity_id: str) -> bool:
 
     # Return False if the file doesn't exist
     return False
+
+
+# Function to safely join paths within a base directory
+def safe_join(base: str, *paths: str) -> str:
+    """Safely join paths ensuring the result stays within the base directory."""
+    final_path = os.path.abspath(os.path.join(base, *paths))
+    if not final_path.startswith(os.path.abspath(base)):
+        raise ValueError("Path manipulation detected. Directory traversal blocked.")
+    return final_path
+
+
+# Helper to ensure documents dir exists
+def get_docs_dir() -> str:
+    return os.path.join(DATA_DIR, "documents")
+
+
+# Function to get document context
+def create_document(rel_path: str) -> bool:
+    docs_dir = get_docs_dir()
+    f_path = safe_join(docs_dir, rel_path)
+    if os.path.exists(f_path):
+        return False
+    os.makedirs(os.path.dirname(f_path), exist_ok=True)
+    with open(f_path, "w", encoding="utf-8") as f:
+        f.write("# New Document\n")
+    build_manifest()
+    return True
+
+
+# Function to write document context
+def write_document(rel_path: str, content: str) -> bool:
+    docs_dir = get_docs_dir()
+    f_path = safe_join(docs_dir, rel_path)
+    os.makedirs(os.path.dirname(f_path), exist_ok=True)
+    with open(f_path, "w", encoding="utf-8") as f:
+        f.write(content)
+    build_manifest()
+    return True
+
+
+# Function to create a folder
+def create_folder(rel_path: str) -> bool:
+    docs_dir = get_docs_dir()
+    f_path = safe_join(docs_dir, rel_path)
+    if os.path.exists(f_path):
+        return False
+    os.makedirs(f_path, exist_ok=True)
+    build_manifest()
+    return True
+
+
+# Function to rename a document or folder
+def rename_document(old_rel_path: str, new_name: str) -> bool:
+    docs_dir = get_docs_dir()
+    old_path = safe_join(docs_dir, old_rel_path)
+    if not os.path.exists(old_path):
+        return False
+
+    parent_dir = os.path.dirname(old_path)
+    new_path = safe_join(parent_dir, new_name)
+
+    if os.path.exists(new_path):
+        return False
+
+    os.rename(old_path, new_path)
+    build_manifest()
+    return True
+
+
+# Function to move a document or folder
+def move_document(old_rel_path: str, new_rel_dest_dir: str) -> bool:
+    docs_dir = get_docs_dir()
+    old_path = safe_join(docs_dir, old_rel_path)
+    if not os.path.exists(old_path):
+        return False
+
+    dest_dir = safe_join(docs_dir, new_rel_dest_dir)
+    os.makedirs(dest_dir, exist_ok=True)
+
+    new_path = safe_join(dest_dir, os.path.basename(old_path))
+    if os.path.exists(new_path):
+        return False
+
+    shutil.move(old_path, new_path)
+    build_manifest()
+    return True
+
+
+# Function to copy a document
+def copy_document(rel_path: str) -> Optional[str]:
+    docs_dir = get_docs_dir()
+    old_path = safe_join(docs_dir, rel_path)
+    if not os.path.exists(old_path):
+        return None
+
+    if not os.path.isfile(old_path):
+        return None  # Only copy files for now
+
+    dir_name = os.path.dirname(old_path)
+    base_name = os.path.basename(old_path)
+    name, ext = os.path.splitext(base_name)
+
+    # Strip any existing _copy_XX from name to avoid _copy_01_copy_01
+    import re
+
+    base_name_no_copy = re.sub(r"_copy_\d+$", "", name)
+
+    counter = 1
+    while True:
+        new_name = f"{base_name_no_copy}_copy_{counter:02d}{ext}"
+        new_path = safe_join(dir_name, new_name)
+        if not os.path.exists(new_path):
+            break
+        counter += 1
+
+    shutil.copy2(old_path, new_path)
+    build_manifest()
+
+    # Return the new relative path
+    return os.path.relpath(new_path, docs_dir).replace("\\", "/")
+
+
+# Function to delete a document or folder
+def delete_document_file(rel_path: str) -> bool:
+    docs_dir = get_docs_dir()
+    f_path = safe_join(docs_dir, rel_path)
+    if not os.path.exists(f_path):
+        return False
+
+    if os.path.isdir(f_path):
+        shutil.rmtree(f_path)
+    else:
+        os.remove(f_path)
+
+    build_manifest()
+    return True
+
+
+# ── Image Management ──
+
+
+def get_images_dir() -> str:
+    """Returns the absolute path to the data/images directory."""
+    return os.path.join(DATA_DIR, "images")
+
+
+def upload_image(rel_dir: str, filename: str, data: bytes) -> Optional[str]:
+    """
+    Saves a binary image to data/images/<rel_dir>/<filename>.
+    Returns the relative URL path on success, or None on failure.
+    """
+    images_dir = get_images_dir()
+    dest_dir = safe_join(images_dir, rel_dir) if rel_dir else images_dir
+    os.makedirs(dest_dir, exist_ok=True)
+
+    # Sanitize filename
+    safe_filename = os.path.basename(filename)
+    ext = os.path.splitext(safe_filename)[1].lower()
+    if ext not in IMAGE_EXTENSIONS:
+        return None
+
+    file_path = safe_join(dest_dir, safe_filename)
+    with open(file_path, "wb") as f:
+        f.write(data)
+
+    build_manifest()
+    rel_url_path = os.path.relpath(file_path, DATA_DIR).replace("\\", "/")
+    return f"/data/{rel_url_path}"
+
+
+def list_images() -> dict[str, Any]:
+    """Returns the images section of the manifest."""
+    manifest_path = os.path.join(DATA_DIR, "manifest.json")
+    if os.path.exists(manifest_path):
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            m = json.load(f)
+            return m.get("images", {})
+    return {}
+
+
+def delete_image(rel_path: str) -> bool:
+    """Deletes an image file from the images directory."""
+    images_dir = get_images_dir()
+    f_path = safe_join(images_dir, rel_path)
+    if not os.path.exists(f_path) or not os.path.isfile(f_path):
+        return False
+    os.remove(f_path)
+    build_manifest()
+    return True

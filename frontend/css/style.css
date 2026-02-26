@@ -225,3 +225,84 @@ BUTTONS & TOOLS
     color: var(--bg-dark);
     box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }
+
+/*
+══════════════════════════════════════════════════════════════
+FORM INPUTS & TEXTAREAS
+══════════════════════════════════════════════════════════════
+*/
+input[type="text"],
+input[type="number"],
+textarea {
+    background: var(--glass-bg);
+    color: var(--text-light);
+    border: 1px solid var(--glass-border);
+    border-left: 3px solid transparent;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: 'Gothica', sans-serif;
+    font-size: 1.1rem;
+    outline: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, border-left-color 0.25s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+    border-color: var(--aether-cyan);
+    border-left-color: var(--aether-cyan);
+    box-shadow: 0 0 14px var(--aether-cyan-dim), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    background: rgba(20, 16, 60, 0.9);
+}
+
+input[type="text"]::placeholder,
+Input[type="number"]::placeholder,
+textarea::placeholder {
+    color: var(--text-dim);
+    font-style: italic;
+    opacity: 0.75;
+}
+
+/* Custom styling for the markdown editor textarea */
+.editor-textarea {
+    width: 100%;
+    min-height: 450px;
+    resize: vertical;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding: 16px;
+    background: rgba(8, 6, 26, 0.9);
+    border: 1px solid var(--aether-cyan-dim);
+    border-left: 3px solid var(--aether-cyan-dim);
+    border-radius: 8px;
+    color: var(--text-light);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+    tab-size: 4;
+}
+
+.editor-textarea:focus {
+    border-color: var(--aether-cyan);
+    border-left-color: var(--aether-cyan);
+    box-shadow: 0 0 18px var(--aether-cyan-dim), inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Muted button style (for cancel buttons) */
+.btn-muted {
+    color: var(--text-dim) !important;
+    border-color: rgba(136, 136, 170, 0.3) !important;
+}
+
+.btn-muted:hover {
+    color: var(--text-light) !important;
+    background: rgba(136, 136, 170, 0.1) !important;
+    border-color: var(--text-dim) !important;
+    box-shadow: none !important;
+}
+
+/* Small button variant */
+.btn-small {
+    padding: 3px 8px !important;
+    font-size: 0.9rem !important;
+}

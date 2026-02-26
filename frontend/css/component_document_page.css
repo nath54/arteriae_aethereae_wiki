@@ -224,3 +224,322 @@ DOCUMENTS PAGE
         max-height: 300px;
     }
 }
+
+/*
+── Context Menu & Modals
+*/
+.context-menu {
+    position: absolute;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    font-family: 'Gothica', sans-serif;
+    min-width: 150px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.context-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.context-menu li {
+    padding: 10px 16px;
+    cursor: pointer;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.context-menu li:hover {
+    background: rgba(0, 255, 255, 0.1);
+}
+
+.context-menu li.danger {
+    color: #ff5555;
+    border-top: 1px solid rgba(255, 85, 85, 0.2);
+}
+
+.context-menu li.danger:hover {
+    background: rgba(255, 85, 85, 0.1);
+}
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 8, 32, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    min-width: 400px;
+    padding: 30px;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    font-family: 'Balgruf', serif;
+    color: var(--aether-cyan);
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.move-tree-container {
+    background: rgba(10, 8, 32, 0.5);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+/*
+── Inline Creation Panels (New Folder / New Doc)
+*/
+.inline-panel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: rgba(0, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    animation: panel-slide-in 0.2s ease;
+}
+
+@keyframes panel-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.inline-panel-label {
+    color: var(--text-dim);
+    font-size: 1rem;
+    white-space: nowrap;
+}
+
+.inline-panel-label em {
+    color: var(--aether-cyan);
+    font-style: normal;
+}
+
+.inline-panel input[type="text"] {
+    flex: 1;
+    min-width: 180px;
+    padding: 7px 12px;
+    font-size: 1rem;
+}
+
+/*
+── Doc Editor
+*/
+.doc-editor-wrap {
+    padding: 0 !important;
+}
+
+/*
+── Move Tree Items
+*/
+.move-tree-root-item,
+.move-tree-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: background 0.15s;
+    user-select: none;
+    font-size: 1rem;
+}
+
+.move-tree-root-item:hover,
+.move-tree-item:hover {
+    background: rgba(0, 255, 255, 0.07);
+}
+
+.move-tree-root-item.selected,
+.move-tree-item.selected {
+    background: rgba(0, 255, 255, 0.15);
+    border-left: 2px solid var(--aether-cyan);
+    color: var(--aether-cyan);
+}
+
+.move-folder-toggle {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    opacity: 0.7;
+    transition: transform 0.2s;
+}
+
+.move-tree-children {
+    overflow: hidden;
+}
+
+.move-tree-children.collapsed {
+    display: none;
+}
+
+/*
+── Image Gallery
+*/
+.image-gallery-toolbar {
+    margin-bottom: 16px;
+}
+
+.image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    padding: 4px 2px;
+}
+
+.image-card {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.image-card:hover {
+    border-color: var(--aether-cyan-dim);
+    box-shadow: 0 4px 20px rgba(0, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.image-card-preview {
+    width: 100%;
+    height: 110px;
+    background: rgba(10, 8, 32, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.image-card-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-card-fallback {
+    font-size: 2.5rem;
+    opacity: 0.4;
+}
+
+.image-card-info {
+    padding: 8px 10px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.image-card-name {
+    font-family: 'Gothica', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.image-card-id {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Courier New', monospace;
+}
+
+.image-card-actions {
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px;
+    border-top: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+}
+
+/*
+── Toast Notification
+*/
+.doc-toast {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-family: 'Gothica', sans-serif;
+    font-size: 1rem;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+}
+
+.doc-toast-show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.doc-toast-success {
+    background: rgba(0, 200, 100, 0.15);
+    border: 1px solid rgba(0, 200, 100, 0.4);
+    color: #00e87a;
+}
+
+.doc-toast-error {
+    background: rgba(255, 50, 50, 0.15);
+    border: 1px solid rgba(255, 50, 50, 0.4);
+    color: #ff6666;
+}
+
+.doc-toast-info {
+    background: rgba(0, 200, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    color: var(--aether-cyan);
+}

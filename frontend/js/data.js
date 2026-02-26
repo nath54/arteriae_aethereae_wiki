@@ -50,6 +50,16 @@ class DataManager {
     }
 
     /**
+     * Forces a fresh reload of the manifest, bypassing the cache.
+     * Use this after any mutation (create, rename, move, copy, delete, upload).
+     * @returns {Promise<Object>} The freshly loaded manifest.
+     */
+    async reloadManifest() {
+        this.manifest = null;
+        return this.loadManifest();
+    }
+
+    /**
      * Fetches a specific entity's data. Hits the in-memory cache first.
      * memory limits apply to avoid blowing up memory over time.
      *

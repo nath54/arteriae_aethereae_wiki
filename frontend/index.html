@@ -129,6 +129,46 @@
         <div id="documents-content" class="page-body">
             <p class="placeholder-text">Documents page — coming soon.</p>
         </div>
+
+        <!-- Document Context Menu (hidden) -->
+        <div id="doc-context-menu" class="edit-only context-menu" style="display:none; position:fixed; z-index:3000;">
+            <ul>
+                <li id="ctx-btn-rename">✏️ Rename</li>
+                <li id="ctx-btn-move">📂 Move</li>
+                <li id="ctx-btn-copy">📋 Copy</li>
+                <li id="ctx-btn-delete" class="danger">🗑️ Delete</li>
+            </ul>
+        </div>
+
+        <!-- Rename Modal (hidden) -->
+        <div id="doc-rename-modal" class="edit-only modal-overlay" style="display:none !important;">
+            <div class="parchment-card modal-content">
+                <h3>✏️ Rename Item</h3>
+                <div class="form-group">
+                    <label>New Name:</label>
+                    <input type="text" id="doc-rename-input" placeholder="e.g. New Filename">
+                </div>
+                <div class="form-actions">
+                    <button class="tool-btn btn-muted" id="btn-cancel-rename">✖ Cancel</button>
+                    <button class="tool-btn" id="btn-confirm-rename">✔ Rename</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Move Modal (hidden) -->
+        <div id="doc-move-modal" class="edit-only modal-overlay" style="display:none !important;">
+            <div class="parchment-card modal-content">
+                <h3>📂 Move Item</h3>
+                <p style="color: var(--text-dim); margin-bottom: 10px;">Select destination folder:</p>
+                <div id="doc-move-tree-container" class="move-tree-container">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="form-actions">
+                    <button class="tool-btn btn-muted" id="btn-cancel-move">✖ Cancel</button>
+                    <button class="tool-btn" id="btn-confirm-move">✔ Move Here</button>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
