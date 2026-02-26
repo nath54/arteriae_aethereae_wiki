@@ -210,12 +210,17 @@
                         <input type="text" id="ev-name" value="${escAttr(existingData.name)}" required autofocus />
                     </div>
 
-                    <div style="display:flex; gap:10px;">
-                        <div class="edit-field" style="flex:1;">
+                    <hr style="margin: 10px;">
+
+                    <div style="display:flex; gap:10px; flex-direction: column; flex-wrap: wrap;">
+
+                        <b style="margin-top: 10px; margin-bottom: 10px; margin-left: 0;">Event Date</b>
+
+                        <div class="edit-field" style="display: flex; flex-direction: column;">
                             <label>Year</label>
                             <input type="number" id="ev-year" value="${existingData.date_year || existingData.date || ''}" placeholder="e.g. 15" />
                         </div>
-                        <div class="edit-field" style="flex:2;">
+                        <div class="edit-field" style="display: flex; flex-direction: column;">
                             <label>Month</label>
                             <select id="ev-month" style="padding:8px; background:var(--bg-lighter); color:white; border:1px solid var(--border-color); border-radius:4px; width:100%;">
                                 <option value="">-- None --</option>
@@ -238,6 +243,8 @@
                             <input type="number" id="ev-day" value="${existingData.date_day || ''}" min="1" max="28" placeholder="1-28" />
                         </div>
                     </div>
+
+                    <hr style="margin: 10px;">
 
                     <div class="edit-field">
                         <label>World</label>
