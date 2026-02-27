@@ -35,6 +35,24 @@
     "maps": {},
     "events": {},
     "documents": {
+        "characters/aeria": {
+            "name": "Aeria",
+            "_type": "data",
+            "file": "characters/aeria.json",
+            "ext": ".json"
+        },
+        "characters/aeron": {
+            "name": "Aeron",
+            "_type": "data",
+            "file": "characters/aeron.json",
+            "ext": ".json"
+        },
+        "characters/cadfael": {
+            "name": "Cadfael",
+            "_type": "data",
+            "file": "characters/cadfael.json",
+            "ext": ".json"
+        },
         "documents/calendrier_systeme": {
             "name": "Calendrier Systeme",
             "_type": "document",

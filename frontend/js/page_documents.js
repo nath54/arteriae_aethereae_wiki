@@ -458,6 +458,33 @@
      * @param {string} realPath    - Real filesystem relative path (e.g. "Histoire/v0/draft.md")
      */
     async function loadDocument(id, displayName, realPath) {
+        // Redirection for JSON files (entity categories)
+        if (realPath && realPath.toLowerCase().endsWith('.json')) {
+            const parts = realPath.split('/');
+            const category = parts[0]; // e.g., 'characters', 'places', 'maps', 'events'
+
+            // Generate entity ID by stripping category prefix and filename extension
+            // e.g., 'characters/protagonists/aeron.json' -> 'protagonists/aeron'
+            let entityId = parts.slice(1).join('/').replace(/\.json$/i, '');
+
+            // Special handling for places/maps which are stored as folders containing place.json/map.json
+            if (category === 'places' || category === 'maps') {
+                entityId = entityId.replace(/\/(place|map)$/i, '');
+                window.location.hash = `#places:${entityId}`;
+                return;
+            }
+
+            if (category === 'characters') {
+                window.location.hash = `#characters:${entityId}`;
+                return;
+            }
+
+            if (category === 'events') {
+                window.location.hash = `#timeline`; // Timeline doesn't support direct ID focus yet
+                return;
+            }
+        }
+
         const viewer = document.getElementById('doc-viewer');
         viewer.innerHTML = '<p class="doc-loading">Loading…</p>';
 

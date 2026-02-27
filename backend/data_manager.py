@@ -199,15 +199,6 @@ def build_manifest() -> dict[str, Any]:
                 f_path = os.path.join(root, file)
                 rel = os.path.relpath(f_path, docs_dir).replace("\\", "/")
 
-                # Check if this file is ALREADY registered in a category (avoid duplicates)
-                already_registered = False
-                for cat in DIRECTORIES:
-                    if rel.startswith(cat + "/"):
-                        already_registered = True
-                        break
-                if already_registered:
-                    continue
-
                 # Generate a document ID (relative path without extension)
                 doc_id = os.path.splitext(rel)[0]
                 # Generate a display name (title-cased filename, underscores to spaces)
