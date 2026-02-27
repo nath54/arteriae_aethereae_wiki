@@ -40,7 +40,6 @@ from backend.data_manager import (
     copy_document,
     delete_document_file,
     safe_join,
-    get_docs_dir,
     upload_image,
     list_images,
     delete_image,
@@ -378,7 +377,7 @@ def api_upload_document(
 
     print(f"DEBUG | api_upload_document | path: {path}, file: {file}")
 
-    docs_dir = get_docs_dir()
+    docs_dir = DATA_DIR
 
     # We want to upload directly to a certain folder context, so path is the destination directory
     dest_dir = safe_join(docs_dir, path) if path else docs_dir
@@ -398,9 +397,7 @@ def api_upload_document(
     build_manifest()
 
     # Return a markdown friendly path that points to from the frontend mapping
-    rel_file_path = os.path.relpath(
-        file_path, os.path.join(os.path.dirname(docs_dir))
-    ).replace("\\", "/")
+    rel_file_path = os.path.relpath(file_path, docs_dir).replace("\\", "/")
     return {"status": "success", "file_url": f"/data/{rel_file_path}"}
 
 

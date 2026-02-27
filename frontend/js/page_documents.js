@@ -435,8 +435,8 @@
         // Paths are absolute from the server root (/data/...) so they work when
         // served via FastAPI at any URL depth.
         const fetchPaths = [
-            realPath ? `/data/documents/${realPath}` : null,
-            `/data/documents/${id}`,
+            realPath ? `/data/${realPath}` : null,
+            `/data/${id}`,
         ].filter(Boolean);
 
         let content = null;

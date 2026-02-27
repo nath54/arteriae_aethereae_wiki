@@ -18,6 +18,6 @@ Write-Host "  Frontend: http://localhost:8000/frontend/index.html" -ForegroundCo
 
 . .venv\Scripts\Activate.ps1
 
-Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }
+# Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }
 
-uvicorn backend.main:app --reload --port 8000
+uvicorn backend.main:app --port 8000

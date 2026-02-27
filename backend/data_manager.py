@@ -43,11 +43,21 @@ def init_data_dirs() -> None:
     Called once during server startup. Always rebuilds the manifest to ensure
     it reflects the current filesystem state.
     """
+
+    # Create the data directory if it doesn't exist
     os.makedirs(DATA_DIR, exist_ok=True)
+
+    # Create the entity directories if they don't exist
     for d in DIRECTORIES:
         os.makedirs(os.path.join(DATA_DIR, d), exist_ok=True)
+
+    # Create the images directory if it doesn't exist
     os.makedirs(os.path.join(DATA_DIR, "images"), exist_ok=True)
+
+    # Create the documents directory if it doesn't exist
     os.makedirs(os.path.join(DATA_DIR, "documents"), exist_ok=True)
+
+    # Rebuild the manifest
     build_manifest()
 
 
@@ -269,7 +279,11 @@ def _entity_path(category: str, entity_id: str) -> str:
       - Simple IDs: "aeron"             → data/characters/aeron.json
       - Nested IDs: "protagonists/aeron" → data/characters/protagonists/aeron.json
     """
+
+    # Get the safe ID
     safe_id = entity_id.replace("\\", "/").strip("/")
+
+    # Return the absolute path to the file
     return os.path.join(DATA_DIR, category, safe_id + ".json")
 
 
@@ -284,9 +298,15 @@ def get_entity(category: str, entity_id: str) -> Optional[dict[str, Any]]:
     Returns:
         dict if found, None if the file does not exist.
     """
+
+    # Get the absolute path to the file
     f_path = _entity_path(category, entity_id)
+
+    # If the file doesn't exist, return None
     if not os.path.exists(f_path):
         return None
+
+    # Open and return the file
     with open(f_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -301,10 +321,18 @@ def save_entity(category: str, entity_id: str, data: dict) -> None:
         entity_id: Path-based ID (e.g. "protagonists/aeron").
         data:      Payload to serialize as JSON.
     """
+
+    # Get the absolute path to the file
     f_path = _entity_path(category, entity_id)
+
+    # Create parent directories as needed
     os.makedirs(os.path.dirname(f_path), exist_ok=True)
+
+    # Write the file
     with open(f_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
+    # Rebuild the manifest
     build_manifest()
 
 
@@ -315,11 +343,22 @@ def delete_entity(category: str, entity_id: str) -> bool:
     Returns:
         True if the file was found and deleted, False otherwise.
     """
+
+    # Get the absolute path to the file
     f_path = _entity_path(category, entity_id)
+
+    # If the file doesn't exist, return False
     if not os.path.exists(f_path):
+        # Return False if the file doesn't exist
         return False
+
+    # Delete the file
     os.remove(f_path)
+
+    # Rebuild the manifest
     build_manifest()
+
+    # Return True if deleted
     return True
 
 
@@ -331,31 +370,32 @@ def safe_join(base: str, *paths: str) -> str:
     Joins paths ensuring the result stays within the base directory.
     Raises ValueError on directory traversal attempts.
     """
+
+    # Join paths and resolve absolute path
     final_path = os.path.abspath(os.path.join(base, *paths))
+
+    # We want to avoid ../../../ things that can go to other directories
     if not final_path.startswith(os.path.abspath(base)):
         raise ValueError(f"Path traversal blocked: {final_path!r} is outside {base!r}")
+
+    # Return the final path
     return final_path
 
 
 # ── Document Operations ────────────────────────────────────────────────────────
 
 
-def get_docs_dir() -> str:
-    """Returns the absolute path to data/documents/."""
-    return os.path.join(DATA_DIR, "documents")
-
-
 def create_document(rel_path: str) -> bool:
     """
-    Creates a new empty Markdown document at data/documents/<rel_path>.
+    Creates a new empty Markdown document at data/<rel_path>.
     Creates parent directories automatically.
 
     Returns:
         True if created, False if the file already exists.
     """
 
-    # Get the absolute path to the documents directory
-    docs_dir = get_docs_dir()
+    # Get the absolute path to the base directory
+    docs_dir = DATA_DIR
 
     # Get the absolute path to the document file
     f_path = safe_join(docs_dir, rel_path)
@@ -384,12 +424,12 @@ def create_document(rel_path: str) -> bool:
 
 def write_document(rel_path: str, content: str) -> bool:
     """
-    Overwrites the content of a document at data/documents/<rel_path>.
+    Overwrites the content of a document at data/<rel_path>.
     Creates the file (and parent dirs) if it does not exist.
     """
 
-    # Get the absolute path to the documents directory
-    docs_dir = get_docs_dir()
+    # Get the absolute path to the base directory
+    docs_dir = DATA_DIR
 
     # Get the absolute path to the document file
     f_path = safe_join(docs_dir, rel_path)
@@ -439,24 +479,40 @@ def rename_document(old_rel_path: str, new_name: str) -> bool:
     Renames a document or folder.
 
     Args:
-        old_rel_path: Relative path from data/documents/ (e.g. "Histoire/v0/draft.md")
+        old_rel_path: Relative path from data/ (e.g. "Histoire/v0/draft.md")
         new_name:     New filename only, not a full path (e.g. "brouillon.md")
 
     Returns:
         True on success, False if source not found or target already exists.
     """
-    docs_dir = get_docs_dir()
+
+    # Get the base data directory
+    docs_dir = DATA_DIR
+
+    # Get the absolute path to the old document
     old_path = safe_join(docs_dir, old_rel_path)
+
+    # We can't rename a non existing document
     if not os.path.exists(old_path):
         return False
 
+    # Get the parent directory of the old document
     parent_dir = os.path.dirname(old_path)
+
+    # Get the absolute path to the new document
     new_path = safe_join(parent_dir, new_name)
+
+    # We can't rename a document to an existing one
     if os.path.exists(new_path):
         return False
 
+    # Rename the old document to the new name
     os.rename(old_path, new_path)
+
+    # Rebuild the manifest
     build_manifest()
+
+    # Return True if renamed
     return True
 
 
@@ -465,26 +521,43 @@ def move_document(old_rel_path: str, new_rel_dest_dir: str) -> bool:
     Moves a document or folder to a different directory.
 
     Args:
-        old_rel_path:    Source relative path from data/documents/
+        old_rel_path:    Source relative path from data/
         new_rel_dest_dir: Destination DIRECTORY relative path (not the full target path)
 
     Returns:
         True on success, False if source not found or target already exists.
     """
-    docs_dir = get_docs_dir()
+
+    # Get the base data directory
+    docs_dir = DATA_DIR
+
+    # Get the absolute path to the old document
     old_path = safe_join(docs_dir, old_rel_path)
+
+    # We can't move a non existing document
     if not os.path.exists(old_path):
         return False
 
+    # Get the absolute path to the destination directory
     dest_dir = safe_join(docs_dir, new_rel_dest_dir) if new_rel_dest_dir else docs_dir
+
+    # Create the destination directory if it doesn't exist
     os.makedirs(dest_dir, exist_ok=True)
 
+    # Get the absolute path to the new document
     new_path = safe_join(dest_dir, os.path.basename(old_path))
+
+    # We can't move a document to an existing one
     if os.path.exists(new_path):
         return False
 
+    # Move the old document to the new path
     shutil.move(old_path, new_path)
+
+    # Rebuild the manifest
     build_manifest()
+
+    # Return True if moved
     return True
 
 
@@ -495,48 +568,81 @@ def copy_document(rel_path: str) -> Optional[str]:
     Returns:
         Relative path of the new copy, or None on failure.
     """
-    docs_dir = get_docs_dir()
+
+    # Get the base data directory
+    docs_dir = DATA_DIR
+
+    # Get the absolute path to the old document
     old_path = safe_join(docs_dir, rel_path)
+
+    # We can't copy a non existing document
     if not os.path.exists(old_path) or not os.path.isfile(old_path):
         return None
 
+    # Get the directory name and base name of the old document
     dir_name = os.path.dirname(old_path)
     base = os.path.basename(old_path)
     name, ext = os.path.splitext(base)
+
     # Strip any existing _copy_NN to avoid stacking suffixes
     base_clean = re.sub(r"_copy_\d+$", "", name)
 
+    # Counter to avoid name conflicts
     counter = 1
+
+    # Loop until we find a non existing path
     while True:
+        # Generate the new name with a counter
         new_name = f"{base_clean}_copy_{counter:02d}{ext}"
+
+        # Get the absolute path to the new document
         new_path = safe_join(dir_name, new_name)
+
+        # If the new path doesn't exist, break the loop
         if not os.path.exists(new_path):
             break
+
+        # Increment the counter
         counter += 1
 
+    # Copy the old document to the new path
     shutil.copy2(old_path, new_path)
+
+    # Rebuild the manifest
     build_manifest()
+
+    # Return the relative path of the new copy
     return os.path.relpath(new_path, docs_dir).replace("\\", "/")
 
 
 def delete_document_file(rel_path: str) -> bool:
     """
-    Deletes a document file or an entire folder (recursively) from data/documents/.
+    Deletes a document file or an entire folder (recursively) from data/.
 
     Returns:
         True if deleted, False if not found.
     """
-    docs_dir = get_docs_dir()
+
+    # Get the base data directory
+    docs_dir = DATA_DIR
+
+    # Get the absolute path to the document
     f_path = safe_join(docs_dir, rel_path)
+
+    # We can't delete a non existing document
     if not os.path.exists(f_path):
         return False
 
+    # Delete the document or folder
     if os.path.isdir(f_path):
         shutil.rmtree(f_path)
     else:
         os.remove(f_path)
 
+    # Rebuild the manifest
     build_manifest()
+
+    # Return True if deleted
     return True
 
 
@@ -559,21 +665,37 @@ def create_place(name: str, parent_id: Optional[str] = None) -> Optional[str]:
     Returns:
         The new place's path-based ID (e.g. "teria/risnia"), or None if it already exists.
     """
+
+    # Get the base data directory
     places_dir = os.path.join(DATA_DIR, "places")
+
+    # Get the folder name from the place name
     folder_name = name.lower().replace(" ", "_").replace("/", "_")
 
+    # If a parent ID is provided, create a nested place
     if parent_id:
         # Nested: resolve parent folder path
         parent_rel = parent_id.replace("/", os.sep)
+
+        # Get the absolute path to the place directory
         place_dir = safe_join(places_dir, parent_rel, folder_name)
+
+        # Get the place ID
         place_id = f"{parent_id}/{folder_name}"
+
+    # If no parent ID is provided, create a root place
     else:
+        # Get the absolute path to the place directory
         place_dir = safe_join(places_dir, folder_name)
+
+        # Get the place ID
         place_id = folder_name
 
+    # Check if the place already exists
     if os.path.exists(place_dir):
         return None  # Already exists
 
+    # Create the place directory
     os.makedirs(place_dir, exist_ok=True)
 
     # Write initial place.json
@@ -586,6 +708,8 @@ def create_place(name: str, parent_id: Optional[str] = None) -> Optional[str]:
         "gallery": [],
         "icon": None,
     }
+
+    # Write the place.json file
     with open(os.path.join(place_dir, "place.json"), "w", encoding="utf-8") as f:
         json.dump(place_data, f, indent=4, ensure_ascii=False)
 
@@ -598,10 +722,15 @@ def create_place(name: str, parent_id: Optional[str] = None) -> Optional[str]:
         "polygons": {},
         "layers": {},
     }
+
+    # Write the map.json file
     with open(os.path.join(place_dir, "map.json"), "w", encoding="utf-8") as f:
         json.dump(map_data, f, indent=4, ensure_ascii=False)
 
+    # Rebuild the manifest
     build_manifest()
+
+    # Return the place ID
     return place_id
 
 
@@ -609,7 +738,9 @@ def create_place(name: str, parent_id: Optional[str] = None) -> Optional[str]:
 
 
 def get_images_dir() -> str:
-    """Returns the absolute path to data/images/."""
+    """
+    Returns the absolute path to data/images/.
+    """
     return os.path.join(DATA_DIR, "images")
 
 
@@ -626,30 +757,57 @@ def upload_image(rel_dir: str, filename: str, data: bytes) -> Optional[str]:
         The public URL path (e.g. "/data/images/portraits/aeron.png") on success,
         or None if the file extension is not allowed.
     """
+
+    # Get the base images directory
     images_dir = get_images_dir()
+
+    # Get the absolute path to the destination directory
     dest_dir = safe_join(images_dir, rel_dir) if rel_dir else images_dir
     os.makedirs(dest_dir, exist_ok=True)
 
+    # Get the safe filename
     safe_filename = os.path.basename(filename)
+
+    # Get the file extension
     ext = os.path.splitext(safe_filename)[1].lower()
+
+    # Check if the file extension is allowed
     if ext not in IMAGE_EXTENSIONS:
         return None
 
+    # Get the absolute path to the file
     file_path = safe_join(dest_dir, safe_filename)
+
+    # Write the file
     with open(file_path, "wb") as f:
         f.write(data)
 
+    # Rebuild the manifest
     build_manifest()
+
+    # Get the relative path to the file
     rel_url = os.path.relpath(file_path, DATA_DIR).replace("\\", "/")
+
+    # Return the public URL path
     return f"/data/{rel_url}"
 
 
 def list_images() -> dict[str, Any]:
-    """Returns the images section of the current manifest."""
+    """
+    Returns the images section of the current manifest.
+    """
+
+    # Get the manifest path
     manifest_path = os.path.join(DATA_DIR, "manifest.json")
+
+    # If the manifest exists, return the images section
     if os.path.exists(manifest_path):
+        # Open and return the manifest
         with open(manifest_path, "r", encoding="utf-8") as f:
+            # Return the images section
             return json.load(f).get("images", {})
+
+    # Return an empty dictionary if the manifest doesn't exist
     return {}
 
 
@@ -660,10 +818,22 @@ def delete_image(rel_path: str) -> bool:
     Returns:
         True if deleted, False if not found or not a file.
     """
+
+    # Get the base images directory
     images_dir = get_images_dir()
+
+    # Get the absolute path to the file
     f_path = safe_join(images_dir, rel_path)
+
+    # If the file doesn't exist, return False
     if not os.path.exists(f_path) or not os.path.isfile(f_path):
         return False
+
+    # Delete the file
     os.remove(f_path)
+
+    # Rebuild the manifest
     build_manifest()
+
+    # Return True if deleted
     return True
