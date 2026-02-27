@@ -35,266 +35,356 @@
     "maps": {},
     "events": {},
     "documents": {
-        "calendrier_systeme": {
+        "documents/calendrier_systeme": {
             "name": "Calendrier Systeme",
             "_type": "document",
-            "file": "calendrier_systeme.md"
+            "file": "documents/calendrier_systeme.md",
+            "ext": ".md"
         },
-        "description_des_races": {
+        "documents/description_des_races": {
             "name": "Description Des Races",
             "_type": "document",
-            "file": "description_des_races.md"
+            "file": "documents/description_des_races.md",
+            "ext": ".md"
         },
-        "general": {
+        "documents/general": {
             "name": "General",
             "_type": "document",
-            "file": "general.md"
+            "file": "documents/general.md",
+            "ext": ".md"
         },
-        "inspirations": {
+        "documents/inspirations": {
             "name": "Inspirations",
             "_type": "document",
-            "file": "inspirations.md"
+            "file": "documents/inspirations.md",
+            "ext": ".md"
         },
-        "README": {
+        "documents/README": {
             "name": "Readme",
             "_type": "document",
-            "file": "README.md"
+            "file": "documents/README.md",
+            "ext": ".md"
         },
-        "éléments": {
+        "documents/éléments": {
             "name": "Éléments",
             "_type": "document",
-            "file": "éléments.md"
+            "file": "documents/éléments.md",
+            "ext": ".md"
         },
-        "Histoire/v1/Chapitre_0_L_arrivee_dans_un_nouveau_monde": {
+        "documents/Histoire/v1/Chapitre_0_L_arrivee_dans_un_nouveau_monde": {
             "name": "Chapitre 0 L Arrivee Dans Un Nouveau Monde",
             "_type": "document",
-            "file": "Histoire/v1/Chapitre_0_L_arrivee_dans_un_nouveau_monde.md"
+            "file": "documents/Histoire/v1/Chapitre_0_L_arrivee_dans_un_nouveau_monde.md",
+            "ext": ".md"
         },
-        "Personnages/Personnage_template": {
+        "documents/Personnages/Personnage_template": {
             "name": "Personnage Template",
             "_type": "document",
-            "file": "Personnages/Personnage_template.md"
+            "file": "documents/Personnages/Personnage_template.md",
+            "ext": ".md"
         },
-        "Personnages/Deos_Royal_Family/0_big_brother_Cadfael": {
+        "documents/Personnages/Deos_Royal_Family/0_big_brother_Cadfael": {
             "name": "0 Big Brother Cadfael",
             "_type": "document",
-            "file": "Personnages/Deos_Royal_Family/0_big_brother_Cadfael.md"
+            "file": "documents/Personnages/Deos_Royal_Family/0_big_brother_Cadfael.md",
+            "ext": ".md"
         },
-        "Personnages/Deos_Royal_Family/0_Twins_Aeria": {
+        "documents/Personnages/Deos_Royal_Family/0_Twins_Aeria": {
             "name": "0 Twins Aeria",
             "_type": "document",
-            "file": "Personnages/Deos_Royal_Family/0_Twins_Aeria.md"
+            "file": "documents/Personnages/Deos_Royal_Family/0_Twins_Aeria.md",
+            "ext": ".md"
         },
-        "Personnages/Deos_Royal_Family/0_Twins_Aeron": {
+        "documents/Personnages/Deos_Royal_Family/0_Twins_Aeron": {
             "name": "0 Twins Aeron",
             "_type": "document",
-            "file": "Personnages/Deos_Royal_Family/0_Twins_Aeron.md"
+            "file": "documents/Personnages/Deos_Royal_Family/0_Twins_Aeron.md",
+            "ext": ".md"
         },
-        "Personnages/Deos_Royal_Family/1_father_king_Darian": {
+        "documents/Personnages/Deos_Royal_Family/1_father_king_Darian": {
             "name": "1 Father King Darian",
             "_type": "document",
-            "file": "Personnages/Deos_Royal_Family/1_father_king_Darian.md"
+            "file": "documents/Personnages/Deos_Royal_Family/1_father_king_Darian.md",
+            "ext": ".md"
         },
-        "Personnages/Deos_Royal_Family/1_mother_queen_Lysandra": {
+        "documents/Personnages/Deos_Royal_Family/1_mother_queen_Lysandra": {
             "name": "1 Mother Queen Lysandra",
             "_type": "document",
-            "file": "Personnages/Deos_Royal_Family/1_mother_queen_Lysandra.md"
+            "file": "documents/Personnages/Deos_Royal_Family/1_mother_queen_Lysandra.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/0_Femme_du_marchand_Elise_Bulon": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/0_Femme_du_marchand_Elise_Bulon": {
             "name": "0 Femme Du Marchand Elise Bulon",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/0_Femme_du_marchand_Elise_Bulon.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/0_Femme_du_marchand_Elise_Bulon.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/0_Fille_du_marchand_Marie_Bulon": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/0_Fille_du_marchand_Marie_Bulon": {
             "name": "0 Fille Du Marchand Marie Bulon",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/0_Fille_du_marchand_Marie_Bulon.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/0_Fille_du_marchand_Marie_Bulon.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/0_Marchand_Malvin_Bulon": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/0_Marchand_Malvin_Bulon": {
             "name": "0 Marchand Malvin Bulon",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/0_Marchand_Malvin_Bulon.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/0_Marchand_Malvin_Bulon.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/1_Maire_Jean-Pierre_Girond": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/1_Maire_Jean-Pierre_Girond": {
             "name": "1 Maire Jean-Pierre Girond",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/1_Maire_Jean-Pierre_Girond.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/1_Maire_Jean-Pierre_Girond.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/2_Boulangere_": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/2_Boulangere_": {
             "name": "2 Boulangere ",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/2_Boulangere_.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/2_Boulangere_.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/2_Forgeron_": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/2_Forgeron_": {
             "name": "2 Forgeron ",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/2_Forgeron_.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/2_Forgeron_.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/3_Paysanne_": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/3_Paysanne_": {
             "name": "3 Paysanne ",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/3_Paysanne_.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/3_Paysanne_.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/3_Paysan_": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/3_Paysan_": {
             "name": "3 Paysan ",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/3_Paysan_.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/3_Paysan_.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/4_Pretre_": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/4_Pretre_": {
             "name": "4 Pretre ",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/4_Pretre_.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/4_Pretre_.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/5_Tisserande_": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/5_Tisserande_": {
             "name": "5 Tisserande ",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/5_Tisserande_.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/5_Tisserande_.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/6_Fermier_": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/6_Fermier_": {
             "name": "6 Fermier ",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/6_Fermier_.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/6_Fermier_.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Village_Bruine/7_Paysan_": {
+        "documents/Personnages/Teria/Risnia/Village_Bruine/7_Paysan_": {
             "name": "7 Paysan ",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Village_Bruine/7_Paysan_.md"
+            "file": "documents/Personnages/Teria/Risnia/Village_Bruine/7_Paysan_.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Ville_Montcre/0_Maitre_arts_martiaux": {
+        "documents/Personnages/Teria/Risnia/Ville_Montcre/0_Maitre_arts_martiaux": {
             "name": "0 Maitre Arts Martiaux",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Ville_Montcre/0_Maitre_arts_martiaux.md"
+            "file": "documents/Personnages/Teria/Risnia/Ville_Montcre/0_Maitre_arts_martiaux.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Risnia/Ville_Montcre/1_Magicienne_Marianne": {
+        "documents/Personnages/Teria/Risnia/Ville_Montcre/1_Magicienne_Marianne": {
             "name": "1 Magicienne Marianne",
             "_type": "document",
-            "file": "Personnages/Teria/Risnia/Ville_Montcre/1_Magicienne_Marianne.md"
+            "file": "documents/Personnages/Teria/Risnia/Ville_Montcre/1_Magicienne_Marianne.md",
+            "ext": ".md"
         },
-        "Personnages/Teria/Senka/0_Danha": {
+        "documents/Personnages/Teria/Senka/0_Danha": {
             "name": "0 Danha",
             "_type": "document",
-            "file": "Personnages/Teria/Senka/0_Danha.md"
+            "file": "documents/Personnages/Teria/Senka/0_Danha.md",
+            "ext": ".md"
         },
-        "Timeline/Timeline_Principale_Maria": {
+        "documents/Timeline/Timeline_Principale_Maria": {
             "name": "Timeline Principale Maria",
             "_type": "document",
-            "file": "Timeline/Timeline_Principale_Maria.md"
+            "file": "documents/Timeline/Timeline_Principale_Maria.md",
+            "ext": ".md"
         },
-        "Timeline/Timeline_Principale_Teria": {
+        "documents/Timeline/Timeline_Principale_Teria": {
             "name": "Timeline Principale Teria",
             "_type": "document",
-            "file": "Timeline/Timeline_Principale_Teria.md"
+            "file": "documents/Timeline/Timeline_Principale_Teria.md",
+            "ext": ".md"
         },
-        "Univers/world": {
+        "documents/Univers/world": {
             "name": "World",
             "_type": "document",
-            "file": "Univers/world.md"
+            "file": "documents/Univers/world.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Capitale_Dessusavo/Capitale_Dessusavo": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Capitale_Dessusavo/Capitale_Dessusavo": {
             "name": "Capitale Dessusavo",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Capitale_Dessusavo/Capitale_Dessusavo.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Capitale_Dessusavo/Capitale_Dessusavo.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Abyra/Ville_Abyra": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Abyra/Ville_Abyra": {
             "name": "Ville Abyra",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Abyra/Ville_Abyra.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Abyra/Ville_Abyra.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Athemakouke/Ville_Athemakouke": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Athemakouke/Ville_Athemakouke": {
             "name": "Ville Athemakouke",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Athemakouke/Ville_Athemakouke.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Athemakouke/Ville_Athemakouke.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Colis/Ville_Colis": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Colis/Ville_Colis": {
             "name": "Ville Colis",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Colis/Ville_Colis.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Colis/Ville_Colis.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Jukroite_Ile/Ville_Jukroite_Ile": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Jukroite_Ile/Ville_Jukroite_Ile": {
             "name": "Ville Jukroite Ile",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Jukroite_Ile/Ville_Jukroite_Ile.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Jukroite_Ile/Ville_Jukroite_Ile.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Leontumnama/Ville_Leontumnama": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Leontumnama/Ville_Leontumnama": {
             "name": "Ville Leontumnama",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Leontumnama/Ville_Leontumnama.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Leontumnama/Ville_Leontumnama.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Lepliosse_Ile/Ville_Lepliosse_Ile": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Lepliosse_Ile/Ville_Lepliosse_Ile": {
             "name": "Ville Lepliosse Ile",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Lepliosse_Ile/Ville_Lepliosse_Ile.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Lepliosse_Ile/Ville_Lepliosse_Ile.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Matis/Ville_Matis": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Matis/Ville_Matis": {
             "name": "Ville Matis",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Matis/Ville_Matis.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Matis/Ville_Matis.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Melarium/Ville_Melarium": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Melarium/Ville_Melarium": {
             "name": "Ville Melarium",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Melarium/Ville_Melarium.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Melarium/Ville_Melarium.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Sparteleu/Ville_Sparteleu": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Sparteleu/Ville_Sparteleu": {
             "name": "Ville Sparteleu",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Sparteleu/Ville_Sparteleu.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Sparteleu/Ville_Sparteleu.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Tempia/Ville_Tempia": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Tempia/Ville_Tempia": {
             "name": "Ville Tempia",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Tempia/Ville_Tempia.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Tempia/Ville_Tempia.md",
+            "ext": ".md"
         },
-        "Univers/Géographie/Teria/0_Exaucia/Ville_Tytos/Ville_Tytos": {
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Tytos/Ville_Tytos": {
             "name": "Ville Tytos",
             "_type": "document",
-            "file": "Univers/Géographie/Teria/0_Exaucia/Ville_Tytos/Ville_Tytos.md"
+            "file": "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Tytos/Ville_Tytos.md",
+            "ext": ".md"
         },
-        "Univers/Langues/Teria/Allemand_Terien": {
+        "documents/Univers/Langues/Teria/Allemand_Terien": {
             "name": "Allemand Terien",
             "_type": "document",
-            "file": "Univers/Langues/Teria/Allemand_Terien.md"
+            "file": "documents/Univers/Langues/Teria/Allemand_Terien.md",
+            "ext": ".md"
         },
-        "Univers/Langues/Teria/Anglais_Terien": {
+        "documents/Univers/Langues/Teria/Anglais_Terien": {
             "name": "Anglais Terien",
             "_type": "document",
-            "file": "Univers/Langues/Teria/Anglais_Terien.md"
+            "file": "documents/Univers/Langues/Teria/Anglais_Terien.md",
+            "ext": ".md"
         },
-        "Univers/Langues/Teria/Espanol_Terien": {
+        "documents/Univers/Langues/Teria/Espanol_Terien": {
             "name": "Espanol Terien",
             "_type": "document",
-            "file": "Univers/Langues/Teria/Espanol_Terien.md"
+            "file": "documents/Univers/Langues/Teria/Espanol_Terien.md",
+            "ext": ".md"
         },
-        "Univers/Langues/Teria/Francais_Terien": {
+        "documents/Univers/Langues/Teria/Francais_Terien": {
             "name": "Francais Terien",
             "_type": "document",
-            "file": "Univers/Langues/Teria/Francais_Terien.md"
+            "file": "documents/Univers/Langues/Teria/Francais_Terien.md",
+            "ext": ".md"
         },
-        "Univers/Langues/Teria/Grec_Terien": {
+        "documents/Univers/Langues/Teria/Grec_Terien": {
             "name": "Grec Terien",
             "_type": "document",
-            "file": "Univers/Langues/Teria/Grec_Terien.md"
+            "file": "documents/Univers/Langues/Teria/Grec_Terien.md",
+            "ext": ".md"
         },
-        "Univers/Langues/Teria/Japonais_Terien": {
+        "documents/Univers/Langues/Teria/Japonais_Terien": {
             "name": "Japonais Terien",
             "_type": "document",
-            "file": "Univers/Langues/Teria/Japonais_Terien.md"
+            "file": "documents/Univers/Langues/Teria/Japonais_Terien.md",
+            "ext": ".md"
         },
-        "Univers/Langues/Teria/Latin_Terien": {
+        "documents/Univers/Langues/Teria/Latin_Terien": {
             "name": "Latin Terien",
             "_type": "document",
-            "file": "Univers/Langues/Teria/Latin_Terien.md"
+            "file": "documents/Univers/Langues/Teria/Latin_Terien.md",
+            "ext": ".md"
         },
-        "Univers/Langues/Teria/Mandarin_Terien": {
+        "documents/Univers/Langues/Teria/Mandarin_Terien": {
             "name": "Mandarin Terien",
             "_type": "document",
-            "file": "Univers/Langues/Teria/Mandarin_Terien.md"
+            "file": "documents/Univers/Langues/Teria/Mandarin_Terien.md",
+            "ext": ".md"
         },
-        "Univers/Religions/religions_teria": {
+        "documents/Univers/Religions/religions_teria": {
             "name": "Religions Teria",
             "_type": "document",
-            "file": "Univers/Religions/religions_teria.md"
+            "file": "documents/Univers/Religions/religions_teria.md",
+            "ext": ".md"
         }
     },
-    "images": {}
+    "images": {},
+    "folders": [
+        "characters",
+        "documents",
+        "events",
+        "folders",
+        "images",
+        "maps",
+        "places",
+        "documents/Histoire",
+        "documents/Personnages",
+        "documents/Timeline",
+        "documents/Univers",
+        "documents/Histoire/v1",
+        "documents/Personnages/Deos_Royal_Family",
+        "documents/Personnages/Teria",
+        "documents/Personnages/Teria/Risnia",
+        "documents/Personnages/Teria/Senka",
+        "documents/Personnages/Teria/Risnia/Village_Bruine",
+        "documents/Personnages/Teria/Risnia/Ville_Montcre",
+        "documents/Univers/Géographie",
+        "documents/Univers/Langues",
+        "documents/Univers/Religions",
+        "documents/Univers/Géographie/Teria",
+        "documents/Univers/Géographie/Teria/0_Exaucia",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Capitale_Dessusavo",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Abyra",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Athemakouke",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Colis",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Jukroite_Ile",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Leontumnama",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Lepliosse_Ile",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Matis",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Melarium",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Sparteleu",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Tempia",
+        "documents/Univers/Géographie/Teria/0_Exaucia/Ville_Tytos",
+        "documents/Univers/Langues/Teria"
+    ]
 }

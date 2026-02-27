@@ -61,7 +61,33 @@
     function buildTreeFromManifest() {
         const root = { name: 'Root', type: 'folder', children: [] };
         const manifestDocs = (window.db?.manifest?.documents) || {};
+        const manifestFolders = (window.db?.manifest?.folders) || [];
 
+        // 1. Ensure all explicit folders from manifest are present in the tree
+        for (const folderPath of manifestFolders) {
+            const parts = folderPath.split('/');
+            let level = root.children;
+
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                const pathSoFar = parts.slice(0, i + 1).join('/');
+
+                let folder = level.find(n => n.name === part && n.type === 'folder');
+                if (!folder) {
+                    folder = {
+                        name: part,
+                        type: 'folder',
+                        path: pathSoFar,
+                        icon: getFolderIcon(part),
+                        children: []
+                    };
+                    level.push(folder);
+                }
+                level = folder.children;
+            }
+        }
+
+        // 2. Add documents to their respective folders
         for (const [id, doc] of Object.entries(manifestDocs)) {
             const parts = doc.file.split('/');
             let level = root.children;
@@ -72,12 +98,14 @@
                 const pathSoFar = parts.slice(0, i + 1).join('/');
 
                 if (isLast) {
+                    // Use a different icon for JSON files vs Markdown
+                    const icon = doc.ext === '.json' ? '📦' : '📄';
                     level.push({
-                        name: doc.name || part.replace(/\.md$/i, ''),
+                        name: doc.name || part.replace(/\.(md|json)$/i, ''),
                         type: 'doc',
                         id,                // manifest document ID (slug)
                         path: doc.file,    // REAL filesystem relative path
-                        icon: '📄'
+                        icon: icon
                     });
                 } else {
                     let folder = level.find(n => n.name === part && n.type === 'folder');

@@ -65,60 +65,78 @@ def build_manifest() -> dict[str, Any]:
 
     Sections produced:
       characters, places, maps, events  — from recursive JSON walks
-      documents                         — from data/documents/ (.md files)
+      documents                         — from data/ (.md and .json files)
       images                            — from data/images/ (image files)
+      folders                           — all encountered directories (including empty ones)
 
     Returns:
         dict: The full manifest dictionary, also written to data/manifest.json.
     """
+    # Define the output path for the manifest file
     manifest_path = os.path.join(DATA_DIR, "manifest.json")
 
+    # Initialize the manifest structure
     manifest: dict[str, Any] = {
-        "characters": {},
-        "places": {},
-        "maps": {},
-        "events": {},
-        "documents": {},
-        "images": {},
+        "characters": {},  # Stores character metadata
+        "places": {},  # Stores place metadata
+        "maps": {},  # Stores map data
+        "events": {},  # Stores event timeline data
+        "documents": {},  # Stores general markdown and JSON documents
+        "images": {},  # Stores image references
+        "folders": [],  # List of all folders found in the data directory
     }
 
     # ── Scan entity JSON categories ──
+    # Iterate through established entity categories (characters, places, etc.)
     for category in DIRECTORIES:
+        # Resolve the absolute path to the category directory
         cat_dir = os.path.join(DATA_DIR, category)
+        # Skip if the directory doesn't exist
         if not os.path.exists(cat_dir):
             continue
 
-        # Walk recursively so nested folders (characters/protagonists/, places/teria/) work
+        # Walk recursively through the category directory
         for root, _, files in os.walk(cat_dir):
             for filename in files:
+                # We only care about .json files in these specific folders
                 if not filename.endswith(".json"):
                     continue
 
-                # Skip internal config files (prefixed with _)
+                # Skip internal configuration files or temporary files starting with underscore
                 if filename.startswith("_"):
                     continue
 
+                # Resolve the full absolute path of the file
                 f_path = os.path.join(root, filename)
 
-                # Path-based ID: relative to data/ category dir, no extension
+                # Generate a path-based ID: relative to the category root, extension removed
                 rel_from_cat = os.path.relpath(f_path, cat_dir)
                 entity_id = os.path.splitext(rel_from_cat)[0].replace("\\", "/")
 
                 try:
+                    # Open and parse the JSON file
                     with open(f_path, "r", encoding="utf-8") as f:
                         data: dict[str, Any] = json.load(f)
 
+                    # Extract common metadata for the manifest entry
                     entry: dict[str, Any] = {
-                        "name": data.get("name", entity_id.split("/")[-1]),
-                        "parent": data.get("parent", None),
-                        "type": data.get("type", None),
+                        "name": data.get(
+                            "name", entity_id.split("/")[-1]
+                        ),  # Fallback to filename
+                        "parent": data.get("parent", None),  # Hierarchy parent link
+                        "type": data.get(
+                            "type", None
+                        ),  # Domain-specific type (e.g., 'protagonist')
                         "_type": data.get(
-                            "_type", category.rstrip("s")
-                        ),  # e.g. "character"
-                        "file": rel_from_cat.replace("\\", "/"),
+                            "_type",
+                            category.rstrip(
+                                "s"
+                            ),  # Internal system type (e.g., 'character')
+                        ),
+                        "file": rel_from_cat.replace("\\", "/"),  # Relative file path
                     }
 
-                    # Category-specific extra fields for manifest
+                    # Add category-specific fields (like character icons or place descriptions)
                     if category == "characters":
                         entry["linked_characters"] = data.get("linked_characters", [])
                         entry["folder"] = data.get("folder", "")
@@ -127,50 +145,102 @@ def build_manifest() -> dict[str, Any]:
 
                     if category == "places":
                         if "description" in data:
+                            # Truncate description for the manifest to keep file size small
                             entry["description"] = str(data["description"])[:200]
 
+                    # Store the entity metadata in the manifest dictionary
                     manifest[category][entity_id] = entry
 
                 except Exception as e:  # pylint: disable=broad-except
+                    # Log errors but don't stop the whole scan
                     print(f"[manifest] Error reading {f_path}: {e}")
 
-    # ── Scan documents (data/documents/**/*.md) ──
-    docs_dir = os.path.join(DATA_DIR, "documents")
+    # ── Scan documents and folders (recursively through DATA_DIR) ──
+    # The user updated docs_dir to DATA_DIR to see everything
+    docs_dir = DATA_DIR
     if os.path.exists(docs_dir):
-        for root, _, files in os.walk(docs_dir):
+        # Walk the data directory recursively
+        for root, dirs, files in os.walk(docs_dir):
+            # Register directories (including empty ones)
+            for d in dirs:
+                # Get the relative path of the directory from the data root
+                d_rel = os.path.relpath(os.path.join(root, d), docs_dir).replace(
+                    "\\", "/"
+                )
+                # Avoid registering internal or system folders if needed
+                if d_rel not in manifest["folders"]:
+                    manifest["folders"].append(d_rel)
+
+            # Register files as documents
             for file in files:
-                if not file.endswith(".md"):
+                # We ignore files and folders that are already handled by established categories
+                # or are system files like manifest.json
+                if file == "manifest.json" or file.startswith("_"):
                     continue
+
+                # Get the file extension
+                ext = os.path.splitext(file)[1].lower()
+
+                # We only treat .md and .json files as documents
+                if ext not in [".md", ".json"]:
+                    continue
+
+                # Get the full path and relative path
                 f_path = os.path.join(root, file)
                 rel = os.path.relpath(f_path, docs_dir).replace("\\", "/")
-                doc_id = os.path.splitext(rel)[0]  # e.g. "Histoire/v0/draft"
+
+                # Check if this file is ALREADY registered in a category (avoid duplicates)
+                already_registered = False
+                for cat in DIRECTORIES:
+                    if rel.startswith(cat + "/"):
+                        already_registered = True
+                        break
+                if already_registered:
+                    continue
+
+                # Generate a document ID (relative path without extension)
+                doc_id = os.path.splitext(rel)[0]
+                # Generate a display name (title-cased filename, underscores to spaces)
                 doc_name = os.path.splitext(file)[0].replace("_", " ").title()
 
+                # Add the document to the manifest
                 manifest["documents"][doc_id] = {
                     "name": doc_name,
-                    "_type": "document",
-                    "file": rel,  # real filesystem path
+                    "_type": "document"
+                    if ext == ".md"
+                    else "data",  # Distinguish between markdown and raw JSON
+                    "file": rel,  # The real path used for fetching and operations
+                    "ext": ext,  # Keep the extension for frontend logic
                 }
 
     # ── Scan images (data/images/**/*) ──
+    # Resolve the images directory path
     images_dir = os.path.join(DATA_DIR, "images")
     if os.path.exists(images_dir):
+        # Walk recursively through images
         for root, _, files in os.walk(images_dir):
             for file in files:
+                # Filter by supported image extensions
                 ext = os.path.splitext(file)[1].lower()
                 if ext not in IMAGE_EXTENSIONS:
                     continue
+
+                # Resolve paths
                 f_path = os.path.join(root, file)
                 rel = os.path.relpath(f_path, images_dir).replace("\\", "/")
-                img_id = os.path.splitext(rel)[0]  # e.g. "portraits/aeron"
+
+                # Generate image ID and Name
+                img_id = os.path.splitext(rel)[0]
                 img_name = (
                     os.path.splitext(file)[0]
                     .replace("_", " ")
                     .replace("-", " ")
                     .title()
                 )
+                # Public URL for the frontend relative to server root
                 img_url = "/data/images/" + rel
 
+                # Add image metadata to the manifest
                 manifest["images"][img_id] = {
                     "name": img_name,
                     "_type": "image",
@@ -179,10 +249,12 @@ def build_manifest() -> dict[str, Any]:
                     "ext": ext,
                 }
 
-    # ── Write manifest ──
+    # ── Write the final manifest to disk ──
+    # Using ensure_ascii=False to support non-Latin characters if present
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=4, ensure_ascii=False)
 
+    # Return the manifest dictionary for immediate use in memory
     return manifest
 
 
