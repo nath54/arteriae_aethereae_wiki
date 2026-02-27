@@ -204,13 +204,13 @@
             const indent = depth * 16;
             if (node.type === 'folder') {
                 const isSelected = selectedFolderPath === node.path;
-                html += `<div class="doc-tree-folder folder-open ${isSelected ? 'selected' : ''}"
+                html += `<div class="doc-tree-folder ${isSelected ? 'selected' : ''}"
                               data-path="${node.path}" style="padding-left:${indent}px">
-                    <span class="folder-toggle">▼</span>
+                    <span class="folder-toggle">▶</span>
                     <span class="folder-icon">${node.icon || '📁'}</span>
                     <span class="folder-name">${node.name}</span>
                 </div>`;
-                html += `<div class="doc-tree-children">`;
+                html += `<div class="doc-tree-children collapsed">`;
                 if (node.children) html += renderTreeHtml(node.children, depth + 1, node.path);
                 html += `</div>`;
             } else {
@@ -398,23 +398,53 @@
     }
 
     function filterTree(container, query) {
-        const q = query.toLowerCase();
+        const q = query.toLowerCase().trim();
+        const items = container.querySelectorAll('.doc-tree-item');
+        const folders = container.querySelectorAll('.doc-tree-folder');
+
         if (!q) {
-            container.querySelectorAll('.doc-tree-item').forEach(i => { i.style.display = ''; });
-            container.querySelectorAll('.doc-tree-folder').forEach(f => {
+            // Restore default folded state
+            items.forEach(i => i.style.display = '');
+            folders.forEach(f => {
                 f.style.display = '';
-                f.classList.add('folder-open');
-                if (f.nextElementSibling) f.nextElementSibling.classList.remove('collapsed');
+                f.classList.remove('folder-open');
+                const toggle = f.querySelector('.folder-toggle');
+                if (toggle) toggle.textContent = '▶';
+                const children = f.nextElementSibling;
+                if (children && children.classList.contains('doc-tree-children')) {
+                    children.classList.add('collapsed');
+                }
             });
             return;
         }
-        container.querySelectorAll('.doc-tree-item').forEach(item => {
-            item.style.display = (item.dataset.name || '').toLowerCase().includes(q) ? '' : 'none';
-        });
-        container.querySelectorAll('.doc-tree-folder').forEach(f => {
-            f.style.display = '';
-            f.classList.add('folder-open');
-            if (f.nextElementSibling) f.nextElementSibling.classList.remove('collapsed');
+
+        // Search mode: hide everything initially
+        items.forEach(i => i.style.display = 'none');
+        folders.forEach(f => f.style.display = 'none');
+
+        // Show matching items and their parent chains
+        items.forEach(item => {
+            const name = (item.dataset.name || '').toLowerCase();
+            if (name.includes(q)) {
+                // Show the item
+                item.style.display = 'flex';
+
+                // Show and expand all parents
+                let parentChildren = item.parentElement;
+                while (parentChildren && parentChildren.classList.contains('doc-tree-children')) {
+                    const folder = parentChildren.previousElementSibling;
+                    if (folder && folder.classList.contains('doc-tree-folder')) {
+                        folder.style.display = 'flex';
+                        folder.classList.add('folder-open');
+                        const toggle = folder.querySelector('.folder-toggle');
+                        if (toggle) toggle.textContent = '▼';
+                        parentChildren.classList.remove('collapsed');
+                        parentChildren = folder.parentElement;
+                    } else {
+                        break;
+                    }
+                }
+            }
         });
     }
 
