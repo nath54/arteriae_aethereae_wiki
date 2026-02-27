@@ -34,7 +34,6 @@ DIRECTORIES: list[str] = ["characters", "places", "maps", "events"]
 # Image file extensions supported by the image library
 IMAGE_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
 
-
 # ── Initialisation ─────────────────────────────────────────────────────────────
 
 
@@ -132,7 +131,7 @@ def build_manifest() -> dict[str, Any]:
 
                     manifest[category][entity_id] = entry
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-except
                     print(f"[manifest] Error reading {f_path}: {e}")
 
     # ── Scan documents (data/documents/**/*.md) ──
@@ -282,15 +281,32 @@ def create_document(rel_path: str) -> bool:
     Returns:
         True if created, False if the file already exists.
     """
+
+    # Get the absolute path to the documents directory
     docs_dir = get_docs_dir()
+
+    # Get the absolute path to the document file
     f_path = safe_join(docs_dir, rel_path)
+
+    # Check if the document file already exists
     if os.path.exists(f_path):
         return False
+
+    # Create the parent directories if they don't exist
     os.makedirs(os.path.dirname(f_path), exist_ok=True)
+
+    # Create the document file
     with open(f_path, "w", encoding="utf-8") as f:
+        # Get the document name from the relative path
         name = os.path.splitext(os.path.basename(rel_path))[0].replace("_", " ").title()
+
+        # Write the document name to the file
         f.write(f"# {name}\n\n")
+
+    # Rebuild the manifest
     build_manifest()
+
+    # Return True if created
     return True
 
 
@@ -299,12 +315,24 @@ def write_document(rel_path: str, content: str) -> bool:
     Overwrites the content of a document at data/documents/<rel_path>.
     Creates the file (and parent dirs) if it does not exist.
     """
+
+    # Get the absolute path to the documents directory
     docs_dir = get_docs_dir()
+
+    # Get the absolute path to the document file
     f_path = safe_join(docs_dir, rel_path)
+
+    # Create the parent directories if they don't exist
     os.makedirs(os.path.dirname(f_path), exist_ok=True)
+
+    # Write the document content to the file
     with open(f_path, "w", encoding="utf-8") as f:
         f.write(content)
+
+    # Rebuild the manifest
     build_manifest()
+
+    # Return True if written
     return True
 
 

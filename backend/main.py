@@ -88,6 +88,8 @@ def startup_event() -> None:
     Currently, it ensures the required data directories exist.
     """
 
+    print("DEBUG | startup_event")
+
     # Initialize the data directories.
     init_data_dirs()
 
@@ -102,6 +104,8 @@ def read_root() -> RedirectResponse:
     Returns:
         RedirectResponse pointing to the frontend UI.
     """
+
+    print("DEBUG | read_root")
 
     # Redirect to the frontend index page.
     return RedirectResponse(url="/frontend/index.html")
@@ -118,6 +122,8 @@ def get_manifest() -> dict[str, Any]:
         dict representing the entire manifest JSON schema.
     """
 
+    print("DEBUG | get_manifest")
+
     # Get the manifest path.
     manifest_path = os.path.join(DATA_DIR, "manifest.json")
 
@@ -130,88 +136,6 @@ def get_manifest() -> dict[str, Any]:
         return json.load(f)
 
 
-# Reads a specific entity's full data payload from its JSON file.
-@app.get("/api/{category}/{entity_id}")
-def read_entity(category: str, entity_id: str) -> dict[str, Any]:
-    """
-    Reads a specific entity's full data payload from its JSON file.
-
-    Args:
-        category (str): The entity category (e.g., "characters", "places").
-        entity_id (str): The specific string ID (usually the filename without .json).
-
-    Returns:
-        dict containing the entity's full data.
-
-    Raises:
-        HTTPException (404) if the entity file cannot be found.
-    """
-
-    # Call the data manager to get the entity.
-    data = get_entity(category, entity_id)
-
-    # Raise an HTTPException if the entity was not found.
-    if data is None:
-        raise HTTPException(status_code=404, detail="Entity not found")
-
-    # Return the entity data.
-    return data
-
-
-# Writes or updates a specific entity's data to its corresponding JSON file.
-@app.post("/api/{category}/{entity_id}")
-def write_entity(category: str, entity_id: str, data: dict[str, Any]) -> dict[str, Any]:
-    """
-    Writes or updates a specific entity's data to its corresponding JSON file.
-    Called when saving changes securely from the frontend edit mode.
-
-    Args:
-        category (str): The entity category (e.g., "characters").
-        entity_id (str): The specific ID.
-        data (dict): The new entity JSON payload parsed as a Python dictionary.
-
-    Returns:
-        dict indicating success status and the echoed entity_id.
-    """
-
-    # Call the data manager to save the entity.
-    save_entity(category, entity_id, data)
-
-    # Return the entity ID along with a success message.
-    return {"status": "success", "entity_id": entity_id}
-
-
-# Deletes an entity by category and ID.
-@app.delete("/api/{category}/{entity_id}")
-def remove_entity(category: str, entity_id: str) -> dict[str, Any]:
-    """
-    Deletes an entity by category and ID.
-
-    Args:
-        category (str): The entity category.
-        entity_id (str): The specific ID.
-
-    Returns:
-        dict indicating deletion status.
-
-    Raises:
-        HTTPException (404) if the entity is not found to delete.
-
-    HOOK POINT: You can add cleanup code here if deleting an entity requires
-    removing associated images in `/res/` or cascading deletions in other linked entities.
-    """
-
-    # Call the data manager to delete the entity.
-    success = delete_entity(category, entity_id)
-
-    # Raise an HTTPException if the entity was not found.
-    if not success:
-        raise HTTPException(status_code=404, detail="Entity not found")
-
-    # Return the entity ID along with a success message.
-    return {"status": "deleted", "entity_id": entity_id}
-
-
 # Document specific endpoints
 
 
@@ -219,18 +143,37 @@ def remove_entity(category: str, entity_id: str) -> dict[str, Any]:
 async def api_create_document(request: Request) -> dict[str, Any]:
     """
     Creates a new document in the data/docs directory.
+
+    Args:
+        request (Request): The request object containing the JSON body.
+
+    Returns:
+        dict indicating success status and the echoed path.
+
+    Raises:
+        HTTPException (400) if the document already exists or the path is invalid.
     """
+
+    print(f"DEBUG | api_create_document | request: {request}")
+
+    # Try to get the JSON body data from the request
     try:
         data = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON body")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid JSON body") from e
 
+    # Get the path from the JSON body data
     path = data.get("path")
+
+    # Raise an HTTPException if the path is missing
     if not path:
         raise HTTPException(status_code=400, detail="Missing parameter: 'path'")
 
+    # Create the document and return the result
     if create_document(path):
         return {"status": "success", "path": path}
+
+    # If an error occurred, raise an HTTPException
     raise HTTPException(
         status_code=400, detail=f"Document '{path}' already exists or invalid path"
     )
@@ -240,11 +183,23 @@ async def api_create_document(request: Request) -> dict[str, Any]:
 async def api_write_document(request: Request) -> dict[str, Any]:
     """
     Writes a document to the data/docs directory.
+
+    Args:
+        request (Request): The request object containing the JSON body.
+
+    Returns:
+        dict indicating success status and the echoed path.
+
+    Raises:
+        HTTPException (400) if the document cannot be written.
     """
+
+    print(f"DEBUG | api_write_document | request: {request}")
+
     try:
         data = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON body")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid JSON body") from e
 
     path = data.get("path")
     content = data.get("content")
@@ -263,16 +218,33 @@ async def api_write_document(request: Request) -> dict[str, Any]:
 async def api_create_folder(request: Request) -> dict[str, Any]:
     """
     Creates a new folder in the data/docs directory.
+
+    Args:
+        request (Request): The request object containing the JSON body.
+
+    Returns:
+        dict indicating success status and the echoed path.
+
+    Raises:
+        HTTPException (400) if the folder already exists or the path is invalid.
     """
+
+    print(f"DEBUG | api_create_folder | request: {request}")
+
+    # Try to get the JSON body data from the request
     try:
         data = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON body")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid JSON body") from e
 
+    # Get the path from the JSON body data
     path = data.get("path")
+
+    # Raise an HTTPException if the path is missing
     if not path:
         raise HTTPException(status_code=400, detail="Missing parameter: 'path'")
 
+    # Create the folder and return the result
     if create_folder(path):
         return {"status": "success", "path": path}
     raise HTTPException(
@@ -284,11 +256,23 @@ async def api_create_folder(request: Request) -> dict[str, Any]:
 async def api_rename_document(request: Request) -> dict[str, Any]:
     """
     Renames a document or folder in the data/docs directory.
+
+    Args:
+        request (Request): The request object containing the JSON body.
+
+    Returns:
+        dict indicating success status.
+
+    Raises:
+        HTTPException (400) if the document or folder cannot be renamed.
     """
+
+    print(f"DEBUG | api_rename_document | request: {request}")
+
     try:
         data = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON body")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid JSON body") from e
 
     old_path = data.get("old_path")
     new_name = data.get("new_name")
@@ -302,7 +286,8 @@ async def api_rename_document(request: Request) -> dict[str, Any]:
         return {"status": "success"}
     raise HTTPException(
         status_code=400,
-        detail=f"Rename failed for '{old_path}' to '{new_name}' (file might not exist or name taken)",
+        detail=f"Rename failed for '{old_path}' to '{new_name}' \
+                 (file might not exist or name taken)",
     )
 
 
@@ -310,11 +295,23 @@ async def api_rename_document(request: Request) -> dict[str, Any]:
 async def api_move_document(request: Request) -> dict[str, Any]:
     """
     Moves a document or folder in the data/docs directory.
+
+    Args:
+        request (Request): The request object containing the JSON body.
+
+    Returns:
+        dict indicating success status.
+
+    Raises:
+        HTTPException (400) if the document or folder cannot be moved.
     """
+
+    print(f"DEBUG | api_move_document | request: {request}")
+
     try:
         data = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON body")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid JSON body") from e
 
     old_path = data.get("old_path")
     new_dest_dir = data.get("new_dest_dir")
@@ -335,11 +332,23 @@ async def api_move_document(request: Request) -> dict[str, Any]:
 async def api_copy_document(request: Request) -> dict[str, Any]:
     """
     Copies a document or folder in the data/docs directory.
+
+    Args:
+        request (Request): The request object containing the JSON body.
+
+    Returns:
+        dict indicating success status and the echoed new path.
+
+    Raises:
+        HTTPException (400) if the document or folder cannot be copied.
     """
+
+    print(f"DEBUG | api_copy_document | request: {request}")
+
     try:
         data = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON body")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid JSON body") from e
 
     path = data.get("path")
     if not path:
@@ -351,23 +360,23 @@ async def api_copy_document(request: Request) -> dict[str, Any]:
     raise HTTPException(status_code=400, detail=f"Copy failed for '{path}'")
 
 
-@app.delete("/api/documents/{path:path}")
-def api_delete_document(path: str) -> dict[str, Any]:
-    """
-    Deletes a document or folder from the data/docs directory.
-    """
-    if delete_document_file(path):
-        return {"status": "deleted", "path": path}
-    raise HTTPException(status_code=404, detail="File or folder not found")
-
-
 @app.post("/api/documents/upload")
 def api_upload_document(
     path: str = Form(...), file: UploadFile = File(...)
 ) -> dict[str, Any]:
     """
     Uploads a document or image to the data/docs directory.
+
+    Args:
+        path (str): Destination directory for the document or image.
+        file (UploadFile): The document or image file to upload.
+
+    Returns:
+        {"status": "success", "file_url": f"/data/{rel_file_path}"} on success.
+        HTTPException on failure.
     """
+
+    print(f"DEBUG | api_upload_document | path: {path}, file: {file}")
 
     docs_dir = get_docs_dir()
 
@@ -405,13 +414,19 @@ async def api_create_place(request: Request) -> dict[str, Any]:
     Nested places are created as subfolders of their parent.
 
     Args:
-        name:      Human-readable place name.
-        parent_id: Optional parent place path-based ID (e.g. "teria"). Empty = root.
+        request (Request): The request object containing the JSON body.
+
+    Returns:
+        {"status": "success", "place_id": place_id} on success.
+        HTTPException on failure.
     """
+
+    print(f"DEBUG | api_create_place | request: {request}")
+
     try:
         data = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON body")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid JSON body") from e
 
     name = data.get("name")
     parent_id = data.get("parent_id", "")
@@ -437,7 +452,17 @@ def api_upload_image(
     """
     Uploads an image to data/images/<path>/.
     Assigns it a slug-based ID during the next manifest rebuild.
+
+    Args:
+        path (str): Destination directory for the image.
+        file (UploadFile): The image file to upload.
+
+    Returns:
+        {"status": "success", "url": img_url} on success.
+        HTTPException on failure.
     """
+
+    print(f"DEBUG | api_upload_image | path: {path}, file: {file}")
 
     file_name: str = file.filename if file.filename else ""
 
@@ -456,7 +481,11 @@ def api_upload_image(
 def api_list_images() -> dict[str, Any]:
     """
     Returns all images tracked in the manifest.
+
+    Returns:
+        List of images.
     """
+    print("DEBUG | api_list_images")
     return list_images()
 
 
@@ -464,7 +493,123 @@ def api_list_images() -> dict[str, Any]:
 def api_delete_image(img_path: str) -> dict[str, Any]:
     """
     Deletes an image from data/images/.
+
+    Args:
+        img_path (str): Path to the image to delete.
+
+    Returns:
+        {"status": "deleted", "path": img_path} on success.
+        HTTPException on failure.
     """
+    print(f"DEBUG | api_delete_image | img_path: {img_path}")
     if delete_image(img_path):
         return {"status": "deleted", "path": img_path}
     raise HTTPException(status_code=404, detail="Image not found")
+
+
+@app.delete("/api/documents/{path:path}")
+def api_delete_document(path: str) -> dict[str, Any]:
+    """
+    Deletes a document or folder from the data/docs directory.
+
+    Args:
+        path (str): Path to the document or folder to delete.
+
+    Returns:
+        {"status": "deleted", "path": path} on success.
+        HTTPException on failure.
+    """
+    print(f"DEBUG | api_delete_document | path: {path}")
+    if delete_document_file(path):
+        return {"status": "deleted", "path": path}
+    raise HTTPException(status_code=404, detail="File or folder not found")
+
+
+# Reads a specific entity's full data payload from its JSON file.
+@app.get("/api/{category}/{entity_id}")
+def read_entity(category: str, entity_id: str) -> dict[str, Any]:
+    """
+    Reads a specific entity's full data payload from its JSON file.
+
+    Args:
+        category (str): The entity category (e.g., "characters", "places").
+        entity_id (str): The specific string ID (usually the filename without .json).
+
+    Returns:
+        dict containing the entity's full data.
+
+    Raises:
+        HTTPException (404) if the entity file cannot be found.
+    """
+
+    print(f"DEBUG | read_entity | category: {category}, entity_id: {entity_id}")
+
+    # Call the data manager to get the entity.
+    data = get_entity(category, entity_id)
+
+    # Raise an HTTPException if the entity was not found.
+    if data is None:
+        raise HTTPException(status_code=404, detail="Entity not found")
+
+    # Return the entity data.
+    return data
+
+
+# Writes or updates a specific entity's data to its corresponding JSON file.
+@app.post("/api/{category}/{entity_id}")
+def write_entity(category: str, entity_id: str, data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Writes or updates a specific entity's data to its corresponding JSON file.
+    Called when saving changes securely from the frontend edit mode.
+
+    Args:
+        category (str): The entity category (e.g., "characters").
+        entity_id (str): The specific ID.
+        data (dict): The new entity JSON payload parsed as a Python dictionary.
+
+    Returns:
+        dict indicating success status and the echoed entity_id.
+    """
+
+    print(
+        f"DEBUG | write_entity | category: {category}, entity_id: {entity_id}, data: {data}"
+    )
+
+    # Call the data manager to save the entity.
+    save_entity(category, entity_id, data)
+
+    # Return the entity ID along with a success message.
+    return {"status": "success", "entity_id": entity_id}
+
+
+# Deletes an entity by category and ID.
+@app.delete("/api/{category}/{entity_id}")
+def remove_entity(category: str, entity_id: str) -> dict[str, Any]:
+    """
+    Deletes an entity by category and ID.
+
+    Args:
+        category (str): The entity category.
+        entity_id (str): The specific ID.
+
+    Returns:
+        dict indicating deletion status.
+
+    Raises:
+        HTTPException (404) if the entity is not found to delete.
+
+    HOOK POINT: You can add cleanup code here if deleting an entity requires
+    removing associated images in `/res/` or cascading deletions in other linked entities.
+    """
+
+    print(f"DEBUG | remove_entity | category: {category}, entity_id: {entity_id}")
+
+    # Call the data manager to delete the entity.
+    success = delete_entity(category, entity_id)
+
+    # Raise an HTTPException if the entity was not found.
+    if not success:
+        raise HTTPException(status_code=404, detail="Entity not found")
+
+    # Return the entity ID along with a success message.
+    return {"status": "deleted", "entity_id": entity_id}
