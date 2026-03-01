@@ -14,6 +14,25 @@
     let activeContextNode = null; // { path: string, type: 'doc'|'folder', name: string }
     let contextMenuHideListener = null;
 
+    // Persist folder states
+    const STORAGE_KEY = 'wiki_open_folders';
+    const SCROLL_KEY = 'wiki_tree_scroll';
+    let openFolders = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+
+    function saveOpenFolders() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(openFolders)));
+    }
+
+    function saveScrollPosition(pos) {
+        localStorage.setItem(SCROLL_KEY, pos);
+    }
+
+    function getScrollPosition() {
+        return parseInt(localStorage.getItem(SCROLL_KEY) || '0', 10);
+    }
+
+
+
     // ─── Visibility Helpers ───────────────────────────────────────────────────
     // Use direct style.display manipulation — simple and reliable.
 
@@ -191,6 +210,12 @@
         }
         bindSearchEvents(container);
         setupContextMenus(container);
+
+        // Restore scroll position
+        const treeEl = container.querySelector('#doc-tree');
+        if (treeEl) {
+            treeEl.scrollTop = getScrollPosition();
+        }
     }
 
     /**
@@ -204,13 +229,14 @@
             const indent = depth * 16;
             if (node.type === 'folder') {
                 const isSelected = selectedFolderPath === node.path;
-                html += `<div class="doc-tree-folder ${isSelected ? 'selected' : ''}"
+                const isOpen = openFolders.has(node.path);
+                html += `<div class="doc-tree-folder ${isSelected ? 'selected' : ''} ${isOpen ? 'folder-open' : ''}"
                               data-path="${node.path}" style="padding-left:${indent}px">
-                    <span class="folder-toggle">▶</span>
+                    <span class="folder-toggle">${isOpen ? '▼' : '▶'}</span>
                     <span class="folder-icon">${node.icon || '📁'}</span>
                     <span class="folder-name">${node.name}</span>
                 </div>`;
-                html += `<div class="doc-tree-children collapsed">`;
+                html += `<div class="doc-tree-children ${isOpen ? '' : 'collapsed'}">`;
                 if (node.children) html += renderTreeHtml(node.children, depth + 1, node.path);
                 html += `</div>`;
             } else {
@@ -269,11 +295,31 @@
                 const children = folder.nextElementSibling;
                 if (children) {
                     children.classList.toggle('collapsed');
-                    folder.classList.toggle('folder-open');
-                    toggle.textContent = children.classList.contains('collapsed') ? '▶' : '▼';
+                    const isOpen = !children.classList.contains('collapsed');
+                    folder.classList.toggle('folder-open', isOpen);
+                    toggle.textContent = isOpen ? '▼' : '▶';
+
+                    if (isOpen) {
+                        openFolders.add(folder.dataset.path);
+                    } else {
+                        openFolders.delete(folder.dataset.path);
+                    }
+                    saveOpenFolders();
                 }
             });
         });
+
+        // Track scroll position
+        const treeEl = container.querySelector('#doc-tree');
+        if (treeEl) {
+            let scrollTimeout;
+            treeEl.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    saveScrollPosition(treeEl.scrollTop);
+                }, 100);
+            });
+        }
     }
 
     function updatePanelContextLabels(container) {
