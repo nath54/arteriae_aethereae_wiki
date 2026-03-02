@@ -1,0 +1,10 @@
+- Improve the character page folders UI, adds ability to copy / move / rename characters.
+- Refactor the whole relationship graph functionality, I don't want a global graph, but only to see the direct relationships of a character
+- Fix all the things that are not working in the Worlds & Map page
+- Remake the whole Timeline & Events page. The whole event system needs a full rethinking and rewrite.
+    - I want a non linear event system, with potential branches where two different actions can lead to different events, with a pseudo global variables system where we can indicate under which conditions we can go to which branch. To create a good and beautiful story graph
+    - I want the event system to be hierarchical & recursive, with boxes of sub events, that can also contains boxes of sub events, and so on. A box can have multiple input paths, and output paths for the different story lines / choices that can be linked to it. The goal is to have a system able to manage a very long & complex story with a lot of different choices and paths. We have to do an hierarchical system to be able to manage this.
+    - The events will still have a date, a title, a description, and the possibility to link characters and places to it.*
+    - There will be a special event that will split the story into different paths, and we can specify the conditions for each path, and the events that will be linked to each path.
+    - There will also be a special event that can merge different paths into one.
+    - The events paths and links UI have to be worked on well, it has to be beautiful, responsive and easy to use.
