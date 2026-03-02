@@ -2,8 +2,10 @@
     "name": "Cadfael",
     "type": "Major Character",
     "parent": "deos_royal_family",
-    "icon": null,
-    "gallery": [],
+    "icon": "/data/images/cadfael.png",
+    "gallery": [
+        "/data/images/cadfael.png"
+    ],
     "identity": {
         "firstName": "Cadfael",
         "lastName": "(Royal name)",
@@ -46,5 +48,7 @@
         "importance": "Major",
         "storyArc": "Bridge between twins' past and future, resistance leader",
         "futureDevelopment": "Reveals the twins' heritage, offers them a path"
-    }
+    },
+    "folder": "",
+    "linked_characters": []
 }

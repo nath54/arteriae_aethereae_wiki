@@ -196,7 +196,7 @@
             html += `<div class="char-card" data-id="${id}">
                 <div class="char-card-icon">
                     ${iconUrl
-                    ? `<img src="${iconUrl}" alt="${escapeAttr(data.name)}" loading="lazy">`
+                    ? `<img src="${iconUrl}" alt="${escapeAttr(data.name)}" loading="lazy" style="object-fit:cover;">`
                     : `<span class="char-card-placeholder">👤</span>`}
                 </div>
                 <h3 class="char-card-name">${escapeHtml(data.name || id)}</h3>
@@ -286,15 +286,16 @@
             <button class="char-sheet-back tool-btn" id="btn-back-chars">← All Characters</button>
             <div class="char-sheet-header">
                 <div class="char-sheet-icon">
-                    ${data.icon
-                ? `<img src="${data.icon}" alt="${escapeAttr(data.name)}">`
-                : `<span class="char-placeholder-large">👤</span>`}
+            ${data.icon
+                ? `<a href="${data.icon}" target="_blank" title="View full size" style="width: 100%; height: 100%;"><img src="${data.icon}" alt="${escapeAttr(data.name)}" style="object-fit:cover; width: 100%; height: 100%;"></a>`
+                : `<span class="char-placeholder-large">👤</span>`
+            }
                 </div>
                 <div class="char-sheet-title-block">
                     <h2 class="char-sheet-name">${escapeHtml(data.name)}</h2>
                     ${data.identity ? `<p class="char-sheet-subtitle">${escapeHtml(data.identity.titles || '')} ${data.identity.aliases ? '— ' + escapeHtml(data.identity.aliases) : ''}</p>` : ''}
                 </div>
-                <div class="char-sheet-actions edit-only">
+                <div class="char-sheet-actions edit-only" style="display:flex; gap:8px; flex-wrap: wrap; flex-direction: row-wrap;">
                     <button class="tool-btn" id="btn-edit-char" data-id="${id}">✏️ Edit</button>
                     <button class="tool-btn" id="btn-delete-char" data-id="${id}"
                         style="border-color:#ff5555;color:#ff5555;">🗑️ Delete</button>
@@ -331,7 +332,7 @@
         if (data.gallery?.length) {
             html += `<div class="char-section"><h3 class="char-section-title">🖼️ Gallery</h3><div class="char-gallery">`;
             data.gallery.forEach(url => {
-                html += `<img src="${url}" alt="Gallery image" class="char-gallery-img" loading="lazy">`;
+                html += `<a href="${url}" target="_blank" style="display:block; overflow:hidden; border-radius:8px;"><img src="${url}" alt="Gallery image" class="char-gallery-img" loading="lazy" style="object-fit:cover;"></a>`;
             });
             html += '</div></div>';
         }
@@ -383,9 +384,10 @@
             <h3 class="char-section-title">🖼️ Profile Image</h3>
             <div class="char-section-body" style="flex-direction:row;align-items:center;gap:20px;">
                 <div class="char-icon-clickable" id="char-icon-wrap" style="width:80px;height:80px;">
-                    ${iconUrl
+            ${iconUrl
                 ? `<img id="char-icon-preview" src="${iconUrl}" style="width:80px;height:80px;object-fit:cover;border-radius:50%;">`
-                : `<span id="char-icon-placeholder" style="font-size:3rem;opacity:0.6;">👤</span>`}
+                : `<span id="char-icon-placeholder" style="font-size:3rem;opacity:0.6;">👤</span>`
+            }
                 </div>
                 <div>
                     <button type="button" class="tool-btn" id="btn-pick-icon">🖼 Choose Icon</button>
@@ -446,7 +448,7 @@
                 <div class="gallery-edit-strip" id="gallery-edit-strip">
                     ${gallery.map((url, i) => `
                         <div class="gallery-thumb-edit" data-idx="${i}">
-                            <img src="${url}" alt="">
+                            <img src="${url}" alt="" style="object-fit:cover;">
                             <button type="button" class="gallery-thumb-remove" data-idx="${i}">✕</button>
                         </div>`).join('')}
                     <button type="button" class="gallery-add-btn" id="btn-add-gallery">＋</button>
@@ -501,7 +503,8 @@
             strip.innerHTML =
                 currentGallery.map((url, i) => `
                     <div class="gallery-thumb-edit" data-idx="${i}">
-                        <img src="${url}" alt="">
+                        <img src="${url}" alt="" style="object-fit:cover;">
+                        <a href="${url}" target="_blank" class="gallery-thumb-view" title="View full size">🔍</a>
                         <button type="button" class="gallery-thumb-remove" data-idx="${i}">✕</button>
                     </div>`).join('') +
                 `<button type="button" class="gallery-add-btn" id="btn-add-gallery">＋</button>`;

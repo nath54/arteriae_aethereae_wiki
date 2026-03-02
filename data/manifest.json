@@ -28,7 +28,7 @@
             "file": "cadfael.json",
             "linked_characters": [],
             "folder": "",
-            "icon": null
+            "icon": "/data/images/cadfael.png"
         }
     },
     "places": {},
@@ -156,7 +156,29 @@
             "ext": ".md"
         }
     },
-    "images": {},
+    "images": {
+        "cadfael": {
+            "name": "Cadfael",
+            "_type": "image",
+            "file": "cadfael.png",
+            "url": "/data/images/cadfael.png",
+            "ext": ".png"
+        },
+        "king_darian": {
+            "name": "King Darian",
+            "_type": "image",
+            "file": "king_darian.png",
+            "url": "/data/images/king_darian.png",
+            "ext": ".png"
+        },
+        "qween_lysandra": {
+            "name": "Qween Lysandra",
+            "_type": "image",
+            "file": "qween_lysandra.png",
+            "url": "/data/images/qween_lysandra.png",
+            "ext": ".png"
+        }
+    },
     "folders": [
         "characters",
         "documents",

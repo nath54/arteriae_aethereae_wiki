@@ -919,6 +919,7 @@
                                 <img src="${img.url}" alt="${img.name}" loading="lazy"
                                     onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
                                 <div class="image-card-fallback" style="display:none">🖼️</div>
+                                <a href="${img.url}" target="_blank" class="image-card-view-btn" title="View full size">🔍</a>
                             </div>
                             <div class="image-card-info">
                                 <span class="image-card-name" title="${img.name}">${img.name}</span>

@@ -103,7 +103,7 @@
                         <h3 class="char-section-title">🖼️ Gallery</h3>
                         <div class="char-gallery">`;
                     for (const img of data.gallery) {
-                        html += `<img src="${img}" alt="Gallery" class="char-gallery-img">`;
+                        html += `<a href="${img}" target="_blank" style="display:block; overflow:hidden; border-radius:8px;"><img src="${img}" alt="Gallery" class="char-gallery-img"></a>`;
                     }
                     html += '</div></div>';
                 }
@@ -167,7 +167,7 @@
         }
 
         for (const [id, data] of items) {
-            const iconUrl = data.icon ? `../data/places/${id}_icon.png` : null;
+            const iconUrl = data.icon || null;
 
             html += `
             <div class="place-card" data-id="${id}">
@@ -370,6 +370,9 @@
                         <h2 class="char-sheet-name">Editing: ${existingData.name}</h2>
                     </div>
                  </div>`;
+        const iconUrl = existingData.icon || null;
+        const gallery = existingData.gallery || [];
+
         html += `<form id="place-edit-form" class="char-section">
             <div class="char-section-body">
                 <div class="edit-field">
@@ -380,10 +383,27 @@
                     <label>Type</label>
                     <input type="text" id="edit-place-type" value="${escAttr(existingData.type || 'region')}" />
                 </div>
-                <div class="edit-field">
-                    <label>Icon path (filename from /data/places/)</label>
-                    <input type="text" id="edit-place-icon" value="${escAttr(existingData.icon ? existingData.icon.split('/').pop() : '')}" placeholder="e.g. place_icon.png" />
+                
+                <h3 class="char-section-title" style="margin-top: 15px;">🖼️ Profile Image</h3>
+                <div style="display:flex;align-items:center;gap:20px;margin-bottom:15px;">
+                    <div class="char-icon-clickable" id="place-icon-wrap" style="width:80px;height:80px;border-radius:10px;overflow:hidden;background:var(--glass-bg);display:flex;align-items:center;justify-content:center;">
+                        ${iconUrl
+                ? `<img id="place-icon-preview" src="${iconUrl}" style="width:100%;height:100%;object-fit:cover;">`
+                : `<span id="place-icon-placeholder" style="font-size:3rem;opacity:0.6;">🗺️</span>`}
+                    </div>
+                    <div>
+                        <button type="button" class="tool-btn" id="btn-pick-icon">🖼 Choose Icon</button>
+                        <input type="hidden" id="edit-place-icon" value="${escAttr(iconUrl || '')}">
+                        ${iconUrl ? `<button type="button" class="tool-btn btn-muted" id="btn-clear-icon" style="margin-top:8px;">✖ Clear</button>` : ''}
+                    </div>
                 </div>
+
+                <h3 class="char-section-title" style="margin-top: 15px;">🖼️ Gallery</h3>
+                <div class="gallery-edit-strip" id="gallery-edit-strip">
+                    <!-- populated dynamically -->
+                </div>
+                <input type="hidden" id="edit-place-gallery" value="${escAttr(JSON.stringify(gallery))}">
+
                 <div style="display:flex;gap:12px;margin-top:20px;">
                     <button type="submit" class="tool-btn" style="border-color:#4ecdc4;color:#4ecdc4;">💾 Save</button>
                     <button type="button" class="tool-btn" id="btn-cancel-edit-place">Cancel</button>
@@ -396,15 +416,90 @@
             renderPlacesView();
         });
 
+        // Icon picker setup
+        const iconInput = document.getElementById('edit-place-icon');
+        const iconWrap = document.getElementById('place-icon-wrap');
+
+        document.getElementById('btn-pick-icon').addEventListener('click', () => {
+            window.openImagePicker(img => {
+                iconInput.value = img.url;
+                iconWrap.innerHTML = `<img id="place-icon-preview" src="${img.url}" style="width:100%;height:100%;object-fit:cover;">`;
+
+                // Add clear button dynamically if it doesn't exist
+                if (!document.getElementById('btn-clear-icon')) {
+                    const clearBtn = document.createElement('button');
+                    clearBtn.type = 'button';
+                    clearBtn.className = 'tool-btn btn-muted';
+                    clearBtn.id = 'btn-clear-icon';
+                    clearBtn.style.marginTop = '8px';
+                    clearBtn.innerHTML = '✖ Clear';
+                    clearBtn.addEventListener('click', () => {
+                        iconInput.value = '';
+                        iconWrap.innerHTML = `<span id="place-icon-placeholder" style="font-size:3rem;opacity:0.6;">🗺️</span>`;
+                        clearBtn.remove();
+                    });
+                    iconInput.parentNode.appendChild(clearBtn);
+                }
+            }, { title: 'Choose Place Icon' });
+        });
+
+        // Initial bind for clear icon
+        const clearIconBtn = document.getElementById('btn-clear-icon');
+        if (clearIconBtn) {
+            clearIconBtn.addEventListener('click', () => {
+                iconInput.value = '';
+                iconWrap.innerHTML = `<span id="place-icon-placeholder" style="font-size:3rem;opacity:0.6;">🗺️</span>`;
+                clearIconBtn.remove();
+            });
+        }
+
+        // Gallery management
+        let currentGallery = [...gallery];
+
+        function rebuildGalleryStrip() {
+            const strip = document.getElementById('gallery-edit-strip');
+            const galleryInput = document.getElementById('edit-place-gallery');
+            strip.innerHTML =
+                currentGallery.map((url, i) => `
+                    <div class="gallery-thumb-edit" data-idx="${i}">
+                        <img src="${url}" alt="">
+                        <a href="${url}" target="_blank" class="gallery-thumb-view" title="View full size">🔍</a>
+                        <button type="button" class="gallery-thumb-remove" data-idx="${i}">✕</button>
+                    </div>`).join('') +
+                `<button type="button" class="gallery-add-btn" id="btn-add-gallery">＋</button>`;
+
+            galleryInput.value = JSON.stringify(currentGallery);
+
+            strip.querySelectorAll('.gallery-thumb-remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentGallery.splice(parseInt(btn.dataset.idx), 1);
+                    rebuildGalleryStrip();
+                });
+            });
+
+            document.getElementById('btn-add-gallery').addEventListener('click', () => {
+                window.openImagePicker(imgs => {
+                    const arr = Array.isArray(imgs) ? imgs : [imgs];
+                    arr.forEach(img => { if (!currentGallery.includes(img.url)) currentGallery.push(img.url); });
+                    rebuildGalleryStrip();
+                }, { title: 'Add to Gallery', multiple: true });
+            });
+        }
+
+        rebuildGalleryStrip();
+
         document.getElementById('place-edit-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const desc = document.getElementById('edit-place-desc').value;
             const type = document.getElementById('edit-place-type').value;
-            const iconUrl = document.getElementById('edit-place-icon').value.trim();
+            const iconUrlVal = document.getElementById('edit-place-icon').value.trim();
 
-            const updatedData = { ...existingData, description: desc, type: type };
-            if (iconUrl) {
-                updatedData.icon = `../data/places/${iconUrl}`;
+            let galleryVal = [];
+            try { galleryVal = JSON.parse(document.getElementById('edit-place-gallery').value); } catch (_) { }
+
+            const updatedData = { ...existingData, description: desc, type: type, gallery: galleryVal };
+            if (iconUrlVal) {
+                updatedData.icon = iconUrlVal;
             } else {
                 delete updatedData.icon;
             }

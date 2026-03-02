@@ -182,7 +182,6 @@ CHARACTERS PAGE
 .char-sheet-actions {
     display: flex;
     gap: 8px;
-    flex-shrink: 0;
 }
 
 /*

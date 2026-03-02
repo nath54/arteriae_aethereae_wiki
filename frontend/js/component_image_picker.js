@@ -80,12 +80,20 @@
                 <div class="picker-img-thumb">
                     <img src="${img.url}" alt="${img.name}" loading="lazy"
                          onerror="this.style.display='none'">
+                    <a href="${img.url}" target="_blank" class="picker-img-view-btn" title="View full size">🔍</a>
                 </div>
                 <div class="picker-img-label">${img.name}</div>
             </div>`).join('');
 
         // Bind card clicks
         gallery.querySelectorAll('.picker-img-card').forEach(card => {
+            const viewBtn = card.querySelector('.picker-img-view-btn');
+            if (viewBtn) {
+                viewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
             card.addEventListener('click', () => {
                 const imgObj = {
                     id: card.dataset.id,
@@ -104,8 +112,9 @@
                     }
                 } else {
                     // Single: select and close immediately
+                    const cb = _callback;
                     closeModal(modal);
-                    if (_callback) _callback(imgObj);
+                    if (cb) cb(imgObj);
                 }
             });
         });
@@ -148,8 +157,9 @@
         // Done (multi-select)
         modal.querySelector('#image-picker-done')?.addEventListener('click', () => {
             const result = [..._selected];
+            const cb = _callback;
             closeModal(modal);
-            if (_callback) _callback(result);
+            if (cb) cb(result);
         });
 
         // Cancel
