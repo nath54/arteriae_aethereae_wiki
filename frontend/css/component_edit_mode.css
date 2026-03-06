@@ -9,6 +9,10 @@ EDIT MODE
     display: none;
 }
 
+body:not(.edit-mode) .edit-only {
+    display: none !important;
+}
+
 body.edit-mode .edit-only {
     display: inline-flex;
 }

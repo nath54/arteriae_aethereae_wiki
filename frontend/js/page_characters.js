@@ -169,9 +169,6 @@
             html += `<button class="tool-btn" id="btn-add-character">+ Add Character</button>`;
         }
 
-        // Graph tab
-        html += `<button class="tool-btn" id="btn-char-graph">🕸️ Relationships</button>`;
-
         html += '</div>';
 
         // ── Folder cards ──
@@ -255,24 +252,8 @@
             addBtn.addEventListener('click', () => promptNewCharacter(container));
         }
 
-        // Relationship graph tab
-        const graphBtn = container.querySelector('#btn-char-graph');
-        if (graphBtn) {
-            graphBtn.addEventListener('click', () => {
-                if (window.renderGraphPage) {
-                    container.innerHTML = `
-                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-                            <button class="tool-btn" id="btn-back-from-graph">← Characters</button>
-                            <h2 style="font-family:'Balgruf',serif;color:var(--aether-cyan);margin:0;">🕸️ Character Relationships</h2>
-                        </div>
-                        <div id="graph-page-container" style="display:flex;height:600px;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--glass-border);"></div>`;
-                    document.getElementById('btn-back-from-graph').addEventListener('click', () => {
-                        renderCardGrid(container);
-                    });
-                    window.renderGraphPage(document.getElementById('graph-page-container'));
-                }
-            });
-        }
+        // Setup Context Menus
+        setupCharacterContextMenu(container);
     }
 
     // ─── Character Sheet ───────────────────────────────────────────────────────
@@ -295,10 +276,11 @@
                     <h2 class="char-sheet-name">${escapeHtml(data.name)}</h2>
                     ${data.identity ? `<p class="char-sheet-subtitle">${escapeHtml(data.identity.titles || '')} ${data.identity.aliases ? '— ' + escapeHtml(data.identity.aliases) : ''}</p>` : ''}
                 </div>
-                <div class="char-sheet-actions edit-only" style="display:flex; gap:8px; flex-wrap: wrap; flex-direction: row-wrap;">
-                    <button class="tool-btn" id="btn-edit-char" data-id="${id}">✏️ Edit</button>
+                <div class="char-sheet-actions" style="display:flex; gap:8px; flex-wrap: wrap;">
+                    <button class="tool-btn" id="btn-char-local-graph" data-id="${id}">🕸️ Relationships</button>
+                    ${window.isEditMode ? `<button class="tool-btn" id="btn-edit-char" data-id="${id}">✏️ Edit</button>
                     <button class="tool-btn" id="btn-delete-char" data-id="${id}"
-                        style="border-color:#ff5555;color:#ff5555;">🗑️ Delete</button>
+                        style="border-color:#ff5555;color:#ff5555;">🗑️ Delete</button>` : ''}
                 </div>
             </div>`;
 
@@ -341,6 +323,24 @@
         container.innerHTML = html;
 
         document.getElementById('btn-back-chars').addEventListener('click', () => renderCardGrid(container));
+
+        const graphBtn = document.getElementById('btn-char-local-graph');
+        if (graphBtn) {
+            graphBtn.addEventListener('click', () => {
+                if (window.renderGraphPage) {
+                    container.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                            <button class="tool-btn" id="btn-back-from-graph">← Character Sheet</button>
+                            <h2 style="font-family:'Balgruf',serif;color:var(--aether-cyan);margin:0;">🕸️ Relationships: ${escapeHtml(data.name || id)}</h2>
+                        </div>
+                        <div id="graph-page-container" style="display:flex;height:600px;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--glass-border);"></div>`;
+                    document.getElementById('btn-back-from-graph').addEventListener('click', () => {
+                        openCharacterSheet(id, container);
+                    });
+                    window.renderGraphPage(document.getElementById('graph-page-container'), id);
+                }
+            });
+        }
 
         const editBtn = document.getElementById('btn-edit-char');
         if (editBtn) editBtn.addEventListener('click', () => openCharacterEditor(id, data, container));
@@ -660,5 +660,239 @@
             }
         }
     });
+
+    // ─── Context Menu ─────────────────────────────────────────────────────────
+
+    let activeCharContextNode = null;
+    let charContextMenuHideListener = null;
+
+    function setupCharacterContextMenu(container) {
+        const menu = document.getElementById('char-context-menu');
+        if (!menu) return;
+
+        let pressTimer = null;
+
+        const showMenu = (e, path, type, name) => {
+            if (!window.isEditMode) return;
+            e.preventDefault();
+            e.stopPropagation();
+            activeCharContextNode = { path, type, name };
+
+            menu.style.display = 'block';
+
+            // Position: prefer pageX/Y (mouse), fallback to touch
+            const x = e.pageX ?? (e.touches?.[0]?.pageX ?? 0);
+            const y = e.pageY ?? (e.touches?.[0]?.pageY ?? 0);
+            const mW = menu.offsetWidth || 150;
+            const mH = menu.offsetHeight || 120;
+            menu.style.left = `${Math.min(x, window.innerWidth - mW - 8)}px`;
+            menu.style.top = `${Math.min(y, window.innerHeight + window.scrollY - mH - 8)}px`;
+        };
+
+        const hideMenu = () => { menu.style.display = 'none'; };
+
+        if (charContextMenuHideListener) {
+            document.removeEventListener('click', charContextMenuHideListener);
+        }
+        charContextMenuHideListener = hideMenu;
+        document.addEventListener('click', charContextMenuHideListener);
+
+        menu.addEventListener('click', e => e.stopPropagation());
+
+        container.querySelectorAll('.char-card').forEach(card => {
+            // Document API expects path starting inside data/, e.g. "characters/protagonists/aeron.json"
+            const realPath = `characters/${card.dataset.id}.json`;
+            const name = card.querySelector('.char-card-name')?.textContent || card.dataset.id;
+
+            card.addEventListener('contextmenu', e => showMenu(e, realPath, 'char', name));
+            card.addEventListener('touchstart', e => {
+                pressTimer = setTimeout(() => showMenu(e, realPath, 'char', name), 600);
+            });
+            card.addEventListener('touchend', () => clearTimeout(pressTimer));
+            card.addEventListener('touchmove', () => clearTimeout(pressTimer));
+        });
+
+        // Initialize actions once
+        if (!menu.dataset.initialized) {
+            menu.dataset.initialized = 'true';
+            document.getElementById('ctx-char-btn-rename').addEventListener('click', () => {
+                hideMenu(); handleCharMenuAction('rename', container);
+            });
+            document.getElementById('ctx-char-btn-move').addEventListener('click', () => {
+                hideMenu(); handleCharMenuAction('move', container);
+            });
+            document.getElementById('ctx-char-btn-copy').addEventListener('click', () => {
+                hideMenu(); handleCharMenuAction('copy', container);
+            });
+            setupCharModals(container);
+        }
+    }
+
+    function setupCharModals(container) {
+        const renameModal = document.getElementById('char-rename-modal');
+        const moveModal = document.getElementById('char-move-modal');
+
+        document.getElementById('btn-cancel-char-rename').addEventListener('click', () => renameModal.style.display = 'none');
+        document.getElementById('btn-cancel-char-move').addEventListener('click', () => moveModal.style.display = 'none');
+        renameModal.addEventListener('click', e => { if (e.target === renameModal) renameModal.style.display = 'none'; });
+        moveModal.addEventListener('click', e => { if (e.target === moveModal) moveModal.style.display = 'none'; });
+
+        // Rename confirm
+        document.getElementById('btn-confirm-char-rename').addEventListener('click', async () => {
+            const newName = document.getElementById('char-rename-input').value.trim();
+            if (!newName || !activeCharContextNode) return;
+
+            let nameWithExt = newName;
+            if (!nameWithExt.endsWith('.json')) nameWithExt += '.json';
+
+            const r = await fetch('/api/documents/rename', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ old_path: activeCharContextNode.path, new_name: nameWithExt })
+            });
+            if (r.ok) {
+                renameModal.style.display = 'none';
+                await updateCharacterInternalFolder(activeCharContextNode.path, newName, null);
+                await window.db.reloadManifest();
+                renderCardGrid(container);
+            } else { alert('Rename failed (file may already exist).'); }
+        });
+
+        // Move confirm
+        document.getElementById('btn-confirm-char-move').addEventListener('click', async () => {
+            if (!activeCharContextNode) return;
+            const destPath = moveModal.dataset.selectedDest || 'characters';
+            const r = await fetch('/api/documents/move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ old_path: activeCharContextNode.path, new_dest_dir: destPath })
+            });
+            if (r.ok) {
+                moveModal.style.display = 'none';
+                await updateCharacterInternalFolder(activeCharContextNode.path, null, destPath);
+                await window.db.reloadManifest();
+                renderCardGrid(container);
+            } else { alert('Move failed.'); }
+        });
+    }
+
+    /** Helper to fix the internal 'folder' and 'name' properties when moved/renamed via filesystem */
+    async function updateCharacterInternalFolder(oldPath, newNameStr, newDestDir) {
+        // oldPath is e.g. "characters/protagonists/aeron.json"
+        try {
+            // compute the new path
+            let newPathId;
+            let folderVal = '';
+
+            if (newNameStr) {
+                // renamed
+                const dirStr = oldPath.split('/').slice(1, -1).join('/'); // rm 'characters/' and 'aeron.json'
+                folderVal = dirStr;
+                const safeName = newNameStr.replace('.json', '');
+                newPathId = dirStr ? `${dirStr}/${safeName}` : safeName;
+            } else if (newDestDir) {
+                // moved (e.g. newDestDir "characters/npcs")
+                const safeName = oldPath.split('/').pop().replace('.json', '');
+                const destFolder = newDestDir.startsWith('characters/') ? newDestDir.substring(11) : (newDestDir === 'characters' ? '' : newDestDir);
+                folderVal = destFolder;
+                newPathId = destFolder ? `${destFolder}/${safeName}` : safeName;
+            }
+
+            if (newPathId) {
+                const data = await window.db.getEntity('characters', newPathId);
+                if (data) {
+                    data.folder = folderVal;
+                    if (newNameStr) {
+                        const rawName = newNameStr.replace('.json', '');
+                        // only overwrite name if it really needs to change (or maybe don't touch display name)
+                    }
+                    await window.db.saveEntity('characters', newPathId, data);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function handleCharMenuAction(action, container) {
+        if (!activeCharContextNode) return;
+        const { path, type, name } = activeCharContextNode;
+
+        if (action === 'copy') {
+            const r = await fetch('/api/documents/copy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path })
+            });
+            if (r.ok) {
+                await window.db.reloadManifest();
+                renderCardGrid(container);
+            } else { alert('Copy failed.'); }
+            return;
+        }
+
+        if (action === 'rename') {
+            const modal = document.getElementById('char-rename-modal');
+            const input = document.getElementById('char-rename-input');
+            input.value = name;
+            modal.style.display = 'flex';
+            input.focus();
+            input.select();
+        }
+
+        if (action === 'move') {
+            const modal = document.getElementById('char-move-modal');
+            modal.style.display = 'flex';
+            renderCharMoveTree();
+        }
+    }
+
+    function renderCharMoveTree() {
+        const container = document.getElementById('char-move-tree-container');
+        const modal = document.getElementById('char-move-modal');
+        const characters = window.db.manifest?.characters || {};
+        const folders = new Set();
+        folders.add(''); // Root
+
+        for (const id of Object.keys(characters)) {
+            const parts = id.split('/');
+            if (parts.length > 1) {
+                let p = '';
+                for (let i = 0; i < parts.length - 1; i++) {
+                    p = p ? p + '/' + parts[i] : parts[i];
+                    folders.add(p);
+                }
+            }
+        }
+
+        let html = '';
+        for (const f of Array.from(folders).sort()) {
+            const depth = f ? f.split('/').length : 0;
+            const indent = depth * 16;
+            const isSelected = modal.dataset.selectedDest === (f ? `characters/${f}` : 'characters');
+            html += `
+                <div class="move-tree-row ${isSelected ? 'selected' : ''}" 
+                     data-dest="${f ? 'characters/' + f : 'characters'}"
+                     style="padding-left: ${indent + 8}px; padding-top:4px; padding-bottom:4px; cursor:pointer;">
+                    📁 ${f || '(Root)'}
+                </div>`;
+        }
+        container.innerHTML = html;
+
+        container.querySelectorAll('.move-tree-row').forEach(row => {
+            row.addEventListener('click', () => {
+                container.querySelectorAll('.move-tree-row').forEach(r => r.classList.remove('selected'));
+                row.classList.add('selected');
+                modal.dataset.selectedDest = row.dataset.dest;
+            });
+        });
+
+        // Default select root if none
+        if (!modal.dataset.selectedDest) {
+            modal.dataset.selectedDest = 'characters';
+            const rootEl = container.querySelector('[data-dest="characters"]');
+            if (rootEl) rootEl.classList.add('selected');
+        }
+    }
 
 })();

@@ -1,4 +1,5 @@
-- Improve the character page folders UI, adds ability to copy / move / rename characters.
+[x] Bug fix: We can see some editors only things on the view only serverless mode
+[x] Improve the character page folders UI, adds ability to copy / move / rename characters.
 - Refactor the whole relationship graph functionality, I don't want a global graph, but only to see the direct relationships of a character
 - Fix all the things that are not working in the Worlds & Map page
 - Remake the whole Timeline & Events page. The whole event system needs a full rethinking and rewrite.

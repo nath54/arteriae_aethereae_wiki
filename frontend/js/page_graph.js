@@ -314,8 +314,30 @@
 
     // ─── Build graph data from manifest ───────────────────────────────────────
 
-    function buildGraphFromManifest() {
-        const characters = window.db?.manifest?.characters ?? {};
+    function buildGraphFromManifest(centerNodeId = null) {
+        let characters = window.db?.manifest?.characters || {};
+
+        if (centerNodeId) {
+            const filtered = {};
+            const center = characters[centerNodeId];
+            if (center) {
+                filtered[centerNodeId] = center;
+                // Add outward links
+                (center.linked_characters || []).forEach(linkId => {
+                    if (characters[linkId]) {
+                        filtered[linkId] = characters[linkId];
+                    }
+                });
+                // Add inward links
+                Object.entries(characters).forEach(([id, c]) => {
+                    if ((c.linked_characters || []).includes(centerNodeId)) {
+                        filtered[id] = c;
+                    }
+                });
+            }
+            characters = filtered;
+        }
+
         return Object.entries(characters).map(([id, c]) => ({
             id,
             name: c.name || id,
@@ -331,9 +353,10 @@
      * Called by page_characters.js when the Relationships tab is clicked.
      *
      * @param {HTMLElement} container
+     * @param {string|null} centerNodeId - If provided, only shows direct relationships
      */
-    function renderGraphPage(container) {
-        const nodes = buildGraphFromManifest();
+    function renderGraphPage(container, centerNodeId = null) {
+        const nodes = buildGraphFromManifest(centerNodeId);
 
         container.innerHTML = `
             <div class="graph-canvas-wrap" id="graph-wrap">
