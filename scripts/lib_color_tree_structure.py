@@ -100,7 +100,7 @@ class Recursive3dTree:
         end: tuple[int, int, int],
         parent: Optional["Recursive3dTree"] = None,
         current_depth: int = 0,
-        dividing_factor: int = 10,
+        dividing_factor: int | list[int] = 10,
         max_depth: int = 5,
     ):
 
@@ -114,13 +114,13 @@ class Recursive3dTree:
         self.current_depth: int = current_depth
 
         # Factor by which the current space (end - start) will be divided here and for children
-        self.dividing_factor: int = dividing_factor
+        self.dividing_factor: int | list[int] = dividing_factor
 
         # Size of the blocks managed from this tree branch
         self.block_size: tuple[int, int, int] = (
-            (self.end[0] - self.start[0]) // self.dividing_factor,
-            (self.end[1] - self.start[1]) // self.dividing_factor,
-            (self.end[2] - self.start[2]) // self.dividing_factor,
+            (self.end[0] - self.start[0]) // self.crt_dividing_factor(),
+            (self.end[1] - self.start[1]) // self.crt_dividing_factor(),
+            (self.end[2] - self.start[2]) // self.crt_dividing_factor(),
         )
 
         # Max depth of the tree
@@ -141,6 +141,18 @@ class Recursive3dTree:
 
         # Number of colors stored in the current tree branch recursively
         self.color_count: int = 0
+
+    def crt_dividing_factor(self) -> int:
+        """
+        Get current dividing factor
+        """
+
+        if isinstance(self.dividing_factor, int):
+            return self.dividing_factor
+        else:
+            return self.dividing_factor[
+                min(len(self.dividing_factor) - 1, self.current_depth)
+            ]
 
     def check_if_color_is_inside_tree_space(
         self, color: tuple[int, int, int], raise_error: bool = True
@@ -360,21 +372,26 @@ class Recursive3dTree:
                 # The colors set is not initialized, so we can return from the function
                 return from_color
 
-            # Get the closest color from the colors set, with a filter if needed
-            closest_color: tuple[int, int, int] = min(
-                [
-                    cl
-                    for cl in self.colors
-                    if filter_color is None or cl not in filter_color
-                ],
-                key=lambda color: cl_dist(from_color, color),
-            )
+            # Filter out the colors we don't want
+            potential_colors: list[tuple[int, int, int]] = [
+                cl
+                for cl in self.colors
+                if filter_color is None or cl not in filter_color
+            ]
 
-            # Return the closest color
-            return closest_color
+            # If there are still colors
+            if potential_colors:
+                # We return the closest one
+                return min(
+                    potential_colors,
+                    key=lambda color: cl_dist(from_color, color),
+                )
+
+            # No colors here after the filter
+            return None
 
         # Else, we need to do a growing circular search until we find a closest color
-        current_radius: int = 1
+        current_radius: int = 0
         radius_center: tuple[int, int, int] = self.get_color_sub_block(from_color)
 
         # To store a potential found closest color
@@ -392,20 +409,16 @@ class Recursive3dTree:
             surface_sub_blocks: list[tuple[int, int, int]] = (
                 get_surface_coordinates_of_3d_cube(
                     start=(
-                        radius_center[0] - current_radius,
-                        radius_center[1] - current_radius,
-                        radius_center[2] - current_radius,
+                        radius_center[0] - current_radius * self.block_size[0],
+                        radius_center[1] - current_radius * self.block_size[1],
+                        radius_center[2] - current_radius * self.block_size[2],
                     ),
                     end=(
-                        radius_center[0] + current_radius,
-                        radius_center[1] + current_radius,
-                        radius_center[2] + current_radius,
+                        radius_center[0] + current_radius * self.block_size[0],
+                        radius_center[1] + current_radius * self.block_size[1],
+                        radius_center[2] + current_radius * self.block_size[2],
                     ),
-                    sub_block_size=(
-                        self.block_size[0] // current_radius,
-                        self.block_size[1] // current_radius,
-                        self.block_size[2] // current_radius,
-                    ),
+                    sub_block_size=self.block_size,
                 )
             )
 
@@ -414,6 +427,9 @@ class Recursive3dTree:
                 # If the sub-block is not in the unexplored sub-blocks set, we can skip it
                 if (bx, by, bz) not in unexplored_sub_blocks:
                     continue
+
+                # We explored it, we can remove it from the unexplored sub-blocks
+                unexplored_sub_blocks.remove((bx, by, bz))
 
                 # Get the closest color from the sub-block
                 closest_color_from_block: Optional[tuple[int, int, int]] = (

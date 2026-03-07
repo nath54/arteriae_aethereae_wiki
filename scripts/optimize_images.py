@@ -11,10 +11,30 @@ import argparse
 
 from PIL import Image  # type: ignore  # pylint: disable=import-error
 
-import numpy as np  # type: ignore  # pylint: disable=import-error
-from numpy.typing import NDArray  # type: ignore  # pylint: disable=import-error
-
 from lib_color_tree_structure import Recursive3dTree
+
+
+# Function to get color tuple from pixel access
+def get_color_tuple(color_value: float | tuple[int, ...]) -> tuple[int, int, int]:
+    """
+    Ensure color value is tuple[int, int, int].
+
+    Args:
+        color_value (float | tuple[int, ...]): PixelAccess color value
+
+    Returns:
+        tuple[int, int, int]: Correct tuple format color
+    """
+
+    # Convert the color into RGB
+    if isinstance(color_value, float):
+        return (int(color_value), int(color_value), int(color_value))
+    else:
+        return (
+            color_value[0],
+            color_value[1],
+            color_value[2],
+        )
 
 
 # Function to optimize an image
@@ -37,7 +57,12 @@ def optimize_image(
     # Open the image
     image: Image.Image = Image.open(input_file)
 
-    #
+    print(f"DEBUG | Opened image {input_file}")
+
+    # Ensure it is RGB
+    image = image.convert("RGB")
+
+    # Get width and weight
     img_width: int = image.size[0]
     img_height: int = image.size[1]
 
@@ -60,8 +85,16 @@ def optimize_image(
         # Resize the image
         image = image.resize((target_image_width, target_image_height))
 
+    print(
+        f"DEBUG | Image size ({img_width}, {img_height})"
+        f" -> ({target_image_width}, {target_image_height})"
+    )
+
     # Get the image data
-    img_data: NDArray[np.uint8] = image.load()
+    img_data: Optional[Image.core.PixelAccess] = image.load()  # pylint: disable=c-extension-no-member
+
+    if img_data is None:
+        raise ValueError("Error while getting pixel access image")
 
     # Create the tree structure to efficiently process the image colors
     cl_tree: Recursive3dTree = Recursive3dTree(
@@ -85,11 +118,7 @@ def optimize_image(
     for x in range(0, target_image_width):
         for y in range(0, target_image_height):
             # Get the color
-            cl: tuple[int, int, int] = (
-                img_data[x, y, 0],
-                img_data[x, y, 1],
-                img_data[x, y, 2],
-            )
+            cl: tuple[int, int, int] = get_color_tuple(img_data[x, y])
 
             # Add the color to the tree
             cl_tree.add_color(cl)
@@ -107,6 +136,8 @@ def optimize_image(
     # In a first time,
     # we will randomly fuse two closest clusters
     while len(clusters) > max_color_number and failure_count < max_failures:
+        print(f"DEBUG | len(clusters) = {len(clusters)}")
+
         # Get a random cluster color
         cluster_center: tuple[int, int, int] = random.choice(list(clusters.keys()))
 
@@ -170,16 +201,10 @@ def optimize_image(
     for x in range(0, target_image_width):
         for y in range(0, target_image_height):
             # Get the color
-            cl = (
-                img_data[x, y, 0],
-                img_data[x, y, 1],
-                img_data[x, y, 2],
-            )
+            cl = get_color_tuple(img_data[x, y])
 
             # Update to the final mapped color
-            img_data[x, y, 0] = final_color_map[cl][0]
-            img_data[x, y, 1] = final_color_map[cl][1]
-            img_data[x, y, 2] = final_color_map[cl][2]
+            img_data[x, y] = final_color_map[cl]
 
     # Save the image
     image.save(output_file, optimize=True)
@@ -191,30 +216,39 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Optimize images.")
 
     # Add arguments
-    parser.add_argument("input_file", type=str, required=True, help="Input file.")
-    parser.add_argument("output_file", type=str, required=True, help="Output file.")
     parser.add_argument(
-        "max_img_size",
+        "-i", "--input", dest="input_file", type=str, help="Input file.", required=True
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        dest="output_file",
+        type=str,
+        help="Output file.",
+        required=True,
+    )
+    parser.add_argument(
+        "--max_img_size",
         type=int,
         default=512,
         help="Maximum image side size",
     )
     parser.add_argument(
-        "max_cl_nb",
+        "--max_cl_nb",
         type=int,
         default=20,
         help="Maximum color in the optimized image",
     )
     parser.add_argument(
-        "tree_subdividing",
-        type=int,
-        default=20,
+        "--tree_subdividing",
+        type=list,
+        default=[6, 4, 2],
         help="Color tree subdivisions at each level",
     )
     parser.add_argument(
-        "tree_depth",
+        "--tree_depth",
         type=int,
-        default=5,
+        default=2,
         help="Color tree depth",
     )
 
