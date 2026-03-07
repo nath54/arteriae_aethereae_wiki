@@ -410,8 +410,23 @@
                     <input type="text" name="folder" value="${escapeAttr(data.folder || currentFolder || '')}" />
                 </div>
                 <div class="edit-field">
-                    <label>Linked Characters <span style="font-size:0.8em;color:var(--text-dim);">(comma-separated IDs)</span></label>
-                    <input type="text" name="linked_characters" value="${escapeAttr((data.linked_characters || []).join(', '))}" />
+                    <label>Linked Characters</label>
+                    <div id="linked-chars-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                        ${(data.linked_characters || []).map(cid => {
+            const cName = window.db.manifest?.characters?.[cid]?.name || cid;
+            return `<span class="linked-char-chip" data-id="${escapeAttr(cid)}" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(155,89,255,0.15);border:1px solid rgba(155,89,255,0.4);border-radius:20px;font-size:0.9rem;color:var(--text-light);">
+                                ${escapeHtml(cName)}
+                                <button type="button" class="linked-char-remove" data-id="${escapeAttr(cid)}" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:1rem;padding:0 2px;line-height:1;">✕</button>
+                            </span>`;
+        }).join('')}
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <select id="linked-chars-select" style="flex:1;padding:8px;background:var(--glass-bg);color:white;border:1px solid var(--border-color);border-radius:4px;">
+                            <option value="">— Select a character —</option>
+                        </select>
+                        <button type="button" class="tool-btn" id="btn-add-linked-char" style="white-space:nowrap;">+ Link</button>
+                    </div>
+                    <input type="hidden" name="linked_characters" id="input-linked-chars" value="${escapeAttr(JSON.stringify(data.linked_characters || []))}" />
                 </div>
             </div>
         </div>`;
@@ -532,6 +547,55 @@
 
         rebuildGalleryStrip();
 
+        // ── Linked Characters Picker ──
+        let currentLinked = [...(data.linked_characters || [])];
+        const linkedInput = document.getElementById('input-linked-chars');
+        const linkedSelect = document.getElementById('linked-chars-select');
+        const linkedChipsDiv = document.getElementById('linked-chars-chips');
+
+        function populateLinkedSelect() {
+            const allChars = window.db.manifest?.characters || {};
+            linkedSelect.innerHTML = '<option value="">— Select a character —</option>';
+            for (const [cid, cData] of Object.entries(allChars)) {
+                if (cid === id) continue; // skip self
+                if (currentLinked.includes(cid)) continue; // skip already linked
+                const opt = document.createElement('option');
+                opt.value = cid;
+                opt.textContent = cData.name || cid;
+                linkedSelect.appendChild(opt);
+            }
+        }
+
+        function rebuildLinkedChips() {
+            linkedChipsDiv.innerHTML = '';
+            currentLinked.forEach(cid => {
+                const cName = window.db.manifest?.characters?.[cid]?.name || cid;
+                const chip = document.createElement('span');
+                chip.className = 'linked-char-chip';
+                chip.dataset.id = cid;
+                chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(155,89,255,0.15);border:1px solid rgba(155,89,255,0.4);border-radius:20px;font-size:0.9rem;color:var(--text-light);';
+                chip.innerHTML = `${escapeHtml(cName)} <button type="button" class="linked-char-remove" data-id="${escapeAttr(cid)}" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:1rem;padding:0 2px;line-height:1;">✕</button>`;
+                chip.querySelector('.linked-char-remove').addEventListener('click', () => {
+                    currentLinked = currentLinked.filter(x => x !== cid);
+                    linkedInput.value = JSON.stringify(currentLinked);
+                    rebuildLinkedChips();
+                    populateLinkedSelect();
+                });
+                linkedChipsDiv.appendChild(chip);
+            });
+            linkedInput.value = JSON.stringify(currentLinked);
+        }
+
+        populateLinkedSelect();
+
+        document.getElementById('btn-add-linked-char').addEventListener('click', () => {
+            const val = linkedSelect.value;
+            if (!val || currentLinked.includes(val)) return;
+            currentLinked.push(val);
+            rebuildLinkedChips();
+            populateLinkedSelect();
+        });
+
         // ── Save form ──
         document.getElementById('char-edit-form').addEventListener('submit', async e => {
             e.preventDefault();
@@ -548,7 +612,7 @@
                 } else if (field === 'gallery') {
                     try { updated.gallery = JSON.parse(val); } catch (_) { updated.gallery = []; }
                 } else if (field === 'linked_characters') {
-                    updated.linked_characters = val.split(',').map(s => s.trim()).filter(Boolean);
+                    try { updated.linked_characters = JSON.parse(val); } catch (_) { updated.linked_characters = []; }
                 } else if (field.includes('.')) {
                     const [sec, key] = field.split('.');
                     if (!updated[sec]) updated[sec] = {};
