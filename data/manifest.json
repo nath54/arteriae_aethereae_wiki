@@ -26,7 +26,12 @@
             "type": "Major Character",
             "_type": "character",
             "file": "cadfael.json",
-            "linked_characters": [],
+            "linked_characters": [
+                {
+                    "id": "aeria",
+                    "type": "sister"
+                }
+            ],
             "folder": "",
             "icon": "/data/images/cadfael.png"
         }

@@ -2,8 +2,8 @@
 [x] Improve the character page folders UI, adds ability to copy / move / rename characters.
 [ ] Refactor the whole relationship graph functionality, I don't want a global graph, but only to see the direct relationships of a character
     [ ] To fix, there are no longer global graphs, but I don't see anything on the local graphs. Event for characters without any relation ship, I want to see the central node of the graph being the character. And if there are relationships, I want to see all the characters to which it is linked, and the type of the relationship (parent, child, friend, brother, sister, etc.)
-    [ ] So each relation should have a type (just a basic free text input)
-    [ ] And I don't see any easy to use and beautiful relationships picker
+    [x] So each relation should have a type (just a basic free text input)
+    [x] And I don't see any easy to use and beautiful relationships picker
 [ ] Refactor and fix all the things that are not working in the Worlds & Map page
     [x] For the World / Places page, I don't really want the two panel / sides separation. I would like to have a full page like the left panel with all the details and information of the place element, and then as a sub-part after the word description and before the place gallery, I want to have a sub-part menu that will be a flex scrolling sub-div that is like the current right side panel.
     [x] When we create a new place, I would like that the app remembers the previous place type selection choice instead of always having the by default `region` type.

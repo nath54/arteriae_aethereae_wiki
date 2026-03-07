@@ -56,11 +56,13 @@
         _buildEdges() {
             const seen = new Set();
             this.nodes.forEach(n => {
-                (n.links || []).forEach(targetId => {
+                (n.links || []).forEach(link => {
+                    const targetId = typeof link === 'object' ? link.id : link;
+                    const linkType = typeof link === 'object' ? (link.type || '') : '';
                     const key = [n.id, targetId].sort().join('|');
                     if (!seen.has(key)) {
                         seen.add(key);
-                        this.edges.push({ a: n.id, b: targetId });
+                        this.edges.push({ a: n.id, b: targetId, type: linkType });
                     }
                 });
             });
@@ -158,16 +160,37 @@
             ctx.scale(this.zoom, this.zoom);
 
             // Edges
-            ctx.strokeStyle = EDGE_COLOR;
             ctx.lineWidth = 1.5;
             this.edges.forEach(e => {
                 const a = idx[e.a];
                 const b = idx[e.b];
                 if (!a || !b) return;
+
+                ctx.strokeStyle = EDGE_COLOR;
                 ctx.beginPath();
                 ctx.moveTo(a.x, a.y);
                 ctx.lineTo(b.x, b.y);
                 ctx.stroke();
+
+                // Edge label (relationship type)
+                if (e.type && this.zoom > 0.4) {
+                    const mx = (a.x + b.x) / 2;
+                    const my = (a.y + b.y) / 2;
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(200, 180, 255, 0.7)';
+                    ctx.font = `${11}px Gothica, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    // Background pill behind text
+                    const textWidth = ctx.measureText(e.type).width;
+                    ctx.fillStyle = 'rgba(20, 16, 50, 0.75)';
+                    ctx.beginPath();
+                    ctx.roundRect(mx - textWidth / 2 - 6, my - 9, textWidth + 12, 18, 9);
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(200, 180, 255, 0.85)';
+                    ctx.fillText(e.type, mx, my);
+                    ctx.restore();
+                }
             });
 
             // Nodes
@@ -317,20 +340,28 @@
     function buildGraphFromManifest(centerNodeId = null) {
         let characters = window.db?.manifest?.characters || {};
 
+        // Helper: normalize linked_characters (supports both legacy string[] and {id,type}[])
+        function normalizeLinks(linked) {
+            return (linked || []).map(lc =>
+                typeof lc === 'string' ? { id: lc, type: '' } : lc
+            );
+        }
+
         if (centerNodeId) {
             const filtered = {};
             const center = characters[centerNodeId];
             if (center) {
                 filtered[centerNodeId] = center;
                 // Add outward links
-                (center.linked_characters || []).forEach(linkId => {
-                    if (characters[linkId]) {
-                        filtered[linkId] = characters[linkId];
+                normalizeLinks(center.linked_characters).forEach(link => {
+                    if (characters[link.id]) {
+                        filtered[link.id] = characters[link.id];
                     }
                 });
                 // Add inward links
                 Object.entries(characters).forEach(([id, c]) => {
-                    if ((c.linked_characters || []).includes(centerNodeId)) {
+                    const links = normalizeLinks(c.linked_characters);
+                    if (links.some(lc => lc.id === centerNodeId)) {
                         filtered[id] = c;
                     }
                 });
@@ -341,7 +372,7 @@
         return Object.entries(characters).map(([id, c]) => ({
             id,
             name: c.name || id,
-            links: c.linked_characters || [],
+            links: normalizeLinks(c.linked_characters),
             icon: c.icon || null,
         }));
     }
@@ -386,8 +417,7 @@
 
         if (nodes.length === 0) {
             wrap.innerHTML = `<p class="placeholder-text" style="padding:40px;text-align:center;">
-                No characters with relationships yet.<br>
-                Add <em>linked_characters</em> in character editor to create connections.
+                No character data found.
             </p>`;
             return;
         }
@@ -406,7 +436,11 @@
                 </h3>
                 ${c.icon ? `<img src="${c.icon}" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;margin-bottom:10px;">` : ''}
                 <p style="font-size:0.9rem;color:var(--text-dim);">
-                    <b>Links:</b> ${(c.linked_characters || []).length} character(s)
+                    <b>Links:</b> ${((c.linked_characters || []).map(lc => {
+                const linkObj = typeof lc === 'string' ? { id: lc, type: '' } : lc;
+                const lName = window.db.manifest.characters[linkObj.id]?.name || linkObj.id;
+                return linkObj.type ? `${lName} <i style="opacity:0.7;">(${linkObj.type})</i>` : lName;
+            })).join(', ') || 'None'}
                 </p>
                 <button class="tool-btn" style="margin-top:12px;width:100%;"
                     onclick="window.location.hash='#characters'; setTimeout(()=>window.requestCharacterFocus && window.requestCharacterFocus('${id}'),300);">

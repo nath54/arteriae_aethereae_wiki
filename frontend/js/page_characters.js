@@ -300,13 +300,25 @@
             html += '</div></div>';
         }
 
-        // Linked characters
-        if (data.linked_characters?.length) {
+        // Linked characters (supports both legacy string[] and new {id,type}[] formats)
+        const normalizedLinks = (data.linked_characters || []).map(lc =>
+            typeof lc === 'string' ? { id: lc, type: '' } : lc
+        );
+        if (normalizedLinks.length) {
             html += `<div class="char-section">
                 <h3 class="char-section-title">🕸️ Connections</h3>
-                <div class="char-section-body">
-                    <div class="char-field"><span class="char-label">Linked:</span>
-                    <span class="char-value">${data.linked_characters.join(', ')}</span></div>
+                <div class="char-section-body" style="display:flex;flex-direction:column;gap:8px;">
+                    ${normalizedLinks.map(lc => {
+                const cName = window.db.manifest?.characters?.[lc.id]?.name || lc.id;
+                const cIcon = window.db.manifest?.characters?.[lc.id]?.icon;
+                return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(155,89,255,0.08);border:1px solid rgba(155,89,255,0.2);border-radius:8px;">
+                            <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;background:var(--glass-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                ${cIcon ? `<img src="${cIcon}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:1.1rem;">👤</span>`}
+                            </div>
+                            <span style="color:var(--aether-cyan);font-family:'Balgruf',serif;">${escapeHtml(cName)}</span>
+                            ${lc.type ? `<span style="color:var(--text-dim);font-size:0.85rem;margin-left:auto;font-style:italic;">${escapeHtml(lc.type)}</span>` : ''}
+                        </div>`;
+            }).join('')}
                 </div></div>`;
         }
 
@@ -411,22 +423,17 @@
                 </div>
                 <div class="edit-field">
                     <label>Linked Characters</label>
-                    <div id="linked-chars-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-                        ${(data.linked_characters || []).map(cid => {
-            const cName = window.db.manifest?.characters?.[cid]?.name || cid;
-            return `<span class="linked-char-chip" data-id="${escapeAttr(cid)}" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(155,89,255,0.15);border:1px solid rgba(155,89,255,0.4);border-radius:20px;font-size:0.9rem;color:var(--text-light);">
-                                ${escapeHtml(cName)}
-                                <button type="button" class="linked-char-remove" data-id="${escapeAttr(cid)}" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:1rem;padding:0 2px;line-height:1;">✕</button>
-                            </span>`;
-        }).join('')}
+                    <div id="linked-chars-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+                        <!-- Populated by JS -->
                     </div>
-                    <div style="display:flex;gap:8px;align-items:center;">
-                        <select id="linked-chars-select" style="flex:1;padding:8px;background:var(--glass-bg);color:white;border:1px solid var(--border-color);border-radius:4px;">
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <select id="linked-chars-select" style="flex:1;min-width:150px;padding:8px;background:var(--glass-bg);color:white;border:1px solid var(--border-color);border-radius:4px;">
                             <option value="">— Select a character —</option>
                         </select>
+                        <input type="text" id="linked-chars-type-input" placeholder="Relationship type (e.g. brother)" style="flex:1;min-width:140px;padding:8px;background:var(--glass-bg);color:white;border:1px solid var(--border-color);border-radius:4px;" />
                         <button type="button" class="tool-btn" id="btn-add-linked-char" style="white-space:nowrap;">+ Link</button>
                     </div>
-                    <input type="hidden" name="linked_characters" id="input-linked-chars" value="${escapeAttr(JSON.stringify(data.linked_characters || []))}" />
+                    <input type="hidden" name="linked_characters" id="input-linked-chars" value="" />
                 </div>
             </div>
         </div>`;
@@ -547,18 +554,23 @@
 
         rebuildGalleryStrip();
 
-        // ── Linked Characters Picker ──
-        let currentLinked = [...(data.linked_characters || [])];
+        // ── Linked Characters Picker (typed relationships) ──
+        // Normalize legacy string[] to {id, type}[]
+        let currentLinked = (data.linked_characters || []).map(lc =>
+            typeof lc === 'string' ? { id: lc, type: '' } : { ...lc }
+        );
         const linkedInput = document.getElementById('input-linked-chars');
         const linkedSelect = document.getElementById('linked-chars-select');
-        const linkedChipsDiv = document.getElementById('linked-chars-chips');
+        const linkedListDiv = document.getElementById('linked-chars-list');
+        const linkedTypeInput = document.getElementById('linked-chars-type-input');
 
         function populateLinkedSelect() {
             const allChars = window.db.manifest?.characters || {};
+            const linkedIds = currentLinked.map(lc => lc.id);
             linkedSelect.innerHTML = '<option value="">— Select a character —</option>';
             for (const [cid, cData] of Object.entries(allChars)) {
-                if (cid === id) continue; // skip self
-                if (currentLinked.includes(cid)) continue; // skip already linked
+                if (cid === id) continue;
+                if (linkedIds.includes(cid)) continue;
                 const opt = document.createElement('option');
                 opt.value = cid;
                 opt.textContent = cData.name || cid;
@@ -566,33 +578,50 @@
             }
         }
 
-        function rebuildLinkedChips() {
-            linkedChipsDiv.innerHTML = '';
-            currentLinked.forEach(cid => {
-                const cName = window.db.manifest?.characters?.[cid]?.name || cid;
-                const chip = document.createElement('span');
-                chip.className = 'linked-char-chip';
-                chip.dataset.id = cid;
-                chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(155,89,255,0.15);border:1px solid rgba(155,89,255,0.4);border-radius:20px;font-size:0.9rem;color:var(--text-light);';
-                chip.innerHTML = `${escapeHtml(cName)} <button type="button" class="linked-char-remove" data-id="${escapeAttr(cid)}" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:1rem;padding:0 2px;line-height:1;">✕</button>`;
-                chip.querySelector('.linked-char-remove').addEventListener('click', () => {
-                    currentLinked = currentLinked.filter(x => x !== cid);
+        function rebuildLinkedList() {
+            linkedListDiv.innerHTML = '';
+            currentLinked.forEach((lc, idx) => {
+                const cName = window.db.manifest?.characters?.[lc.id]?.name || lc.id;
+                const cIcon = window.db.manifest?.characters?.[lc.id]?.icon;
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(155,89,255,0.08);border:1px solid rgba(155,89,255,0.2);border-radius:8px;';
+                row.innerHTML = `
+                    <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;background:var(--glass-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        ${cIcon ? `<img src="${cIcon}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:1.1rem;">👤</span>`}
+                    </div>
+                    <span style="color:var(--aether-cyan);font-family:'Balgruf',serif;min-width:80px;">${escapeHtml(cName)}</span>
+                    <input type="text" class="linked-type-edit" data-idx="${idx}" value="${escapeAttr(lc.type || '')}" placeholder="Type (e.g. brother)" style="flex:1;padding:6px 8px;background:var(--glass-bg);color:white;border:1px solid var(--border-color);border-radius:4px;font-size:0.85rem;min-width:100px;" />
+                    <button type="button" class="linked-char-remove" data-idx="${idx}" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:1.1rem;padding:2px 6px;line-height:1;flex-shrink:0;">✕</button>`;
+
+                // Type change handler
+                row.querySelector('.linked-type-edit').addEventListener('change', (e) => {
+                    currentLinked[idx].type = e.target.value.trim();
                     linkedInput.value = JSON.stringify(currentLinked);
-                    rebuildLinkedChips();
+                });
+
+                // Remove handler
+                row.querySelector('.linked-char-remove').addEventListener('click', () => {
+                    currentLinked.splice(idx, 1);
+                    linkedInput.value = JSON.stringify(currentLinked);
+                    rebuildLinkedList();
                     populateLinkedSelect();
                 });
-                linkedChipsDiv.appendChild(chip);
+
+                linkedListDiv.appendChild(row);
             });
             linkedInput.value = JSON.stringify(currentLinked);
         }
 
         populateLinkedSelect();
+        rebuildLinkedList();
 
         document.getElementById('btn-add-linked-char').addEventListener('click', () => {
-            const val = linkedSelect.value;
-            if (!val || currentLinked.includes(val)) return;
-            currentLinked.push(val);
-            rebuildLinkedChips();
+            const charId = linkedSelect.value;
+            if (!charId || currentLinked.some(lc => lc.id === charId)) return;
+            const relType = linkedTypeInput.value.trim();
+            currentLinked.push({ id: charId, type: relType });
+            linkedTypeInput.value = '';
+            rebuildLinkedList();
             populateLinkedSelect();
         });
 

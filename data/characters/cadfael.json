@@ -50,5 +50,10 @@
         "futureDevelopment": "Reveals the twins' heritage, offers them a path"
     },
     "folder": "",
-    "linked_characters": []
+    "linked_characters": [
+        {
+            "id": "aeria",
+            "type": "sister"
+        }
+    ]
 }
