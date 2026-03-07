@@ -31,7 +31,96 @@
             "icon": "/data/images/cadfael.png"
         }
     },
-    "places": {},
+    "places": {
+        "continent_middle___south": {
+            "name": "Continent Middle - South",
+            "parent": "teria",
+            "type": "continent",
+            "_type": "place",
+            "file": "continent_middle___south.json",
+            "description": ""
+        },
+        "continent_north___east": {
+            "name": "Continent North - East",
+            "parent": "teria",
+            "type": "continent",
+            "_type": "place",
+            "file": "continent_north___east.json",
+            "description": ""
+        },
+        "continent_north___middle": {
+            "name": "Continent North - Middle",
+            "parent": "teria",
+            "type": "continent",
+            "_type": "place",
+            "file": "continent_north___middle.json",
+            "description": ""
+        },
+        "continent_north___west": {
+            "name": "Continent North - West",
+            "parent": "teria",
+            "type": "continent",
+            "_type": "place",
+            "file": "continent_north___west.json",
+            "description": ""
+        },
+        "continent_south___middle___east": {
+            "name": "Continent South / Middle - East",
+            "parent": "teria",
+            "type": "continent",
+            "_type": "place",
+            "file": "continent_south___middle___east.json",
+            "description": ""
+        },
+        "continent_south___west": {
+            "name": "Continent South - West",
+            "parent": "teria",
+            "type": "continent",
+            "_type": "place",
+            "file": "continent_south___west.json",
+            "description": ""
+        },
+        "listhe": {
+            "name": "Listhe",
+            "parent": "continent_middle___south",
+            "type": "country",
+            "_type": "place",
+            "file": "listhe.json",
+            "description": ""
+        },
+        "maria": {
+            "name": "Maria",
+            "parent": null,
+            "type": "planet",
+            "_type": "place",
+            "file": "maria.json",
+            "description": ""
+        },
+        "risnia": {
+            "name": "Risnia",
+            "parent": "continent_middle___south",
+            "type": "country",
+            "_type": "place",
+            "file": "risnia.json",
+            "description": ""
+        },
+        "sitzer": {
+            "name": "Sitzer",
+            "parent": "continent_middle___south",
+            "type": "country",
+            "_type": "place",
+            "file": "sitzer.json",
+            "description": ""
+        },
+        "teria": {
+            "name": "Teria",
+            "parent": null,
+            "type": "planet",
+            "_type": "place",
+            "file": "teria.json",
+            "description": "Teria is a planet that resembles Earth.\n\nThere are several \"continents\" and several countries on Teria: (each inspired by real countries)\n\nThe languages ​​found on Teria will be heavily inspired by th"
+        }
+    },
     "maps": {},
     "events": {},
     "documents": {
@@ -154,6 +243,72 @@
             "_type": "document",
             "file": "documents/Univers/Religions/religions_teria.md",
             "ext": ".md"
+        },
+        "places/continent_middle___south": {
+            "name": "Continent Middle   South",
+            "_type": "data",
+            "file": "places/continent_middle___south.json",
+            "ext": ".json"
+        },
+        "places/continent_north___east": {
+            "name": "Continent North   East",
+            "_type": "data",
+            "file": "places/continent_north___east.json",
+            "ext": ".json"
+        },
+        "places/continent_north___middle": {
+            "name": "Continent North   Middle",
+            "_type": "data",
+            "file": "places/continent_north___middle.json",
+            "ext": ".json"
+        },
+        "places/continent_north___west": {
+            "name": "Continent North   West",
+            "_type": "data",
+            "file": "places/continent_north___west.json",
+            "ext": ".json"
+        },
+        "places/continent_south___middle___east": {
+            "name": "Continent South   Middle   East",
+            "_type": "data",
+            "file": "places/continent_south___middle___east.json",
+            "ext": ".json"
+        },
+        "places/continent_south___west": {
+            "name": "Continent South   West",
+            "_type": "data",
+            "file": "places/continent_south___west.json",
+            "ext": ".json"
+        },
+        "places/listhe": {
+            "name": "Listhe",
+            "_type": "data",
+            "file": "places/listhe.json",
+            "ext": ".json"
+        },
+        "places/maria": {
+            "name": "Maria",
+            "_type": "data",
+            "file": "places/maria.json",
+            "ext": ".json"
+        },
+        "places/risnia": {
+            "name": "Risnia",
+            "_type": "data",
+            "file": "places/risnia.json",
+            "ext": ".json"
+        },
+        "places/sitzer": {
+            "name": "Sitzer",
+            "_type": "data",
+            "file": "places/sitzer.json",
+            "ext": ".json"
+        },
+        "places/teria": {
+            "name": "Teria",
+            "_type": "data",
+            "file": "places/teria.json",
+            "ext": ".json"
         }
     },
     "images": {
