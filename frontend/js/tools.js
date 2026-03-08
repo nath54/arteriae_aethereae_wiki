@@ -214,7 +214,11 @@ class MapTools {
 
     async saveCurrentMap() {
         if (!window.db.isEditMode) return;
-        const currentId = window.location.hash.split(':')[1] || 'map_teria';
+        const currentId = window.currentMapId;
+        if (!currentId) {
+            console.warn('[MapTools] No currentMapId set, cannot save.');
+            return;
+        }
         await window.db.saveEntity('maps', currentId, window.mapGraph.export());
     }
 

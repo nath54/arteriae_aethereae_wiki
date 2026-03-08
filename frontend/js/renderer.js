@@ -171,8 +171,22 @@ class MapRenderer {
             if (!edge) continue;
 
             if (i === 0) {
-                d += `M ${g.nodes[edge.n1].x} ${g.nodes[edge.n1].y} L ${g.nodes[edge.n2].x} ${g.nodes[edge.n2].y}`;
-                currentNodeStr = edge.n2;
+                // Determine correct winding direction for first edge
+                if (edgeIds.length > 1) {
+                    const nextEdge = g.edges[edgeIds[1]];
+                    if (nextEdge && (edge.n2 === nextEdge.n1 || edge.n2 === nextEdge.n2)) {
+                        // n1 → n2 is correct (n2 connects to next edge)
+                        d += `M ${g.nodes[edge.n1].x} ${g.nodes[edge.n1].y} L ${g.nodes[edge.n2].x} ${g.nodes[edge.n2].y}`;
+                        currentNodeStr = edge.n2;
+                    } else {
+                        // n2 → n1 (reversed: n1 connects to next edge)
+                        d += `M ${g.nodes[edge.n2].x} ${g.nodes[edge.n2].y} L ${g.nodes[edge.n1].x} ${g.nodes[edge.n1].y}`;
+                        currentNodeStr = edge.n1;
+                    }
+                } else {
+                    d += `M ${g.nodes[edge.n1].x} ${g.nodes[edge.n1].y} L ${g.nodes[edge.n2].x} ${g.nodes[edge.n2].y}`;
+                    currentNodeStr = edge.n2;
+                }
             } else {
                 if (edge.n1 === currentNodeStr) {
                     d += ` L ${g.nodes[edge.n2].x} ${g.nodes[edge.n2].y}`;
@@ -192,6 +206,9 @@ class MapRenderer {
 }
 
 window.loadMap = async function (mapId) {
+    // Store the current map ID for saveCurrentMap() to use
+    window.currentMapId = mapId;
+
     const data = await window.db.getEntity('maps', mapId);
     if (!data) {
         window.mapGraph.load({

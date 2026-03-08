@@ -682,14 +682,15 @@
     function handleMapCreateClick(placeId, parentId) {
         if (!parentId) {
             const popup = document.getElementById('map-create-popup');
-            popup.classList.remove('hidden');
+            // popup.classList.remove('hidden');
+            popup.style.display = 'block';
 
             document.getElementById('btn-cancel-map-create').onclick = () => popup.classList.add('hidden');
 
             document.getElementById('btn-confirm-map-create').onclick = async () => {
                 const w = parseInt(document.getElementById('map-create-w').value) || 1000;
                 const h = parseInt(document.getElementById('map-create-h').value) || 1000;
-                popup.classList.add('hidden');
+                popup.style.display = 'none';
                 await createMapForPlace(placeId, parentId, w, h);
             };
         } else {

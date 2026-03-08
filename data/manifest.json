@@ -126,7 +126,15 @@
             "description": "Teria is a planet that resembles Earth.\n\nThere are several \"continents\" and several countries on Teria: (each inspired by real countries)\n\nThe languages ​​found on Teria will be heavily inspired by th"
         }
     },
-    "maps": {},
+    "maps": {
+        "teria": {
+            "name": "teria",
+            "parent": null,
+            "type": null,
+            "_type": "map",
+            "file": "teria.json"
+        }
+    },
     "events": {},
     "documents": {
         "characters/aeria": {
@@ -248,6 +256,12 @@
             "_type": "document",
             "file": "documents/Univers/Religions/religions_teria.md",
             "ext": ".md"
+        },
+        "maps/teria": {
+            "name": "Teria",
+            "_type": "data",
+            "file": "maps/teria.json",
+            "ext": ".json"
         },
         "places/continent_middle___south": {
             "name": "Continent Middle   South",
