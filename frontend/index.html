@@ -216,9 +216,14 @@
                         </g>
                     </svg>
                 </div>
-                <div id="map-editor-sidebar" class="parchment-card">
+                <div id="map-sidebar-main">
                     <div class="edit-only map-tools-panel">
-                        <h4>Tools</h4>
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <h4 style="margin:0;">Tools</h4>
+                            <button class="tool-btn btn-muted" id="btn-map-help"
+                                style="padding:4px 8px; font-size:0.85em;">❓ Help</button>
+                        </div>
                         <div class="map-tools-grid">
                             <button class="tool-btn" data-tool="view" title="View Map" alt="View Map">​👁️​
                                 View</button>
@@ -246,7 +251,35 @@
                         <!-- Populated dynamically -->
                     </div>
                 </div>
+
+                <div id="map-sidebar-help" class="hidden"
+                    style="display:none; flex-direction:column; gap:10px; height:100%;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <button class="tool-btn" id="btn-exit-help">← Exit Help</button>
+                        <h3 style="margin:0;">Map Editor Guide</h3>
+                    </div>
+                    <div
+                        style="flex:1; overflow-y:auto; padding-right:5px; font-size:0.9rem; line-height:1.5; color:var(--text-dim);">
+                        <p><strong>👁️ View:</strong> Navigate and inspect the map. Click on regions to see their
+                            details.</p>
+                        <p><strong>👆 Move:</strong> Click and drag nodes (dots) to reshape polygons. Careful not to
+                            overlap lines.</p>
+                        <p><strong>📏 Subdivide:</strong> Click an edge to split it into two segments by adding a new
+                            node in the middle.</p>
+                        <p><strong>⛓️‍💥 Split:</strong> Click a node, then click another node on the <em>same</em>
+                            polygon to draw a new edge between them, splitting the polygon in two.</p>
+                        <p><strong>🔗 Join:</strong> Click an edge shared by two polygons to merge them into one. If
+                            they belong to different sub-regions, you'll be warned.</p>
+                        <p><strong>🗑️ Delete:</strong> Click a node between exactly two edges to remove it and merge
+                            the edges into one straight line.</p>
+                        <p><strong>📥 Assign:</strong> Start by selecting a sub-region from the list below, then click
+                            this tool, and finally click on a polygon to assign it.</p>
+                        <p><strong>📤 Unassign:</strong> Removes the association between a polygon and its assigned
+                            sub-region. Click the Unassign button next to a region in the list.</p>
+                    </div>
+                </div>
             </div>
+        </div>
         </div>
     </section>
 

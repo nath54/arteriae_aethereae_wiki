@@ -55,6 +55,22 @@ class MapTools {
             });
         }
 
+        // Help menu toggle
+        const helpBtn = document.getElementById('btn-map-help');
+        const exitHelpBtn = document.getElementById('btn-exit-help');
+        const mainSidebar = document.getElementById('map-sidebar-main');
+        const helpSidebar = document.getElementById('map-sidebar-help');
+        if (helpBtn && exitHelpBtn && mainSidebar && helpSidebar) {
+            helpBtn.addEventListener('click', () => {
+                mainSidebar.style.display = 'none';
+                helpSidebar.style.display = 'flex';
+            });
+            exitHelpBtn.addEventListener('click', () => {
+                helpSidebar.style.display = 'none';
+                mainSidebar.style.display = 'block';
+            });
+        }
+
         const svg = document.getElementById('map-svg');
         if (svg) {
             svg.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
@@ -252,7 +268,45 @@ class MapTools {
     }
 
     async exportPNG() {
-        alert("PNG export requires full canvas integration, SVG export used currently.");
+        const svgElement = document.getElementById('map-svg');
+        if (!svgElement) return;
+
+        // Serialize SVG to string
+        const svgData = new XMLSerializer().serializeToString(svgElement);
+        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+
+        // Create an Image element to load the SVG
+        const img = new Image();
+        img.onload = () => {
+            // Create a canvas with the same dimensions as the SVG
+            const canvas = document.createElement('canvas');
+            const rect = svgElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            const ctx = canvas.getContext('2d');
+
+            // Draw a white background (SVG background is usually transparent)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the SVG image
+            ctx.drawImage(img, 0, 0, rect.width, rect.height);
+
+            // Convert canvas to PNG data URL
+            const pngUrl = canvas.toDataURL("image/png");
+
+            // Trigger download
+            const link = document.createElement("a");
+            link.href = pngUrl;
+            link.download = "map_export.png";
+            link.click();
+
+            // Cleanup
+            URL.revokeObjectURL(svgUrl);
+        };
+        img.src = svgUrl;
     }
 }
 window.mapTools = new MapTools();
