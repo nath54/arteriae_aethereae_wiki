@@ -127,6 +127,13 @@
         }
     },
     "maps": {
+        "maria": {
+            "name": "maria",
+            "parent": null,
+            "type": null,
+            "_type": "map",
+            "file": "maria.json"
+        },
         "teria": {
             "name": "teria",
             "parent": null,
@@ -256,6 +263,12 @@
             "_type": "document",
             "file": "documents/Univers/Religions/religions_teria.md",
             "ext": ".md"
+        },
+        "maps/maria": {
+            "name": "Maria",
+            "_type": "data",
+            "file": "maps/maria.json",
+            "ext": ".json"
         },
         "maps/teria": {
             "name": "Teria",

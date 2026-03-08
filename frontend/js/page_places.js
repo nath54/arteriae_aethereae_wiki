@@ -682,23 +682,35 @@
     function handleMapCreateClick(placeId, parentId) {
         if (!parentId) {
             const popup = document.getElementById('map-create-popup');
-            // popup.classList.remove('hidden');
             popup.style.display = 'block';
 
-            document.getElementById('btn-cancel-map-create').onclick = () => popup.classList.add('hidden');
+            // Wire grid checkbox toggle
+            const gridCheck = document.getElementById('map-create-grid');
+            const gridOpts = document.getElementById('map-grid-options');
+            gridCheck.onchange = () => {
+                gridOpts.style.display = gridCheck.checked ? 'block' : 'none';
+            };
+            // Reset state
+            gridCheck.checked = false;
+            gridOpts.style.display = 'none';
+
+            document.getElementById('btn-cancel-map-create').onclick = () => popup.style.display = 'none';
 
             document.getElementById('btn-confirm-map-create').onclick = async () => {
                 const w = parseInt(document.getElementById('map-create-w').value) || 1000;
                 const h = parseInt(document.getElementById('map-create-h').value) || 1000;
+                const useGrid = gridCheck.checked;
+                const cols = useGrid ? (parseInt(document.getElementById('map-grid-cols').value) || 4) : 0;
+                const rows = useGrid ? (parseInt(document.getElementById('map-grid-rows').value) || 4) : 0;
                 popup.style.display = 'none';
-                await createMapForPlace(placeId, parentId, w, h);
+                await createMapForPlace(placeId, parentId, w, h, useGrid, cols, rows);
             };
         } else {
             createMapForPlace(placeId, parentId);
         }
     }
 
-    async function createMapForPlace(id, parentId, customW = 1000, customH = 1000) {
+    async function createMapForPlace(id, parentId, customW = 1000, customH = 1000, useGrid = false, gridCols = 4, gridRows = 4) {
         let mapData = {
             nodes: {},
             edges: {},
@@ -707,21 +719,83 @@
         };
 
         if (!parentId) {
-            mapData.nodes = {
-                n1: { x: 0, y: 0, locked: [0, 0] },
-                n2: { x: customW, y: 0, locked: [customW, 0] },
-                n3: { x: customW, y: customH, locked: [customW, customH] },
-                n4: { x: 0, y: customH, locked: [0, customH] }
-            };
-            mapData.edges = {
-                e1: { n1: 'n1', n2: 'n2' },
-                e2: { n1: 'n2', n2: 'n3' },
-                e3: { n1: 'n3', n2: 'n4' },
-                e4: { n1: 'n4', n2: 'n1' }
-            };
-            mapData.polygons = {
-                poly1: { name: 'World', edges: ['e1', 'e2', 'e3', 'e4'], color: 'rgba(0,0,0,0.1)', link: id }
-            };
+            if (useGrid && gridCols >= 1 && gridRows >= 1) {
+                // ── Generate grid mesh ──
+                let nId = 1, eId = 1, pId = 1;
+
+                // Create (cols+1) × (rows+1) grid of nodes
+                const nodeGrid = [];   // nodeGrid[row][col] = nodeId
+                for (let r = 0; r <= gridRows; r++) {
+                    nodeGrid[r] = [];
+                    for (let c = 0; c <= gridCols; c++) {
+                        const x = (c / gridCols) * customW;
+                        const y = (r / gridRows) * customH;
+                        const nodeKey = `n${nId++}`;
+                        // Lock boundary nodes
+                        const onBoundary = (r === 0 || r === gridRows || c === 0 || c === gridCols);
+                        mapData.nodes[nodeKey] = { x, y, locked: onBoundary ? [x, y] : null };
+                        nodeGrid[r][c] = nodeKey;
+                    }
+                }
+
+                // Create horizontal edges (row-wise)
+                const hEdges = [];  // hEdges[r][c] = edgeId for edge from (r,c)→(r,c+1)
+                for (let r = 0; r <= gridRows; r++) {
+                    hEdges[r] = [];
+                    for (let c = 0; c < gridCols; c++) {
+                        const edgeKey = `e${eId++}`;
+                        mapData.edges[edgeKey] = { n1: nodeGrid[r][c], n2: nodeGrid[r][c + 1] };
+                        hEdges[r][c] = edgeKey;
+                    }
+                }
+
+                // Create vertical edges (column-wise)
+                const vEdges = [];  // vEdges[r][c] = edgeId for edge from (r,c)→(r+1,c)
+                for (let r = 0; r < gridRows; r++) {
+                    vEdges[r] = [];
+                    for (let c = 0; c <= gridCols; c++) {
+                        const edgeKey = `e${eId++}`;
+                        mapData.edges[edgeKey] = { n1: nodeGrid[r][c], n2: nodeGrid[r + 1][c] };
+                        vEdges[r][c] = edgeKey;
+                    }
+                }
+
+                // Create polygons for each cell
+                for (let r = 0; r < gridRows; r++) {
+                    for (let c = 0; c < gridCols; c++) {
+                        // Edges: top, right, bottom (reversed), left (reversed)
+                        // Winding: clockwise → top → right → bottom → left
+                        const polyKey = `poly${pId++}`;
+                        mapData.polygons[polyKey] = {
+                            name: `Cell ${r + 1},${c + 1}`,
+                            edges: [
+                                hEdges[r][c],       // top: (r,c)→(r,c+1)
+                                vEdges[r][c + 1],    // right: (r,c+1)→(r+1,c+1)
+                                hEdges[r + 1][c],    // bottom: (r+1,c)→(r+1,c+1)  — traversed backwards
+                                vEdges[r][c]         // left: (r,c)→(r+1,c) — traversed backwards
+                            ],
+                            color: `hsla(${(r * gridCols + c) * (360 / (gridRows * gridCols))}, 40%, 35%, 0.4)`
+                        };
+                    }
+                }
+            } else {
+                // Simple single-polygon map (original behavior)
+                mapData.nodes = {
+                    n1: { x: 0, y: 0, locked: [0, 0] },
+                    n2: { x: customW, y: 0, locked: [customW, 0] },
+                    n3: { x: customW, y: customH, locked: [customW, customH] },
+                    n4: { x: 0, y: customH, locked: [0, customH] }
+                };
+                mapData.edges = {
+                    e1: { n1: 'n1', n2: 'n2' },
+                    e2: { n1: 'n2', n2: 'n3' },
+                    e3: { n1: 'n3', n2: 'n4' },
+                    e4: { n1: 'n4', n2: 'n1' }
+                };
+                mapData.polygons = {
+                    poly1: { name: 'World', edges: ['e1', 'e2', 'e3', 'e4'], color: 'rgba(0,0,0,0.1)', link: id }
+                };
+            }
         } else {
             const parentMap = await window.db.getEntity('maps', parentId);
             if (!parentMap) { alert("Parent map not found!"); return; }

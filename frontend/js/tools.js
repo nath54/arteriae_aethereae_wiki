@@ -12,6 +12,7 @@ class MapTools {
         this.selectedNodeId = null;
         this.draggingNodeId = null;
         this.selectedPlaceId = null; // Used for sidebar place highlighting
+        this.selectedPolyId = null;  // Currently selected polygon in view mode
         this.bound = false;
     }
 
@@ -30,7 +31,11 @@ class MapTools {
                 btn.classList.add('active');
                 window.currentTool = btn.dataset.tool;
                 this.selectedNodeId = null;
-                if (window.mapRenderer) window.mapRenderer.render();
+                this.selectedPolyId = null;
+                if (window.mapRenderer) {
+                    window.mapRenderer.render();
+                    window.mapRenderer.renderPolyActionBar();
+                }
             });
         });
 
@@ -151,10 +156,13 @@ class MapTools {
             }
         }
         else if (target.classList.contains('map-edge')) {
+            const edgeId = target.id.replace('edge-', '');
             if (window.currentTool === 'subdivide_segment') {
                 e.stopPropagation();
-                const edgeId = target.id.replace('edge-', '');
                 this.handleSubdivide(edgeId);
+            } else if (window.currentTool === 'unsplit_segment') {
+                e.stopPropagation();
+                this.handleJoinAtEdge(edgeId);
             }
         }
     }
@@ -209,6 +217,16 @@ class MapTools {
         if (window.mapGraph.unsubdivideNode(nodeId)) {
             window.mapRenderer.render();
             this.saveCurrentMap();
+        }
+    }
+
+    handleJoinAtEdge(edgeId) {
+        const result = window.mapGraph.joinPolygonsAtEdge(edgeId);
+        if (result.ok) {
+            window.mapRenderer.render();
+            this.saveCurrentMap();
+        } else {
+            alert(result.reason);
         }
     }
 

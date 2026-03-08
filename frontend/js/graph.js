@@ -315,6 +315,96 @@ class MapGraph {
 
         return true;
     }
+
+    /**
+     * Joins two polygons that share a given edge.
+     * Removes the shared edge and merges the two polygons into one.
+     *
+     * Assignment rules:
+     * - Neither assigned → keep unassigned
+     * - One assigned → keep that assignment
+     * - Both assigned to same link → keep that assignment
+     * - Both assigned to different links → reject (return error)
+     *
+     * @param {string} edgeId - The shared edge to remove
+     * @returns {{ ok: boolean, reason?: string }}
+     */
+    joinPolygonsAtEdge(edgeId) {
+        const edge = this.edges[edgeId];
+        if (!edge) return { ok: false, reason: 'Edge not found.' };
+
+        // Find the two polygons that share this edge
+        const sharingPolys = [];
+        for (const [polyId, poly] of Object.entries(this.polygons)) {
+            if (poly.edges.includes(edgeId)) {
+                sharingPolys.push(polyId);
+            }
+        }
+
+        if (sharingPolys.length !== 2) {
+            return { ok: false, reason: `Expected 2 polygons sharing this edge, found ${sharingPolys.length}. Cannot join boundary edges.` };
+        }
+
+        const [polyAId, polyBId] = sharingPolys;
+        const polyA = this.polygons[polyAId];
+        const polyB = this.polygons[polyBId];
+
+        // ── Assignment compatibility check ──
+        const linkA = polyA.link || null;
+        const linkB = polyB.link || null;
+
+        if (linkA && linkB && linkA !== linkB) {
+            return { ok: false, reason: `Cannot join: polygons are assigned to different places ("${linkA}" and "${linkB}").` };
+        }
+
+        const mergedLink = linkA || linkB || null;
+
+        // ── Build properly ordered merged edge list ──
+        // Rotate each polygon's edge list so the shared edge is at index 0,
+        // then remove it. The two remaining chains connect at the shared edge's
+        // endpoints (adjacent polygons traverse shared edges in opposite directions).
+        const idxA = polyA.edges.indexOf(edgeId);
+        const rotatedA = [...polyA.edges.slice(idxA + 1), ...polyA.edges.slice(0, idxA)];
+
+        const idxB = polyB.edges.indexOf(edgeId);
+        const rotatedB = [...polyB.edges.slice(idxB + 1), ...polyB.edges.slice(0, idxB)];
+
+        // Stitch: rotatedA ends where rotatedB starts (at shared edge endpoints)
+        const mergedEdges = [...rotatedA, ...rotatedB];
+
+        // ── Update polygon A to be the merged polygon ──
+        polyA.edges = mergedEdges;
+        polyA.name = polyA.name || polyB.name || 'Merged';
+        if (mergedLink) {
+            polyA.link = mergedLink;
+        } else {
+            delete polyA.link;
+        }
+
+        // ── Remove polygon B ──
+        delete this.polygons[polyBId];
+
+        // ── Remove the shared edge ──
+        delete this.edges[edgeId];
+
+        // ── Clean up orphaned nodes (nodes with no remaining edges) ──
+        const n1 = edge.n1;
+        const n2 = edge.n2;
+        for (const nodeId of [n1, n2]) {
+            let hasEdge = false;
+            for (const e of Object.values(this.edges)) {
+                if (e.n1 === nodeId || e.n2 === nodeId) {
+                    hasEdge = true;
+                    break;
+                }
+            }
+            if (!hasEdge) {
+                delete this.nodes[nodeId];
+            }
+        }
+
+        return { ok: true };
+    }
 }
 
 window.mapGraph = new MapGraph();

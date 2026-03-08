@@ -84,9 +84,16 @@ class MapRenderer {
 
             // Highlight if linked to the actively selected subplace
             if (window.mapTools && window.mapTools.selectedPlaceId === poly.link) {
-                pathNode.setAttribute('fill', '#00ffff'); // Bright cyan highlight
+                pathNode.setAttribute('fill', '#00ffff');
                 pathNode.setAttribute('stroke', '#ffffff');
                 pathNode.setAttribute('stroke-width', '4');
+            }
+
+            // Highlight if this polygon is selected
+            if (window.mapTools && window.mapTools.selectedPolyId === id) {
+                pathNode.setAttribute('stroke', '#ffdd00');
+                pathNode.setAttribute('stroke-width', '4');
+                pathNode.style.filter = 'url(#glow)';
             }
 
             pathNode.addEventListener('click', async () => {
@@ -111,9 +118,27 @@ class MapRenderer {
                             this.render();
                         }
                     }
+                } else if (window.currentTool === 'unassign_region') {
+                    // Unassign by clicking a polygon directly
+                    if (poly.link) {
+                        delete poly.link;
+                        const tools = window.mapTools;
+                        if (tools) await tools.saveCurrentMap();
+                        this.render();
+                    }
                 } else if (window.currentTool === 'view') {
-                    const linkId = poly.link || id;
-                    window.location.hash = `#place:${linkId}`;
+                    // ── Polygon selection system ──
+                    const tools = window.mapTools;
+                    if (tools) {
+                        if (tools.selectedPolyId === id) {
+                            // Deselect on re-click
+                            tools.selectedPolyId = null;
+                        } else {
+                            tools.selectedPolyId = id;
+                        }
+                        this.render();
+                        this.renderPolyActionBar();
+                    }
                 }
             });
 
@@ -157,6 +182,92 @@ class MapRenderer {
 
                 // Event delegation handled in tools.js
                 this.layerBorders.appendChild(circle);
+            }
+        }
+    }
+
+    /**
+     * Renders (or removes) the floating polygon action bar at the bottom of the map.
+     */
+    renderPolyActionBar() {
+        // Remove existing bar
+        let bar = document.getElementById('poly-action-bar');
+        if (bar) bar.remove();
+
+        const tools = window.mapTools;
+        if (!tools || !tools.selectedPolyId) return;
+
+        const g = window.mapGraph;
+        const poly = g.polygons[tools.selectedPolyId];
+        if (!poly) {
+            tools.selectedPolyId = null;
+            return;
+        }
+
+        const linkedPlaceId = poly.link || null;
+        const polyName = poly.name || tools.selectedPolyId;
+
+        // Build action bar
+        bar = document.createElement('div');
+        bar.id = 'poly-action-bar';
+        bar.innerHTML = `
+            <span class="poly-action-label">📍 <strong>${polyName}</strong></span>
+            ${linkedPlaceId
+                ? `<button class="tool-btn" id="poly-btn-goto-place">🏠 Go to place page</button>
+                   <button class="tool-btn" id="poly-btn-zoom">🔎 Zoom into sub-map</button>`
+                : `<span style="color:var(--text-dim);font-size:0.9rem;">No place assigned</span>`
+            }
+            <button class="tool-btn btn-muted" id="poly-btn-deselect">✖</button>
+        `;
+
+        document.getElementById('map-editor-main').appendChild(bar);
+
+        // ── Wire action buttons ──
+        const deselectBtn = document.getElementById('poly-btn-deselect');
+        if (deselectBtn) {
+            deselectBtn.addEventListener('click', () => {
+                tools.selectedPolyId = null;
+                this.render();
+                this.renderPolyActionBar();
+            });
+        }
+
+        if (linkedPlaceId) {
+            const gotoBtn = document.getElementById('poly-btn-goto-place');
+            if (gotoBtn) {
+                gotoBtn.addEventListener('click', () => {
+                    // Close map editor and navigate to place
+                    document.getElementById('map-editor-overlay').classList.add('hidden');
+                    tools.selectedPolyId = null;
+                    window.location.hash = `#places`;
+                    // Dispatch pagechange with the place id
+                    window.dispatchEvent(new CustomEvent('pagechange', {
+                        detail: { page: 'places', id: linkedPlaceId }
+                    }));
+                });
+            }
+
+            const zoomBtn = document.getElementById('poly-btn-zoom');
+            if (zoomBtn) {
+                zoomBtn.addEventListener('click', async () => {
+                    // Check if sub-map exists
+                    const subMapData = await window.db.getEntity('maps', linkedPlaceId);
+                    if (subMapData) {
+                        tools.selectedPolyId = null;
+                        tools.selectPlace(null);
+                        await window.loadMap(linkedPlaceId);
+                        // Update title
+                        const titleEl = document.getElementById('map-editor-title');
+                        if (titleEl) {
+                            const manifest = window.db.manifest;
+                            const placeName = manifest?.places?.[linkedPlaceId]?.name || linkedPlaceId;
+                            titleEl.textContent = `Map Editor — ${placeName}`;
+                        }
+                        this.renderPolyActionBar();
+                    } else {
+                        alert(`No sub-map exists for "${linkedPlaceId}". Create a map from the place page first.`);
+                    }
+                });
             }
         }
     }
