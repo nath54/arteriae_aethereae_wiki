@@ -1,7 +1,27 @@
+# TODO
+
+## Description
+
+The goal of this app is to build a dual facette application, with:
+    - A view only mode for all the people that may be interested by the world build by the author(s). It should be very beautiful, very fast (no loading screens, images loading instantly, no freezes, ...), responsive (the app working well on computer, phones, tablets, but maybe also on other TVs like a smart TV or other devices).
+    - An editor mode for the wiki creators so they can very easily add more content or edit existing content. The editor mode will be hidden for the view only users. The editor mode will be automatically detected based on if the user is running the python editor server locally on his computer.
+
+So currently, the app is divided on 5 pages with each some subpages:
+
+- The main menu page where the user lands when opening the wiki
+- A document & story page where the user can manage all each elements (JSON files), but also a document section where the user can write stories, TODOLIST, prepare all its lore, etc.
+- A character page where the user can manage character sheets.
+- A world & map page where the user can manage places.
+- A timeline & events page where the user can manage timeline and events.
+
+## TODOLIST
+
+[ ] Documents & Story page improvements
+    [ ] Currently, in the folder & files structure / organization / tree, when the user clicks in the folding arrow, it toggle the fold; and when the user clicks on the folder name / folder box, it selects it. This is good for editor mode because when we select a folder, we can then easily insert folders or files in it. But it is not good for view only mode, I would like to not have the selection feature in view only mode, and do that when we click on the folder name / folder box, it toggles the folding too.
 [x] Bug fix: We can see some editors only things on the view only serverless mode
 [x] Improve the character page folders UI, adds ability to copy / move / rename characters.
-[ ] Refactor the whole relationship graph functionality, I don't want a global graph, but only to see the direct relationships of a character
-    [ ] To fix, there are no longer global graphs, but I don't see anything on the local graphs. Event for characters without any relation ship, I want to see the central node of the graph being the character. And if there are relationships, I want to see all the characters to which it is linked, and the type of the relationship (parent, child, friend, brother, sister, etc.)
+[x] Refactor the whole relationship graph functionality, I don't want a global graph, but only to see the direct relationships of a character
+    [x] To fix, there are no longer global graphs, but I don't see anything on the local graphs. Event for characters without any relation ship, I want to see the central node of the graph being the character. And if there are relationships, I want to see all the characters to which it is linked, and the type of the relationship (parent, child, friend, brother, sister, etc.)
     [x] So each relation should have a type (just a basic free text input)
     [x] And I don't see any easy to use and beautiful relationships picker
 [ ] Refactor and fix all the things that are not working in the Worlds & Map page
