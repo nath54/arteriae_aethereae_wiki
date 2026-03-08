@@ -50,6 +50,15 @@
             this._buildEdges();
             this._scatterNodes();
             this._bindEvents();
+
+            // Preload icon images
+            this.nodes.forEach(n => {
+                if (n.icon) {
+                    const img = new Image();
+                    img.src = n.icon;
+                    n._img = img;
+                }
+            });
         }
 
         /** Build deduplicated edge list from node link arrays */
@@ -74,8 +83,8 @@
             const H = this.canvas.height;
             this.nodes.forEach(n => {
                 if (!n.x) {
-                    n.x = W / 2 + (Math.random() - 0.5) * W * 0.6;
-                    n.y = H / 2 + (Math.random() - 0.5) * H * 0.6;
+                    n.x = W / 2 + (Math.random() - 0.5) * W * 0.3;
+                    n.y = H / 2 + (Math.random() - 0.5) * H * 0.3;
                     n.vx = 0;
                     n.vy = 0;
                 }
@@ -214,8 +223,13 @@
                 ctx.shadowBlur = 0;
 
                 // Icon or initial
-                if (n.icon) {
+                if (n._img && n._img.complete && n._img.naturalWidth > 0) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+                    ctx.clip();
                     ctx.drawImage(n._img, n.x - r, n.y - r, r * 2, r * 2);
+                    ctx.restore();
                 } else {
                     ctx.fillStyle = TEXT_COLOR;
                     ctx.font = `bold ${Math.round(r * 0.65)}px Gothica, sans-serif`;
@@ -422,66 +436,88 @@
             return;
         }
 
-        canvas.width = wrap.clientWidth || 700;
-        canvas.height = wrap.clientHeight || 600;
 
-        const graph = new ForceGraph(canvas, nodes);
+        // Defer canvas init to ensure DOM layout is complete
+        setTimeout(() => {
+            const rect = wrap.getBoundingClientRect();
+            const w = Math.round(rect.width) || 700;
+            const h = Math.round(rect.height) || 600;
+            canvas.width = w;
+            canvas.height = h;
 
-        graph.onSelect = (id) => {
-            const c = window.db.manifest.characters[id];
-            if (!c) return;
-            preview.innerHTML = `
+            const graph = new ForceGraph(canvas, nodes);
+
+            graph.onSelect = (id) => {
+                const c = window.db.manifest.characters[id];
+                if (!c) return;
+                preview.innerHTML = `
                 <h3 style="font-family:'Balgruf',serif;color:var(--aether-cyan);margin:0 0 10px;">
                     ${c.name || id}
                 </h3>
                 ${c.icon ? `<img src="${c.icon}" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;margin-bottom:10px;">` : ''}
                 <p style="font-size:0.9rem;color:var(--text-dim);">
                     <b>Links:</b> ${((c.linked_characters || []).map(lc => {
-                const linkObj = typeof lc === 'string' ? { id: lc, type: '' } : lc;
-                const lName = window.db.manifest.characters[linkObj.id]?.name || linkObj.id;
-                return linkObj.type ? `${lName} <i style="opacity:0.7;">(${linkObj.type})</i>` : lName;
-            })).join(', ') || 'None'}
+                    const linkObj = typeof lc === 'string' ? { id: lc, type: '' } : lc;
+                    const lName = window.db.manifest.characters[linkObj.id]?.name || linkObj.id;
+                    return linkObj.type ? `${lName} <i style="opacity:0.7;">(${linkObj.type})</i>` : lName;
+                })).join(', ') || 'None'}
                 </p>
                 <button class="tool-btn" style="margin-top:12px;width:100%;"
                     onclick="window.location.hash='#characters'; setTimeout(()=>window.requestCharacterFocus && window.requestCharacterFocus('${id}'),300);">
                     👤 Open Character
                 </button>`;
-        };
+            };
 
-        // Tooltip on hover
-        canvas.addEventListener('mousemove', e => {
-            const n = graph.hovering;
-            if (n) {
-                tooltip.textContent = n.name;
-                tooltip.style.display = 'block';
-                tooltip.style.left = `${e.offsetX + 16}px`;
-                tooltip.style.top = `${e.offsetY + 16}px`;
-            } else {
-                tooltip.style.display = 'none';
-            }
-        });
+            // Tooltip on hover
+            canvas.addEventListener('mousemove', e => {
+                const n = graph.hovering;
+                if (n) {
+                    tooltip.textContent = n.name;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = `${e.offsetX + 16}px`;
+                    tooltip.style.top = `${e.offsetY + 16}px`;
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            });
 
-        // Control buttons
-        container.querySelector('#btn-graph-reset').addEventListener('click', () => {
-            graph.zoom = 1; graph.panX = 0; graph.panY = 0;
-        });
-        container.querySelector('#btn-graph-center').addEventListener('click', () => {
-            if (nodes.length === 0) return;
-            const avgX = nodes.reduce((s, n) => s + n.x, 0) / nodes.length;
-            const avgY = nodes.reduce((s, n) => s + n.y, 0) / nodes.length;
-            graph.panX = canvas.width / 2 - avgX * graph.zoom;
-            graph.panY = canvas.height / 2 - avgY * graph.zoom;
-        });
+            // Control buttons
+            container.querySelector('#btn-graph-reset').addEventListener('click', () => {
+                graph.zoom = 1; graph.panX = 0; graph.panY = 0;
+            });
+            container.querySelector('#btn-graph-center').addEventListener('click', () => {
+                if (nodes.length === 0) return;
+                const avgX = nodes.reduce((s, n) => s + n.x, 0) / nodes.length;
+                const avgY = nodes.reduce((s, n) => s + n.y, 0) / nodes.length;
+                graph.panX = canvas.width / 2 - avgX * graph.zoom;
+                graph.panY = canvas.height / 2 - avgY * graph.zoom;
+            });
 
-        // Resize on container size change
-        const ro = new ResizeObserver(() => { graph.resize(); });
-        ro.observe(wrap);
+            // Resize on container size change
+            const ro = new ResizeObserver(() => {
+                const rw = wrap.clientWidth || 700;
+                const rh = wrap.clientHeight || 600;
+                canvas.width = rw;
+                canvas.height = rh;
+                graph.resize();
+            });
+            ro.observe(wrap);
 
-        graph.start();
+            graph.start();
 
-        // Clean up when leaving the page
-        const cleanup = () => { graph.stop(); ro.disconnect(); };
-        window.addEventListener('pagechange', cleanup, { once: true });
+            // Auto-center after simulation stabilizes a bit
+            setTimeout(() => {
+                if (nodes.length === 0) return;
+                const avgX = nodes.reduce((s, n) => s + n.x, 0) / nodes.length;
+                const avgY = nodes.reduce((s, n) => s + n.y, 0) / nodes.length;
+                graph.panX = canvas.width / 2 - avgX * graph.zoom;
+                graph.panY = canvas.height / 2 - avgY * graph.zoom;
+            }, 300);
+
+            // Clean up when leaving the page
+            const cleanup = () => { graph.stop(); ro.disconnect(); };
+            window.addEventListener('pagechange', cleanup, { once: true });
+        }, 50); // end setTimeout
     }
 
     // ─── Expose globally ──────────────────────────────────────────────────────
