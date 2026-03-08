@@ -81,7 +81,8 @@
                         <button class="place-inline-edit-btn edit-only" data-field="type" title="Change type">✏️</button>
                     </p>
                     <div style="margin-top:10px;display:flex;gap:8px;">
-                        ${hasMap ? `<button class="tool-btn place-map-btn" data-map="${parentId}" title="View Map">🗺️ Map</button>`
+                        ${hasMap ? `<button class="tool-btn place-map-btn" data-map="${parentId}" title="View Map">🗺️ Map</button>
+                        <button class="tool-btn danger edit-only" id="btn-delete-map" data-id="${parentId}" title="Delete Map">🗑️ Map</button>`
                     : `<button class="tool-btn place-map-create-btn edit-only" data-id="${parentId}" data-parent="${placeNode.parent || ''}" title="Create Map">${placeNode.type === 'planet' ? '🌍 + Map' : '🗺️ + Map from Parent'}</button>`}
                         <button class="tool-btn danger edit-only" id="btn-delete-place" data-id="${parentId}">🗑️ Delete</button>
                         <button class="tool-btn edit-only" id="btn-move-place" data-id="${parentId}" style="border-color:#f7b731;color:#f7b731;">📦 Move to…</button>
@@ -280,6 +281,11 @@
         const mapBtn = container.querySelector('.place-map-btn');
         if (mapBtn) {
             mapBtn.addEventListener('click', () => openMapEditor(mapBtn.dataset.map));
+        }
+
+        const mapDeleteBtn = container.querySelector('#btn-delete-map');
+        if (mapDeleteBtn) {
+            mapDeleteBtn.addEventListener('click', () => deleteMap(placeId));
         }
 
         const mapCreateBtn = container.querySelector('.place-map-create-btn');
@@ -675,6 +681,15 @@
         window.db.manifest = null;
         await window.db.loadManifest();
         currentPath.pop();
+        renderPlacesView();
+    }
+
+    async function deleteMap(id) {
+        if (!confirm(`Are you sure you want to delete the map for this place?`)) return;
+
+        await window.db.deleteEntity('maps', id);
+        window.db.manifest = null;
+        await window.db.loadManifest();
         renderPlacesView();
     }
 
