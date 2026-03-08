@@ -44,6 +44,7 @@ from backend.data_manager import (
     list_images,
     delete_image,
     create_place,
+    move_place,
 )
 
 # Main entry point of the application.
@@ -436,6 +437,41 @@ async def api_create_place(request: Request) -> dict[str, Any]:
         return {"status": "success", "place_id": place_id}
     raise HTTPException(
         status_code=400, detail=f"Place '{name}' already exists or invalid name"
+    )
+
+
+@app.post("/api/places/move")
+async def api_move_place(request: Request) -> dict[str, Any]:
+    """
+    Moves a place to a different parent in the hierarchy.
+    Clears polygon assignments for the moved place and all its descendants.
+
+    Args:
+        request (Request): JSON body with place_id and new_parent_id.
+
+    Returns:
+        {"status": "success"} on success.
+        HTTPException on failure.
+    """
+
+    print(f"DEBUG | api_move_place | request: {request}")
+
+    try:
+        data = await request.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid JSON body") from e
+
+    place_id = data.get("place_id")
+    new_parent_id = data.get("new_parent_id")  # can be None for root
+
+    if not place_id:
+        raise HTTPException(status_code=400, detail="Missing parameter: 'place_id'")
+
+    if move_place(place_id, new_parent_id):
+        return {"status": "success"}
+    raise HTTPException(
+        status_code=400,
+        detail=f"Move failed for place '{place_id}': target not found or would create a cycle",
     )
 
 

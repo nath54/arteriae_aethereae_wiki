@@ -84,6 +84,7 @@
                         ${hasMap ? `<button class="tool-btn place-map-btn" data-map="${parentId}" title="View Map">🗺️ Map</button>`
                     : `<button class="tool-btn place-map-create-btn edit-only" data-id="${parentId}" data-parent="${placeNode.parent || ''}" title="Create Map">${placeNode.type === 'planet' ? '🌍 + Map' : '🗺️ + Map from Parent'}</button>`}
                         <button class="tool-btn danger edit-only" id="btn-delete-place" data-id="${parentId}">🗑️ Delete</button>
+                        <button class="tool-btn edit-only" id="btn-move-place" data-id="${parentId}" style="border-color:#f7b731;color:#f7b731;">📦 Move to…</button>
                     </div>
                 </div>
             </div>`;
@@ -101,6 +102,19 @@
                 </select>
                 <button class="tool-btn" id="inline-type-save" style="border-color:#4ecdc4;color:#4ecdc4;">✔️</button>
                 <button class="tool-btn btn-muted" id="inline-type-cancel">✖</button>
+            </div>`;
+
+            // Move-place modal (edit mode only, hidden by default)
+            html += `<div id="move-place-modal" class="modal-overlay edit-only" style="display:none;">
+                <div class="modal-box" style="max-width:400px;">
+                    <h3 style="margin-bottom:12px;">📦 Move Place</h3>
+                    <p style="margin-bottom:12px;color:var(--text-dim);font-size:0.9rem;">Select a new parent for <strong>${escHtml(placeNode.name)}</strong>. Polygon assignments will be cleared for this place and all its descendants.</p>
+                    <select id="move-place-target" style="width:100%;padding:10px;background:var(--glass-bg);color:white;border:1px solid var(--border-color);border-radius:6px;margin-bottom:16px;"></select>
+                    <div style="display:flex;gap:8px;justify-content:flex-end;">
+                        <button class="tool-btn btn-muted" id="btn-cancel-move-place">✖ Cancel</button>
+                        <button class="tool-btn" id="btn-confirm-move-place" style="border-color:#4ecdc4;color:#4ecdc4;">✔️ Move</button>
+                    </div>
+                </div>
             </div>`;
 
             // Icon section (edit mode only, shown small)
@@ -175,6 +189,7 @@
 
             bindMapButtons(container, parentId, placeNode);
             bindDeleteButton(container);
+            bindMovePlace(container, parentId, placeNode);
             bindInlineEditing(container, parentId, placeNode);
             bindIconPicker(container, parentId, placeNode);
             bindGalleryEditor(container, parentId, placeNode);
@@ -277,6 +292,93 @@
         const delBtn = container.querySelector('#btn-delete-place');
         if (delBtn) {
             delBtn.addEventListener('click', () => deletePlace(delBtn.dataset.id));
+        }
+    }
+
+    function bindMovePlace(container, placeId, placeNode) {
+        const moveBtn = container.querySelector('#btn-move-place');
+        if (!moveBtn) return;
+
+        moveBtn.addEventListener('click', () => {
+            const modal = container.querySelector('#move-place-modal');
+            const select = container.querySelector('#move-place-target');
+            const places = window.db.manifest.places || {};
+
+            // Collect descendants of the current place (to exclude from targets)
+            const descendants = new Set();
+            const collectDescendants = (pid) => {
+                for (const [id, data] of Object.entries(places)) {
+                    if (data.parent === pid && !descendants.has(id)) {
+                        descendants.add(id);
+                        collectDescendants(id);
+                    }
+                }
+            };
+            collectDescendants(placeId);
+
+            // Build options: root + all valid places
+            let optionsHtml = `<option value="__root__">🌌 Root (no parent)</option>`;
+            for (const [id, data] of Object.entries(places)) {
+                if (id === placeId) continue;           // can't be its own parent
+                if (descendants.has(id)) continue;       // can't move under descendant
+                if (id === (placeNode.parent || null)) continue; // already current parent
+                const emoji = getPlaceEmoji(data.type);
+                optionsHtml += `<option value="${id}">${emoji} ${escHtml(data.name)} (${escHtml(data.type || 'Location')})</option>`;
+            }
+            select.innerHTML = optionsHtml;
+
+            modal.style.display = 'flex';
+        });
+
+        const cancelBtn = container.querySelector('#btn-cancel-move-place');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                container.querySelector('#move-place-modal').style.display = 'none';
+            });
+        }
+
+        const confirmBtn = container.querySelector('#btn-confirm-move-place');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', async () => {
+                const select = container.querySelector('#move-place-target');
+                const targetVal = select.value;
+                const newParentId = targetVal === '__root__' ? null : targetVal;
+
+                try {
+                    const resp = await fetch('/api/places/move', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ place_id: placeId, new_parent_id: newParentId })
+                    });
+
+                    if (resp.ok) {
+                        container.querySelector('#move-place-modal').style.display = 'none';
+                        window.db.manifest = null;
+                        await window.db.loadManifest();
+                        if (window.db.cache) window.db.cache.delete(`places_${placeId}`);
+                        // Update breadcrumb to reflect new parent
+                        if (newParentId) {
+                            currentPath = [newParentId, placeId];
+                        } else {
+                            currentPath = [placeId];
+                        }
+                        renderPlacesView();
+                    } else {
+                        const err = await resp.json().catch(() => ({}));
+                        alert(err.detail || 'Move failed.');
+                    }
+                } catch (e) {
+                    alert('Move failed: ' + e.message);
+                }
+            });
+        }
+
+        // Close modal on overlay click
+        const modal = container.querySelector('#move-place-modal');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.style.display = 'none';
+            });
         }
     }
 

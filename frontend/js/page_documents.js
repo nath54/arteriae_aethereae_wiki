@@ -270,20 +270,37 @@
             });
         });
 
-        // Folder: click to select (sets context for new items), arrow to collapse
+        // Folder: in edit mode click selects (sets context for new items);
+        //         in view-only mode click toggles fold (same as arrow).
         container.querySelectorAll('.doc-tree-folder').forEach(folder => {
             folder.addEventListener('click', e => {
                 if (e.target.classList.contains('folder-toggle')) return;
-                const isSelected = folder.classList.contains('selected');
-                container.querySelectorAll('.doc-tree-folder').forEach(f => f.classList.remove('selected'));
-                container.querySelectorAll('.doc-tree-item').forEach(i => i.classList.remove('active'));
-                if (isSelected) {
-                    selectedFolderPath = '';
+                if (window.isEditMode) {
+                    // Editor mode: click selects folder for context
+                    const isSelected = folder.classList.contains('selected');
+                    container.querySelectorAll('.doc-tree-folder').forEach(f => f.classList.remove('selected'));
+                    container.querySelectorAll('.doc-tree-item').forEach(i => i.classList.remove('active'));
+                    if (isSelected) {
+                        selectedFolderPath = '';
+                    } else {
+                        folder.classList.add('selected');
+                        selectedFolderPath = folder.dataset.path;
+                    }
+                    updatePanelContextLabels(container);
                 } else {
-                    folder.classList.add('selected');
-                    selectedFolderPath = folder.dataset.path;
+                    // View-only mode: click toggles fold
+                    const children = folder.nextElementSibling;
+                    if (children) {
+                        children.classList.toggle('collapsed');
+                        const isOpen = !children.classList.contains('collapsed');
+                        folder.classList.toggle('folder-open', isOpen);
+                        const toggle = folder.querySelector('.folder-toggle');
+                        if (toggle) toggle.textContent = isOpen ? '▼' : '▶';
+                        if (isOpen) openFolders.add(folder.dataset.path);
+                        else openFolders.delete(folder.dataset.path);
+                        saveOpenFolders();
+                    }
                 }
-                updatePanelContextLabels(container);
             });
         });
 

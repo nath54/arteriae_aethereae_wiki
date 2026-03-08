@@ -725,6 +725,113 @@ def create_place(name: str, parent_id: Optional[str] = None) -> Optional[str]:
     return place_id
 
 
+def move_place(place_id: str, new_parent_id: Optional[str]) -> bool:
+    """
+    Reparents a place in the hierarchy by updating its `parent` field.
+    Recursively clears polygon assignments for the moved place and ALL
+    its descendants (since polygons are relative to the parent map).
+
+    Args:
+        place_id:       ID of the place to move (e.g. "listhe").
+        new_parent_id:  ID of the new parent place, or None for root.
+
+    Returns:
+        True on success, False if validation fails (place not found,
+        new parent not found, or would create a cycle).
+    """
+
+    places_dir = os.path.join(DATA_DIR, "places")
+
+    # ── Load all place data to build hierarchy ──
+    all_places: dict[str, dict[str, Any]] = {}
+    for filename in os.listdir(places_dir):
+        if filename.endswith(".json"):
+            fpath = os.path.join(places_dir, filename)
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                pid = os.path.splitext(filename)[0]
+                all_places[pid] = data
+            except Exception:  # pylint: disable=broad-except
+                continue
+
+    # ── Validate place exists ──
+    if place_id not in all_places:
+        return False
+
+    # ── Validate new parent exists (unless root) ──
+    if new_parent_id is not None and new_parent_id not in all_places:
+        return False
+
+    # ── Cycle prevention: walk from new_parent upward, must not hit place_id ──
+    if new_parent_id is not None:
+        cursor: Optional[str] = new_parent_id
+        while cursor is not None:
+            if cursor == place_id:
+                return False  # Would create a cycle
+            cursor = all_places.get(cursor, {}).get("parent")
+
+    # ── Collect all descendant IDs (BFS) ──
+    descendants: list[str] = []
+    # Build children lookup
+    children_map: dict[str, list[str]] = {}
+    for pid, pdata in all_places.items():
+        par = pdata.get("parent")
+        if par is not None:
+            children_map.setdefault(par, []).append(pid)
+
+    queue = [place_id]
+    while queue:
+        current = queue.pop(0)
+        for child in children_map.get(current, []):
+            descendants.append(child)
+            queue.append(child)
+
+    # ── Update parent field on the moved place ──
+    place_data = all_places[place_id]
+    place_data["parent"] = new_parent_id
+    place_path = os.path.join(places_dir, f"{place_id}.json")
+    with open(place_path, "w", encoding="utf-8") as f:
+        json.dump(place_data, f, indent=4, ensure_ascii=False)
+
+    # ── Clear polygons for the moved place and all descendants ──
+    # Polygons are stored in corresponding map.json files or in the
+    # manifest maps section. For flat-file places we check if there's
+    # a map entity for the place's parent.
+    maps_dir = os.path.join(DATA_DIR, "maps")
+    ids_to_clear = [place_id] + descendants
+
+    for pid in ids_to_clear:
+        # Try flat map file (data/maps/<pid>.json)
+        map_path = os.path.join(maps_dir, f"{pid}.json")
+        if os.path.exists(map_path):
+            try:
+                with open(map_path, "r", encoding="utf-8") as f:
+                    map_data = json.load(f)
+                map_data["polygons"] = {}
+                with open(map_path, "w", encoding="utf-8") as f:
+                    json.dump(map_data, f, indent=4, ensure_ascii=False)
+            except Exception:  # pylint: disable=broad-except
+                pass
+
+        # Try nested place folder (data/places/<pid>/map.json)
+        nested_map_path = os.path.join(places_dir, pid, "map.json")
+        if os.path.exists(nested_map_path):
+            try:
+                with open(nested_map_path, "r", encoding="utf-8") as f:
+                    map_data = json.load(f)
+                map_data["polygons"] = {}
+                with open(nested_map_path, "w", encoding="utf-8") as f:
+                    json.dump(map_data, f, indent=4, ensure_ascii=False)
+            except Exception:  # pylint: disable=broad-except
+                pass
+
+    # ── Rebuild the manifest ──
+    build_manifest()
+
+    return True
+
+
 # ── Image Operations ───────────────────────────────────────────────────────────
 
 
