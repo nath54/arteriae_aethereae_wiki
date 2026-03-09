@@ -162,34 +162,40 @@
         </div>
 
         <div id="map-create-popup" class="edit-only parchment-card" style="display: none;">
-            <h3>Create New Map</h3>
-            <div class="form-group">
-                <label>Width:</label>
-                <input type="number" id="map-create-w" value="1000">
-            </div>
-            <div class="form-group">
-                <label>Height:</label>
-                <input type="number" id="map-create-h" value="1000">
-            </div>
-            <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;">
-                <input type="checkbox" id="map-create-grid"
-                    style="width:18px;height:18px;accent-color:var(--aether-cyan);">
-                <label for="map-create-grid" style="margin:0;cursor:pointer;">Subdivide into grid</label>
-            </div>
-            <div id="map-grid-options" style="display:none;">
+
+            <div id="map-create-popup-content" style="overflow-y: scroll; margin: 15px; max-height: 90%;">
+
+                <h3>Create New Map</h3>
                 <div class="form-group">
-                    <label>Horizontal splits (columns):</label>
-                    <input type="number" id="map-grid-cols" value="4" min="1" max="50">
+                    <label>Width:</label>
+                    <input type="number" id="map-create-w" value="1000">
                 </div>
                 <div class="form-group">
-                    <label>Vertical splits (rows):</label>
-                    <input type="number" id="map-grid-rows" value="4" min="1" max="50">
+                    <label>Height:</label>
+                    <input type="number" id="map-create-h" value="1000">
                 </div>
+                <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;">
+                    <input type="checkbox" id="map-create-grid"
+                        style="width:18px;height:18px;accent-color:var(--aether-cyan);">
+                    <label for="map-create-grid" style="margin:0;cursor:pointer;">Subdivide into grid</label>
+                </div>
+                <div id="map-grid-options" style="display:none;">
+                    <div class="form-group">
+                        <label>Horizontal splits (columns):</label>
+                        <input type="number" id="map-grid-cols" value="4" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Vertical splits (rows):</label>
+                        <input type="number" id="map-grid-rows" value="4" min="1" max="50">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="tool-btn" id="btn-cancel-map-create">Cancel</button>
+                    <button class="tool-btn" id="btn-confirm-map-create">Create</button>
+                </div>
+
             </div>
-            <div class="form-actions">
-                <button class="tool-btn" id="btn-cancel-map-create">Cancel</button>
-                <button class="tool-btn" id="btn-confirm-map-create">Create</button>
-            </div>
+
         </div>
 
         <!-- Map editor sub-view (loaded on demand inside places) -->
@@ -211,21 +217,41 @@
                             </filter>
                         </defs>
                         <g id="map-layers">
+                            <g id="layer-grids"></g>
                             <g id="layer-regions"></g>
                             <g id="layer-borders"></g>
+                            <g id="layer-pois"></g>
                         </g>
                     </svg>
                 </div>
-                <div id="map-sidebar-main">
-                    <div class="edit-only map-tools-panel">
+                <div id="map-sidebar-main" style="display: flex; flex-direction: column; padding: 10px;">
+
+                    <!-- Active layer part -->
+                    <div class="edit-only map-tools-panel" style="display: flex; flex-direction: column;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <h4 style="margin:0;">Active Layer</h4>
+                        </div>
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <select id="map-layer-select"
+                                style="background:var(--bg-card); color:var(--text-main); border:1px solid var(--border-color); padding:4px; border-radius:4px; font-size:0.9rem;">
+                                <option value="geography">🌍 Geography (Vector)</option>
+                                <option value="biomes">🌲 Biomes (Grid)</option>
+                                <option value="cities">🏛️ Cities (POI)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tools part -->
+                    <div class="edit-only map-tools-panel" style="display: flex; flex-direction: column;">
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                             <h4 style="margin:0;">Tools</h4>
-                            <button class="tool-btn btn-muted" id="btn-map-help"
-                                style="padding:4px 8px; font-size:0.85em;">❓ Help</button>
                         </div>
-                        <div class="map-tools-grid">
-                            <button class="tool-btn" data-tool="view" title="View Map" alt="View Map">​👁️​
+                        <div class="map-tools-grid" id="tools-grid-vector">
+                            <button class="tool-btn btn-muted" id="btn-map-help">❓ Help</button>
+                            <button class=" tool-btn active" data-tool="view" title="View Map" alt="View Map">​👁️​
                                 View</button>
                             <button class="tool-btn" data-tool="move_point" title="Move Point" alt="Move Point">​👆​
                                 Move</button>
@@ -242,8 +268,39 @@
                             <button class="tool-btn" data-tool="unassign_region" title="Unassign Region"
                                 alt="Unassign Region">​📤​ Unassign</button>
                         </div>
+                        <div class="map-tools-grid" id="tools-grid-grid" style="display:none;">
+                            <button class="tool-btn" data-tool="view" title="View Map" alt="View Map">​👁️​
+                                View</button>
+                            <button class="tool-btn" data-tool="paint_biome" title="Paint Biome" alt="Paint Biome">🖌️
+                                Paint</button>
+                            <!-- Biome Palette -->
+                            <select id="biome-brush-select"
+                                style="grid-column: span 2; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border-color); padding:4px; margin-top:5px; border-radius:4px;">
+                                <option value="ocean">🌊 Ocean</option>
+                                <option value="beach">🏖️ Beach</option>
+                                <option value="forest">🌲 Forest</option>
+                                <option value="plains">🌾 Plains</option>
+                                <option value="mountain">⛰️ Mountain</option>
+                                <option value="desert">🏜️ Desert</option>
+                                <option value="snow">❄️ Snow Region</option>
+                            </select>
+                        </div>
+                        <div class="map-tools-grid" id="tools-grid-poi" style="display:none;">
+                            <button class="tool-btn" data-tool="view" title="View Map" alt="View Map">​👁️​
+                                View</button>
+                            <button class="tool-btn" data-tool="place_city" title="Place City" alt="Place City">📍
+                                Place</button>
+                            <div
+                                style="grid-column: span 2; margin-top:5px; padding: 4px; border: 1px solid var(--border-color); border-radius: 4px; display: flex; flex-direction: column;">
+                                <label for="poi-importance" style="font-size: 0.8rem; margin-bottom: 2px;">Visibility
+                                    (LOD):</label>
+                                <input type="number" id="poi-importance" value="5" min="1" max="10"
+                                    title="1=Always visible, 10=Zoomed in only"
+                                    style="background:var(--bg-card); color:var(--text-main); border:none;" />
+                            </div>
+                        </div>
                     </div>
-                    <div class="map-actions-panel">
+                    <div class="map-actions-panel" style="display: flex; flex-direction: row; flex-wrap: wrap;">
                         <button class="tool-btn" id="btn-export-svg">Export SVG</button>
                         <button class="tool-btn" id="btn-export-png">Export PNG</button>
                     </div>

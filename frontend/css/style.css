@@ -207,11 +207,11 @@ BUTTONS & TOOLS
     background: transparent;
     color: var(--aether-cyan);
     border: 1px solid var(--aether-cyan-dim);
-    padding: 6px 14px;
+    padding: 3px;
     border-radius: 6px;
     cursor: pointer;
     font-family: 'Gothica', cursive;
-    font-size: 1.3rem;
+    font-size: 0.95rem;
     transition: all 0.2s;
     white-space: nowrap;
 }

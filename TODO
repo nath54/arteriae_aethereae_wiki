@@ -36,22 +36,22 @@ So currently, the app is divided on 5 pages with each some subpages:
     [x] When we click on a polygon, the app wants us to go to the page `http://localhost:8000/frontend/index.html#place:xxx_place_id`, firstly, that doesn't work and only redirects to the base landing page. And secondly, I'm not sure about this behavior, we maybe should have a polygon selection system, where if a polygon is selected, two buttons appears (`go to place page`, `zoom map hierarchy`), and there is also a third button if we are not on the root planet hierarchy (`go to parent place hierarchy`).
     [x] It can be good to have an help menu button above the tool buttons section, where if we click it, the right panel switches to another sub-panel page with a button `exit help`, and then a full help menu that explains all the map system and how to use each tool.
     [x] The export to png function doesn't work
-    [ ] When we edit the map at a non planet level, but lower in the hierarchy, I want that we are limited to the inside of each areas / polygons, and that we cannot make inner polygons that crosses polygons boundaries, even if it is to go inside another polygon of the same parent place node.
-    [ ] I want multiple layers for the map, I don't really know yet how to organize all that within the current data structures, because I want something very efficient and lightweight to edit at large scale / load / process / view, something that scales well when working on very large maps with a lot of details. And so we also have to design a good data structure to host all of these layers system. They will not share exactly the same hierarchy. And we also have to design the UI.
-        [ ] The polygon / areas part
-        [ ] A more textural thing - A layer that can manage:
-            [ ] Mountains
-            [ ] Forests
-            [ ] Plains
-            [ ] Hills
-        [ ] A more climate thing - A layer that can manage:
-            [ ] Tempered
-            [ ] Snowy
-            [ ] Hot desert
-            [ ] Savanah
-            [ ] ...
-        [ ] A layer that can manage lakes and rivers
-        [ ] A layer that can manage cities
+    [x] When we edit the map at a non planet level, but lower in the hierarchy, I want that we are limited to the inside of each areas / polygons, and that we cannot make inner polygons that crosses polygons boundaries, even if it is to go inside another polygon of the same parent place node.
+    [x] I want multiple layers for the map, I don't really know yet how to organize all that within the current data structures, because I want something very efficient and lightweight to edit at large scale / load / process / view, something that scales well when working on very large maps with a lot of details. And so we also have to design a good data structure to host all of these layers system. They will not share exactly the same hierarchy. And we also have to design the UI.
+        [x] The polygon / areas part
+        [x] A more textural thing - A layer that can manage:
+            [x] Mountains
+            [x] Forests
+            [x] Plains
+            [x] Hills
+        [x] A more climate thing - A layer that can manage:
+            [x] Tempered
+            [x] Snowy
+            [x] Hot desert
+            [x] Savanah
+            [x] ...
+        [x] A layer that can manage lakes and rivers
+        [x] A layer that can manage cities
         [ ] A layer that can manage important roads
         [ ] City hierarchy level specific layers:
             [ ] A layer for the streets / places / parks

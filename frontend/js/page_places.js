@@ -815,71 +815,99 @@
             const parentMap = await window.db.getEntity('maps', parentId);
             if (!parentMap) { alert("Parent map not found!"); return; }
 
-            const polyEntry = Object.entries(parentMap.polygons || {}).find(([k, p]) => p.link === id);
-            if (!polyEntry) {
+            // Find ALL polygons assigned to this place (e.g., islands)
+            const linkedPolys = Object.entries(parentMap.polygons || {}).filter(([k, p]) => p.link === id);
+
+            if (linkedPolys.length === 0) {
                 alert(`No polygon in parent map is assigned to ${id}. Please open the parent map and assign a region to this place first.`);
                 return;
             }
 
-            const [polyId, polyData] = polyEntry;
             const tempGraph = new MapGraph();
             tempGraph.load(parentMap);
-            const { nodes } = tempGraph.getOrderedNodesForPolygon(polyId);
 
-            if (!nodes || nodes.length < 3) { alert("Assigned polygon has too few nodes."); return; }
-
+            // Step 1: Calculate global bounding box for ALL linked polygons to scale them together
             let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            for (const nId of nodes) {
-                const n = parentMap.nodes[nId];
-                if (n.x < minX) minX = n.x;
-                if (n.y < minY) minY = n.y;
-                if (n.x > maxX) maxX = n.x;
-                if (n.y > maxY) maxY = n.y;
+            const polyNodeSets = [];
+
+            for (const [polyId, polyData] of linkedPolys) {
+                const { nodes } = tempGraph.getOrderedNodesForPolygon(polyId);
+                if (!nodes || nodes.length < 3) continue;
+
+                polyNodeSets.push({ polyId, polyData, nodes });
+
+                for (const nId of nodes) {
+                    const n = parentMap.nodes[nId];
+                    if (n.x < minX) minX = n.x;
+                    if (n.y < minY) minY = n.y;
+                    if (n.x > maxX) maxX = n.x;
+                    if (n.y > maxY) maxY = n.y;
+                }
             }
+
+            if (polyNodeSets.length === 0) { alert("Assigned polygons have too few nodes."); return; }
 
             const pWidth = maxX - minX;
             const pHeight = maxY - minY;
             const size = Math.max(pWidth, pHeight);
             const targetW = 1000, targetH = 1000;
-            const scale = size > 0 ? targetW / size : 1;
-            const offsetX = (targetW - pWidth * scale) / 2;
-            const offsetY = (targetH - pHeight * scale) / 2;
+            // Pad slightly so it doesn't touch the exact edges of the 1000x1000 canvas
+            const padding = 50;
+            const scale = size > 0 ? (targetW - padding * 2) / size : 1;
+            const offsetX = padding + (targetW - padding * 2 - pWidth * scale) / 2;
+            const offsetY = padding + (targetH - padding * 2 - pHeight * scale) / 2;
 
-            const nodeMapping = {};
             let nodeCounter = 1;
-            for (const nId of nodes) {
-                const n = parentMap.nodes[nId];
-                const nx = (n.x - minX) * scale + offsetX;
-                const ny = (n.y - minY) * scale + offsetY;
-                const newId = `n${nodeCounter++}`;
-                mapData.nodes[newId] = { x: nx, y: ny, locked: [nx, ny] };
-                nodeMapping[nId] = newId;
-            }
-
             let edgeCounter = 1;
-            const newEdges = [];
-            for (let i = 0; i < nodes.length; i++) {
-                const n1Id = nodeMapping[nodes[i]];
-                const n2Id = nodeMapping[nodes[(i + 1) % nodes.length]];
-                const eId = `e${edgeCounter++}`;
-                mapData.edges[eId] = { n1: n1Id, n2: n2Id };
-                newEdges.push(eId);
-            }
+            let polyCounter = 1;
 
-            mapData.polygons['poly1'] = {
-                name: polyData.name || 'Region',
-                edges: newEdges,
-                color: polyData.color || 'rgba(0,0,0,0.1)',
-                link: id
-            };
+            // Track mapped nodes so shared nodes between sibling polygons are merged
+            // (Though usually islands don't share nodes, but if they do, we handle it)
+            const globalNodeMapping = {};
+
+            for (const { polyId, polyData, nodes } of polyNodeSets) {
+                const localNodesList = [];
+
+                // Create Nodes
+                for (const nId of nodes) {
+                    if (!globalNodeMapping[nId]) {
+                        const n = parentMap.nodes[nId];
+                        const nx = offsetX + (n.x - minX) * scale;
+                        const ny = offsetY + (n.y - minY) * scale;
+                        const newNodeId = `n${nodeCounter++}`;
+                        mapData.nodes[newNodeId] = { x: nx, y: ny, locked: [nx, ny] };
+                        globalNodeMapping[nId] = newNodeId;
+                    }
+                    localNodesList.push(globalNodeMapping[nId]);
+                }
+
+                // Create Edges forming a loop
+                const newEdges = [];
+                for (let i = 0; i < localNodesList.length; i++) {
+                    const n1 = localNodesList[i];
+                    const n2 = localNodesList[(i + 1) % localNodesList.length];
+                    const newEdgeId = `e${edgeCounter++}`;
+                    mapData.edges[newEdgeId] = { n1, n2 };
+                    newEdges.push(newEdgeId);
+                }
+
+                // Create Polygon
+                const newPolyId = `poly${polyCounter++}`;
+                mapData.polygons[newPolyId] = {
+                    name: polyData.name || 'Region',
+                    edges: newEdges,
+                    color: polyData.color || 'rgba(0,0,0,0.1)'
+                };
+            }
         }
 
         await window.db.saveEntity('maps', id, mapData);
         window.db.manifest = null;
         await window.db.loadManifest();
-        renderPlacesView();
-    }
+        if (window.db.cache) window.db.cache.delete(`maps_${id}`);
 
+        openMapEditor(id);
+    }
     // ── Page Lifecycle ──
     window.addEventListener('pagechange', (e) => {
         if (e.detail.page === 'places') {

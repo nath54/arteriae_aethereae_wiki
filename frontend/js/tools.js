@@ -27,7 +27,8 @@ class MapTools {
         const btns = document.querySelectorAll('.map-tools-grid .tool-btn[data-tool]');
         btns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                btns.forEach(b => b.classList.remove('active'));
+                // Remove active from *all* tool buttons
+                document.querySelectorAll('.map-tools-grid .tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 window.currentTool = btn.dataset.tool;
                 this.selectedNodeId = null;
@@ -38,6 +39,33 @@ class MapTools {
                 }
             });
         });
+
+        const layerSelect = document.getElementById('map-layer-select');
+        const gridVector = document.getElementById('tools-grid-vector');
+        const gridGrid = document.getElementById('tools-grid-grid');
+        const gridPoi = document.getElementById('tools-grid-poi');
+        if (layerSelect && gridVector && gridGrid && gridPoi) {
+            layerSelect.addEventListener('change', (e) => {
+                const layerType = e.target.value;
+                gridVector.style.display = 'none';
+                gridGrid.style.display = 'none';
+                gridPoi.style.display = 'none';
+
+                if (layerType === 'geography') {
+                    gridVector.style.display = 'grid';
+                    window.currentTool = 'view';
+                    document.querySelector('#tools-grid-vector .tool-btn[data-tool="view"]')?.click();
+                } else if (layerType === 'biomes') {
+                    gridGrid.style.display = 'grid';
+                    window.currentTool = 'view';
+                    document.querySelector('#tools-grid-grid .tool-btn[data-tool="view"]')?.click();
+                } else if (layerType === 'cities') {
+                    gridPoi.style.display = 'grid';
+                    window.currentTool = 'view';
+                    document.querySelector('#tools-grid-poi .tool-btn[data-tool="view"]')?.click();
+                }
+            });
+        }
 
         // Export buttons
         const exportSvg = document.getElementById('btn-export-svg');
@@ -157,6 +185,26 @@ class MapTools {
         if (!window.db.isEditMode) return;
 
         const target = e.target;
+
+        // Handle Grid Painting Layer
+        const activeLayerSelect = document.getElementById('map-layer-select');
+        if (activeLayerSelect && activeLayerSelect.value === 'biomes' && window.currentTool === 'paint_biome') {
+            this.isPainting = true;
+            this.paintGridCell(e.clientX, e.clientY);
+            return;
+        }
+
+        // Handle POI City Placing
+        if (activeLayerSelect && activeLayerSelect.value === 'cities' && window.currentTool === 'place_city') {
+            const svg = document.getElementById('map-svg');
+            let pt = svg.createSVGPoint();
+            pt.x = e.clientX;
+            pt.y = e.clientY;
+            let svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+            this.placeCity(svgP.x, svgP.y);
+            return;
+        }
+
         if (target.classList.contains('map-node')) {
             const nodeId = target.id.replace('node-', '');
 
@@ -183,16 +231,50 @@ class MapTools {
         }
     }
 
+    /**
+     * Checks if a given SVG coordinate is within the permitted boundaries of the current map.
+     * Uses the `clip-path` defined in renderer.js for parent bounds constraint.
+     */
+    isPointWithinBoundaries(svgX, svgY) {
+        if (!window.mapRenderer || !window.mapRenderer.hasClipPath) return true;
+
+        const clipPathNode = document.getElementById('boundary-clip');
+        if (!clipPathNode) return true;
+
+        const paths = clipPathNode.querySelectorAll('path');
+        if (paths.length === 0) return true;
+
+        const svg = document.getElementById('map-svg');
+        const pt = svg.createSVGPoint();
+        pt.x = svgX;
+        pt.y = svgY;
+
+        for (const p of paths) {
+            if (p.isPointInFill(pt)) return true;
+        }
+
+        return false;
+    }
+
     handlePointerMove(e) {
         if (this.draggingNodeId && window.currentTool === 'move_point') {
+            // Check if node is locked (cannot be moved)
+            const node = window.mapGraph.nodes[this.draggingNodeId];
+            if (node && node.locked) return; // Ignore drag entirely
+
             const svg = document.getElementById('map-svg');
             let pt = svg.createSVGPoint();
             pt.x = e.clientX;
             pt.y = e.clientY;
             let svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
 
-            window.mapGraph.updateNodePosition(this.draggingNodeId, svgP.x, svgP.y);
-            window.mapRenderer.render();
+            // Check if new position violates parent boundaries
+            if (this.isPointWithinBoundaries(svgP.x, svgP.y)) {
+                window.mapGraph.updateNodePosition(this.draggingNodeId, svgP.x, svgP.y);
+                window.mapRenderer.render();
+            }
+        } else if (this.isPainting && window.currentTool === 'paint_biome') {
+            this.paintGridCell(e.clientX, e.clientY);
         }
     }
 
@@ -201,12 +283,109 @@ class MapTools {
             this.draggingNodeId = null;
             this.saveCurrentMap();
         }
+        if (this.isPainting) {
+            this.isPainting = false;
+            this.saveCurrentMap();
+        }
+    }
+
+    paintGridCell(clientX, clientY) {
+        const svg = document.getElementById('map-svg');
+        const brushSelect = document.getElementById('biome-brush-select');
+        if (!svg || !brushSelect) return;
+
+        let pt = svg.createSVGPoint();
+        pt.x = clientX;
+        pt.y = clientY;
+        let svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        if (!this.isPointWithinBoundaries(svgP.x, svgP.y)) return;
+
+        const biome = brushSelect.value;
+        const res = 50; // Grid resolution
+        const gridX = Math.floor(svgP.x / res);
+        const gridY = Math.floor(svgP.y / res);
+        const coordKey = `${gridX},${gridY}`;
+
+        if (!window.mapGraph.layers) window.mapGraph.layers = {};
+        if (!window.mapGraph.layers['biomes']) {
+            window.mapGraph.layers['biomes'] = {
+                type: 'grid',
+                resolution: res,
+                data: {}
+            };
+        }
+
+        const layer = window.mapGraph.layers['biomes'];
+        // Brush size: 3x3
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const tx = gridX + dx;
+                const ty = gridY + dy;
+                // Simple circular brush check
+                if (dx * dx + dy * dy <= 2) {
+                    const tk = `${tx},${ty}`;
+                    const targetX = tx * res + res / 2;
+                    const targetY = ty * res + res / 2;
+                    // Only paint cells that visually fall inside the map constraints
+                    if (this.isPointWithinBoundaries(targetX, targetY)) {
+                        layer.data[tk] = biome;
+                    }
+                }
+            }
+        }
+
+        window.mapRenderer.render();
+    }
+
+    placeCity(svgX, svgY) {
+        if (!this.isPointWithinBoundaries(svgX, svgY)) {
+            alert("Cannot place city outside map boundaries.");
+            return;
+        }
+
+        const name = prompt("Enter city name:");
+        if (!name) return;
+
+        const importanceInput = document.getElementById('poi-importance');
+        const importance = importanceInput ? parseInt(importanceInput.value) : 5;
+
+        if (!window.mapGraph.layers) window.mapGraph.layers = {};
+        if (!window.mapGraph.layers['cities']) {
+            window.mapGraph.layers['cities'] = {
+                type: 'poi',
+                entities: {}
+            };
+        }
+
+        const newId = 'city_' + Date.now();
+        window.mapGraph.layers['cities'].entities[newId] = {
+            name: name,
+            x: svgX,
+            y: svgY,
+            importance: importance
+        };
+
+        window.mapRenderer.render();
+        this.saveCurrentMap();
     }
 
     handleSubdivide(edgeId) {
-        window.mapGraph.subdivideEdge(edgeId);
-        window.mapRenderer.render();
-        this.saveCurrentMap();
+        // Subdivide creates a new point exactly halfway between n1 and n2
+        const edge = window.mapGraph.edges[edgeId];
+        if (!edge) return;
+        const n1 = window.mapGraph.nodes[edge.n1];
+        const n2 = window.mapGraph.nodes[edge.n2];
+        const midX = (n1.x + n2.x) / 2;
+        const midY = (n1.y + n2.y) / 2;
+
+        if (this.isPointWithinBoundaries(midX, midY)) {
+            window.mapGraph.subdivideEdge(edgeId);
+            window.mapRenderer.render();
+            this.saveCurrentMap();
+        } else {
+            alert('Cannot subdivide here: the new point would fall outside the regional boundaries.');
+        }
     }
 
     handleSplitSelection(nodeId, circleElement) {

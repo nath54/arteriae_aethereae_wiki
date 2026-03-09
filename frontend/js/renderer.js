@@ -63,12 +63,86 @@ class MapRenderer {
         this.svg.setAttribute('viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
     }
 
+    setClipPath(pathDArray) {
+        let defs = this.svg.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            this.svg.insertBefore(defs, this.svg.firstChild);
+        }
+
+        let clip = defs.querySelector('#boundary-clip');
+        if (!clip) {
+            clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+            clip.setAttribute('id', 'boundary-clip');
+            defs.appendChild(clip);
+        }
+
+        clip.innerHTML = '';
+        if (pathDArray && pathDArray.length > 0) {
+            pathDArray.forEach(d => {
+                const pNode = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                pNode.setAttribute('d', d);
+                clip.appendChild(pNode);
+            });
+            this.hasClipPath = true;
+        } else {
+            this.hasClipPath = false;
+        }
+    }
+
     render() {
         if (!window.mapGraph) return;
         const g = window.mapGraph;
 
         this.layerRegions.innerHTML = '';
         this.layerBorders.innerHTML = '';
+
+        let layerGrids = document.getElementById('layer-grids');
+        if (layerGrids) layerGrids.innerHTML = '';
+
+        let layerPois = document.getElementById('layer-pois');
+        if (layerPois) layerPois.innerHTML = '';
+
+        const mapLayersGrp = document.getElementById('map-layers');
+        if (mapLayersGrp) {
+            if (this.hasClipPath) {
+                mapLayersGrp.setAttribute('clip-path', 'url(#boundary-clip)');
+            } else {
+                mapLayersGrp.removeAttribute('clip-path');
+            }
+        }
+
+        // Render Grid Layers
+        if (g.layers && layerGrids) {
+            for (const [layerId, layer] of Object.entries(g.layers)) {
+                if (layer.type === 'grid' && layer.data) {
+                    const res = layer.resolution || 50;
+                    for (const [coord, biome] of Object.entries(layer.data)) {
+                        const [cx, cy] = coord.split(',').map(Number);
+                        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        rect.setAttribute('x', cx * res);
+                        rect.setAttribute('y', cy * res);
+                        rect.setAttribute('width', res);
+                        rect.setAttribute('height', res);
+
+                        // Pick color/texture based on biome type
+                        let fill = 'transparent';
+                        if (biome === 'ocean') fill = '#1a4b77';
+                        else if (biome === 'beach') fill = '#e5d9c5';
+                        else if (biome === 'forest') fill = '#2d5a27';
+                        else if (biome === 'mountain') fill = '#7e7e7e';
+                        else if (biome === 'plains') fill = '#5c8a40';
+                        else if (biome === 'desert') fill = '#d4b872';
+                        else if (biome === 'snow') fill = '#ffffff';
+
+                        // We will add SVG patterns later, fallback to color for now
+                        rect.setAttribute('fill', window.getComputedStyle(document.body).getPropertyValue(`--biome-${biome}`) || fill);
+                        rect.classList.add('map-grid-cell');
+                        layerGrids.appendChild(rect);
+                    }
+                }
+            }
+        }
 
         // Render Polygons
         for (const [id, poly] of Object.entries(g.polygons)) {
@@ -164,6 +238,46 @@ class MapRenderer {
             }
 
             this.layerBorders.appendChild(line);
+        }
+
+        // Render POIs
+        if (g.layers && layerPois) {
+            const currentDepth = window.currentMapDepth || 1;
+            for (const [layerId, layer] of Object.entries(g.layers)) {
+                if (layer.type === 'poi' && layer.entities) {
+                    for (const [poiId, poi] of Object.entries(layer.entities)) {
+                        // LOD Check: Only show POI if its visibility importance is >= the current map depth 
+                        // (e.g., Importance 1 = visible from Planet depth 1. Importance 5 = visible only entering depth 5 sub-maps)
+                        if (currentDepth >= (poi.importance || 1)) {
+                            const gPoi = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                            gPoi.setAttribute('id', `poi-${poiId}`);
+                            gPoi.classList.add('map-poi');
+
+                            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                            circle.setAttribute('cx', poi.x);
+                            circle.setAttribute('cy', poi.y);
+                            circle.setAttribute('r', 6);
+                            circle.setAttribute('fill', '#ff4444');
+                            circle.setAttribute('stroke', '#222');
+                            circle.setAttribute('stroke-width', 2);
+
+                            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                            text.setAttribute('x', poi.x);
+                            text.setAttribute('y', poi.y - 12);
+                            text.setAttribute('text-anchor', 'middle');
+                            text.setAttribute('fill', '#ffffff');
+                            text.setAttribute('font-size', '14px');
+                            text.setAttribute('font-weight', 'bold');
+                            text.style.textShadow = '1px 1px 2px #000';
+                            text.textContent = poi.name || "POI";
+
+                            gPoi.appendChild(circle);
+                            gPoi.appendChild(text);
+                            layerPois.appendChild(gPoi);
+                        }
+                    }
+                }
+            }
         }
 
         // Render Nodes
@@ -343,9 +457,40 @@ window.loadMap = async function (mapId) {
         window.mapGraph.load(data);
     }
 
+    // Calculate depth from root (LOD system)
+    let depth = 1;
+    let currPlace = await window.db.getEntity('places', mapId);
+    while (currPlace && currPlace.parent) {
+        depth++;
+        currPlace = await window.db.getEntity('places', currPlace.parent);
+    }
+    window.currentMapDepth = depth;
+
     if (!window.mapRenderer) {
         window.mapRenderer = new MapRenderer();
     }
+
+    // Attempt to mask the map using the parent boundaries
+    const placeData = await window.db.getEntity('places', mapId);
+    let clipPaths = [];
+
+    if (placeData && placeData.parent) {
+        const parentMap = await window.db.getEntity('maps', placeData.parent);
+        if (parentMap) {
+            const tempGraph = new MapGraph();
+            tempGraph.load(parentMap);
+
+            // Find all polygons linked to this mapId
+            const linkedPolys = Object.entries(parentMap.polygons || {}).filter(([k, p]) => p.link === mapId);
+
+            for (const [polyId, polyData] of linkedPolys) {
+                const d = window.mapRenderer.buildPolygonPath(polyData.edges, tempGraph);
+                if (d) clipPaths.push(d);
+            }
+        }
+    }
+
+    window.mapRenderer.setClipPath(clipPaths);
     window.mapRenderer.updateViewBox();
     window.mapRenderer.render();
 };
