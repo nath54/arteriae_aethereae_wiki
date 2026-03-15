@@ -134,7 +134,13 @@
 
             // Detail sections with inline editing
             for (const section of PLACE_SECTIONS) {
+
                 const val = placeNode[section.key];
+
+                if ((val == undefined || val == null || val.length === 0) && !window.isEditMode) {
+                    continue;
+                }
+
                 html += `<div class="char-section" id="section-${section.key}">
                     <h3 class="char-section-title">${section.title}
                         <button class="place-inline-edit-btn edit-only" data-field="${section.key}" title="Edit">✏️</button>
