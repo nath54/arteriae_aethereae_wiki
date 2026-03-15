@@ -168,7 +168,7 @@ circle.map-node.selected {
     stroke-width: 3;
 }
 
-line.map-edge {
+171: line.map-edge {
     stroke: #444;
     stroke-width: 3;
     cursor: pointer;
@@ -224,4 +224,49 @@ line.map-edge.selected {
 
 .poly-action-label strong {
     color: var(--aether-cyan);
+}
+
+/*
+══════════════════════════════════════════════════════════════
+RESPONSIVE ADJUSTMENTS
+══════════════════════════════════════════════════════════════
+*/
+@media (max-width: 900px) {
+    #map-editor-workspace {
+        flex-direction: column;
+    }
+
+    #map-editor-sidebar {
+        flex: 0 0 auto;
+        max-width: none;
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--glass-border);
+        height: 250px; /* Fixed height for scrollable tools area on mobile */
+    }
+
+    #map-editor-main {
+        flex: 1;
+    }
+
+    .map-tools-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    #map-editor-title {
+        font-size: 1.2rem;
+    }
+    
+    .poly-action-label {
+        font-size: 0.9rem;
+    }
+
+    #poly-action-bar {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 90%;
+    }
 }

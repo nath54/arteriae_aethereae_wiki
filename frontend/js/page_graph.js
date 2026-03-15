@@ -346,6 +346,75 @@
                 const factor = e.deltaY > 0 ? 0.9 : 1.1;
                 this.zoom = Math.max(0.2, Math.min(3, this.zoom * factor));
             }, { passive: false });
+
+            // ── Touch Events ──
+            let lastTouchDistance = null;
+            let touchPanStartX = 0, touchPanStartY = 0;
+
+            el.addEventListener('touchstart', e => {
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    const rect = el.getBoundingClientRect();
+                    const n = this._nodeAt(touch.clientX - rect.left, touch.clientY - rect.top);
+                    if (n) {
+                        this.dragging = n;
+                    } else {
+                        isPanning = true;
+                        panStartX = touch.clientX - rect.left;
+                        panStartY = touch.clientY - rect.top;
+                        panOriginX = this.panX;
+                        panOriginY = this.panY;
+                    }
+                } else if (e.touches.length === 2) {
+                    isPanning = false;
+                    this.dragging = null;
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+                }
+            }, { passive: false });
+
+            el.addEventListener('touchmove', e => {
+                e.preventDefault();
+                const rect = el.getBoundingClientRect();
+
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    const tx = touch.clientX - rect.left;
+                    const ty = touch.clientY - rect.top;
+
+                    if (this.dragging) {
+                        const g = this._toGraph(tx, ty);
+                        this.dragging.x = g.x;
+                        this.dragging.y = g.y;
+                        this.dragging.vx = 0;
+                        this.dragging.vy = 0;
+                    } else if (isPanning) {
+                        this.panX = panOriginX + (tx - panStartX);
+                        this.panY = panOriginY + (ty - panStartY);
+                    }
+                } else if (e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (lastTouchDistance !== null) {
+                        const factor = dist / lastTouchDistance;
+                        this.zoom = Math.max(0.2, Math.min(3, this.zoom * factor));
+                    }
+                    lastTouchDistance = dist;
+                }
+            }, { passive: false });
+
+            el.addEventListener('touchend', e => {
+                if (this.dragging && e.touches.length === 0) {
+                    this._selected = this.dragging;
+                    if (this.onSelect) this.onSelect(this.dragging.id);
+                    this.dragging = null;
+                }
+                isPanning = false;
+                lastTouchDistance = null;
+            });
         }
     }
 
@@ -404,7 +473,7 @@
         const nodes = buildGraphFromManifest(centerNodeId);
 
         container.innerHTML = `
-            <div class="graph-canvas-wrap" id="graph-wrap">
+            <div class="graph-canvas-wrap" id="graph-wrap" style="flex: 1; min-height: 400px;">
                 <canvas id="graph-canvas"></canvas>
                 <div class="graph-controls">
                     <button class="tool-btn" id="btn-graph-reset" title="Reset View">🎯 Reset</button>
@@ -412,18 +481,16 @@
                 </div>
                 <div class="graph-tooltip" id="graph-tooltip"></div>
             </div>
-            <div id="graph-char-preview" style="
-                max-width:260px; padding:16px; flex-shrink:0;
-                border-left:1px solid var(--glass-border);">
+            <div id="graph-char-preview" class="graph-preview-panel">
                 <p class="placeholder-text" style="padding:16px;text-align:center;">
                     Click a node to preview the character.
                 </p>
             </div>`;
 
+        container.classList.add('graph-page-container');
         container.style.display = 'flex';
-        container.style.height = '600px';
-        container.style.gap = '0';
-
+        // Style handled by new CSS class or inline media queries
+        
         const wrap = container.querySelector('#graph-wrap');
         const canvas = container.querySelector('#graph-canvas');
         const tooltip = container.querySelector('#graph-tooltip');

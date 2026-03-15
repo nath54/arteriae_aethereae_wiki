@@ -39,13 +39,66 @@ class MapRenderer {
         });
 
         this.svg.addEventListener('pointerdown', (e) => {
-            if (e.button === 0 && window.currentTool !== 'view') return;
+            if (e.pointerType === 'mouse' && e.button !== 0 && window.currentTool !== 'view') return;
+            if (e.pointerType === 'touch') {
+                // Multi-touch handled by touchstart/touchmove separately for zoom
+                if (this.isPinching) return;
+            }
             this.isDragging = true;
             this.dragStart = { x: e.clientX, y: e.clientY };
         });
 
+        // ── Pinch-to-Zoom handling ──
+        this.lastTouchDistance = null;
+        this.isPinching = false;
+
+        this.svg.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                this.isDragging = false;
+                this.isPinching = true;
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                this.lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+            }
+        }, { passive: false });
+
+        this.svg.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && this.isPinching) {
+                e.preventDefault();
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (this.lastTouchDistance) {
+                    const scale = this.lastTouchDistance / dist; // Inverse because we pull/push
+                    
+                    // Zoom towards center of the two fingers
+                    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                    
+                    const pt = this.svg.createSVGPoint();
+                    pt.x = midX;
+                    pt.y = midY;
+                    const svgP = pt.matrixTransform(this.svg.getScreenCTM().inverse());
+
+                    this.viewBox.x = svgP.x - (svgP.x - this.viewBox.x) * scale;
+                    this.viewBox.y = svgP.y - (svgP.y - this.viewBox.y) * scale;
+                    this.viewBox.w *= scale;
+                    this.viewBox.h *= scale;
+
+                    this.updateViewBox();
+                }
+                this.lastTouchDistance = dist;
+            }
+        }, { passive: false });
+
+        this.svg.addEventListener('touchend', () => {
+            this.isPinching = false;
+            this.lastTouchDistance = null;
+        });
+
         window.addEventListener('pointermove', (e) => {
-            if (!this.isDragging) return;
+            if (!this.isDragging || this.isPinching) return;
             const dx = (e.clientX - this.dragStart.x) * (this.viewBox.w / this.svg.clientWidth);
             const dy = (e.clientY - this.dragStart.y) * (this.viewBox.h / this.svg.clientHeight);
             this.viewBox.x -= dx;
