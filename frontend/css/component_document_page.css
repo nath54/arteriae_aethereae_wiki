@@ -91,7 +91,7 @@ DOCUMENTS PAGE
 }
 
 .doc-tree-folder:not(.folder-open) .folder-toggle {
-    transform: rotate(-90deg);
+    transform: rotate(0deg);
 }
 
 .folder-icon {
