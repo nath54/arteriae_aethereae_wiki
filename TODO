@@ -67,3 +67,7 @@ So currently, the app is divided on 5 pages with each some subpages:
     [ ] There will be a special event that will split the story into different paths, and we can specify the conditions for each path, and the events that will be linked to each path.
     [ ] There will also be a special event that can merge different paths into one.
     [ ] The events paths and links UI have to be worked on well, it has to be beautiful, responsive and easy to use.
+[ ] Add a character creator section to the character pages, with very detailed bodies and heads. I would like a system that can easily renders a character based on a skeleton position and an orientation (front, back, left, right). I want very precise details like the face, eyes, mouth, facial expressions, large liberty in the hairs, I don't want to limit the hairs to a few shapes, I want to be able to create any kind of hair, the fingers, the hands, muscles, the fat, ... I also obviously want the render time to be as fast as possible, running on small devices like old smartphones, and allow caching to avoid rendering each time.
+    [ ] Design the datastructures, how to do that concretely
+    [ ] Design the UI elements
+    [ ] Implement all of that

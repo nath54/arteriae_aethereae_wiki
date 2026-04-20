@@ -168,7 +168,7 @@ circle.map-node.selected {
     stroke-width: 3;
 }
 
-171: line.map-edge {
+line.map-edge {
     stroke: #444;
     stroke-width: 3;
     cursor: pointer;
@@ -242,7 +242,8 @@ RESPONSIVE ADJUSTMENTS
         width: 100%;
         border-left: none;
         border-top: 1px solid var(--glass-border);
-        height: 250px; /* Fixed height for scrollable tools area on mobile */
+        height: 250px;
+        /* Fixed height for scrollable tools area on mobile */
     }
 
     #map-editor-main {
@@ -258,7 +259,7 @@ RESPONSIVE ADJUSTMENTS
     #map-editor-title {
         font-size: 1.2rem;
     }
-    
+
     .poly-action-label {
         font-size: 0.9rem;
     }
